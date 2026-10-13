@@ -13,13 +13,15 @@ from store import POLICY
 # MM-032: similarity is the angle between two arrows (cosine)
 def cosine(a, b):
     dot = sum(x * y for x, y in zip(a, b))
-    return dot / (math.sqrt(sum(x * x for x in a)) * math.sqrt(sum(y * y for y in b)))
+    length = lambda v: math.sqrt(sum(x * x for x in v))
+    return dot / (length(a) * length(b))
 
 
 # MM-033: nearest neighbours. Rank every clause by cosine; keep the top k above a floor.
 def nearest(question, docs=POLICY, k=2, floor=0.6):
     q = embed(question)
-    ranked = sorted(((cosine(q, embed(t)), cid) for cid, t in docs.items()), reverse=True)
+    scored = [(cosine(q, embed(t)), cid) for cid, t in docs.items()]
+    ranked = sorted(scored, reverse=True)
     return [(cid, round(s, 2)) for s, cid in ranked[:k] if s >= floor]
 
 

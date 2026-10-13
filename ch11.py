@@ -36,9 +36,11 @@ def check(text, order=None):
         return None, f"fields must be exactly {sorted(CONTRACT)}"
     if reply["decision"] not in CONTRACT["decision"]:
         return None, f"decision must be one of {CONTRACT['decision']}"
-    if reply["decision"] != "escalate" and reply["clause"] not in POLICY:
+    decision = reply["decision"]
+    if decision != "escalate" and reply["clause"] not in POLICY:
         return None, "clause must be a real policy clause"
-    if order is not None and reply["decision"] == "approve" and decide(order) != "approve":
+    allowed = order is None or decide(order) == "approve"
+    if decision == "approve" and not allowed:
         return None, "the policy does not allow approving this order"
     return reply, None
 

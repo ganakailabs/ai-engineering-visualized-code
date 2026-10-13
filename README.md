@@ -49,8 +49,14 @@ return shape. Chapter 9's three models, their prices and speeds, and Chapter 12'
 | `ch16.py` | 16. Grounded Answers: Citations and "I Don't Know" |
 | `ch17.py` | 17. Is the RAG Working? Evaluating Retrieval and Answers |
 | `ch18.py` | 18. Workflows vs Agents: Rails or Steering Wheel |
+| `ch19.py` | 19. The Agent Loop: Think, Act, Observe |
+| `ch20.py` | 20. Planning and Multi-Step Tasks |
+| `ch21.py` | 21. Memory: What the Agent Remembers |
+| `ch22.py` | 22. Agent Safety: Permissions, Approvals and the Trojan Ticket |
+| `ch23.py` | 23. Guardrails and Privacy: Checks In, Checks Out |
+| `ch24.py` | 24. Ship It: Errors, Tracing, Latency and the Complete System |
 
-Chapters 7-18 are in first draft and not yet in the published early-access edition.
+Chapters 7-24 are in first draft and not yet in the published early-access edition.
 
 ## Exercise solutions
 

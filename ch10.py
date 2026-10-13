@@ -19,8 +19,9 @@ OUTPUT_FORMAT = "Reply on one line as '<approve|deny|escalate>: <reason with cla
 
 
 def build_messages(ticket, oid=None, layers=None):
+    facts = order_facts(oid, fetch_order(oid)) if oid else ""
     parts = {"role": ROLE, "rules": RULES,
-             "context": policy_text() + (order_facts(oid, fetch_order(oid)) if oid else ""),
+             "context": policy_text() + facts,
              "examples": EXAMPLES, "output_format": OUTPUT_FORMAT}
     if layers is not None:
         parts = {k: v for k, v in parts.items() if k in layers}

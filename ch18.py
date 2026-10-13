@@ -19,15 +19,17 @@ def person_track(ticket):
 
 
 # MM-050, rung 2: a router. The model picks the track; every track is still fixed.
-ROUTER = "Classify the ticket: refund, tracking, warranty or other. Reply with one word."
+ROUTER = ("Classify the ticket: refund, tracking, warranty or other. "
+          "Reply with one word.")
 TRACKS = {"refund": refund_track, "tracking": answer_track,
           "warranty": answer_track, "other": person_track}
 
 
 def route(ticket, model=call_model):
     label = model([{"role": "system", "content": ROUTER},
-                        {"role": "user", "content": ticket}])["text"].strip()
-    if label not in TRACKS:                        # check the label like any model output
+                   {"role": "user", "content": ticket}])["text"].strip()
+    # check the label like any model output
+    if label not in TRACKS:
         label = "other"
     return label, TRACKS[label](ticket)
 

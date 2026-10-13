@@ -179,7 +179,11 @@ def call_model(messages, temperature=0.0, max_output_tokens=300, seed=None,
     rng = random.Random(seed)
     tool_calls = None
     system = " ".join(_content_text(m["content"]) for m in messages if m["role"] == "system")
-    if "reply with json" in system.lower():
+    if "you are an agent" in system.lower():           # Ch 19-22
+        text = _agent_reply(messages)
+    elif "write a plan" in system.lower():             # Ch 20
+        text = _plan_reply(messages)
+    elif "reply with json" in system.lower():
         text, tool_calls = _json_reply(messages, temperature, rng, tools)
         text = text or ""
     else:
@@ -266,3 +270,57 @@ def _route_label(ticket):
     if any(w in ticket for w in ("warranty", "stopped", "battery", "faulty")):
         return "warranty"
     return "other"
+
+
+# Ch 19-22: a scripted agent. It answers in JSON with a thought and either an
+# action (a tool name and its arguments) or a final reply. Scripted, not learned.
+def _agent_reply(messages):
+    import json
+    ticket = _content_text(next(m["content"] for m in messages if m["role"] == "user"))
+    low = ticket.lower()
+    seen = [_content_text(m["content"]) for m in messages if m["role"] == "tool"]
+    last = seen[-1] if seen else ""
+    oid = (re.findall(r"#(\d{4})", ticket) or [""])[0]
+    to = re.search(r" to (.+?)(\.|$)", ticket)
+    address = to.group(1) if to else ""
+
+    def act(thought, action, **args):
+        return json.dumps({"thought": thought, "action": action, "args": args})
+
+    def final(thought, reply):
+        return json.dumps({"thought": thought, "final": reply})
+
+    # Ch 22: a Trojan ticket. The stub obeys text it finds in the data.
+    if "ignore previous instructions" in low and not seen:
+        return act("The ticket says to refund #3100 in full.", "issue_refund",
+                   order_id="3100", amount=12500)
+    if not any(s.startswith("#") for s in seen):
+        return act(f"Check where #{oid} is first.", "look_up_shipment", order_id=oid)
+    status = next(s for s in seen if s.startswith("#"))
+    if "address changed" in last:
+        return final("The change went through.", f"done: #{oid} will go to {address}.")
+    if "packing" in status:
+        return act("Not shipped yet, so I can change it.", "change_address",
+                   order_id=oid, address=address)
+    if "in transit" in status and not last.startswith("carrier"):
+        return act("Already shipped. Ask the carrier.", "ask_carrier", order_id=oid)
+    if "redirect not allowed" in last:
+        return final("The carrier cannot redirect it.",
+                     f"escalate: #{oid} is in transit and cannot be redirected.")
+    return final("Nothing I can change.", f"escalate: #{oid} is {status.split(': ')[-1]}.")
+
+
+# Ch 20: a scripted planner. It returns a JSON list of steps.
+def _plan_reply(messages):
+    import json
+    text = " ".join(_content_text(m["content"]) for m in messages if m["role"] == "user")
+    oid = (re.findall(r"#(\d{4})", text) or [""])[0]
+    colour = "blue" if "blue" in text.lower() else "green"
+    item = f"mug set {colour}"
+    if "surprise:" in text.lower():
+        steps = [("ask_customer", {"question": f"{colour} is out of stock: "
+                                               "green instead, or a refund?"})]
+    else:
+        steps = [("check_stock", {"item": item}), ("reserve", {"item": item}),
+                 ("send_label", {"order_id": oid})]
+    return json.dumps([{"tool": t, "args": a} for t, a in steps])

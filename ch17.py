@@ -25,7 +25,9 @@ def unsupported(reply, passages):
     if reply.startswith("escalate"):
         return []
     cited = re.findall(r"\[(\w+)\]", reply)
-    said = set().union(set(), *(words(passages.get(c, "")) for c in cited))
+    said = set()
+    for c in cited:
+        said |= set(words(passages.get(c, "")))
     body = re.sub(r"\[\w+\]|^answer:", "", reply)
     out = []
     for sentence in re.split(r"(?<=\.)\s+", body.strip()):

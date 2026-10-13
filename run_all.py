@@ -4,7 +4,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-for ch in [f"ch{n:02d}" for n in range(1, 19)]:
+for ch in [f"ch{n:02d}" for n in range(1, 25)]:
     print(f"===== {ch} =====")
     runpy.run_module(ch, run_name="__main__")
 

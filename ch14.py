@@ -9,8 +9,10 @@ from store import HANDBOOK, HANDBOOK_TEXT, REGION
 def chunk(text, size=12, overlap=0):
     w = text.split()
     step = size - overlap
-    return {f"C{i // step + 1}": " ".join(w[i:i + size]) for i in range(0, len(w), step)
-            if i == 0 or i + overlap < len(w)}
+    starts = [i for i in range(0, len(w), step)
+              if i == 0 or i + overlap < len(w)]
+    return {f"C{n + 1}": " ".join(w[i:i + size])
+            for n, i in enumerate(starts)}
 
 
 # Sidebar: cut at sentence ends instead of word counts
@@ -21,7 +23,8 @@ def sentence_chunks(text):
 
 # MM-040: labels on every chunk; filter on the label first, then rank what is left
 def search_labelled(question, region, k=2):
-    allowed = {cid: t for cid, t in HANDBOOK.items() if REGION[cid] in ("ALL", region)}
+    allowed = {cid: t for cid, t in HANDBOOK.items()
+               if REGION[cid] in ("ALL", region)}
     return hybrid(question, docs=allowed, k=k, kw_floor=0, mean_floor=0)
 
 

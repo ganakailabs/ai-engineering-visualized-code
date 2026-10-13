@@ -23,7 +23,8 @@ def passage_gate(reply, passages):
         return False, "no receipt"
     if any(c not in passages for c in cited):
         return False, "cites a passage we did not retrieve"
-    claim = set(words(re.sub(r"\[\w+\]|^answer:", "", reply))) - {"yes", "we"}
+    text = re.sub(r"\[\w+\]|^answer:", "", reply)
+    claim = set(words(text)) - {"yes", "we"}
     said = set().union(*(words(passages[c]) for c in cited))
     if len(claim & said) < len(claim) / 2:
         return False, "the cited passage does not say this"

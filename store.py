@@ -51,3 +51,12 @@ REGION["S5"] = "EU"
 
 # Ch 14: the same handbook as one long page of text, the way it arrives from the help centre
 HANDBOOK_TEXT = " ".join(HANDBOOK[c] for c in ("S1", "R1", "R2", "S3", "R3", "R4", "S2", "S4", "S5"))
+
+# Ch 19-22: shipments, stock and carriers for the agent chapters (fictional)
+SHIPMENTS = {"5120": "packing", "6001": "in transit", "1234": "delivered"}
+CARRIER_REDIRECT = {"6001": False}           # this carrier cannot redirect parcels
+STOCK = {"mug set green": 4, "mug set blue": 0}
+
+# Ch 23: one customer record, to show what should not leave your building
+CUSTOMERS = {"asha": {"name": "Asha Rao", "email": "asha.rao@example.com",
+                      "phone": "+91 98765 43210", "city": "Pune"}}

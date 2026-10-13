@@ -39,10 +39,13 @@ def search(question, score, docs=HANDBOOK, k=3, floor=0.0):
 # Hybrid: run both, then merge the two rankings (reciprocal rank fusion)
 def hybrid(question, docs=HANDBOOK, k=3, kw_floor=0.5, mean_floor=0.6):
     fused = {}
-    for score, floor in ((keyword_score, kw_floor), (meaning_score, mean_floor)):
-        for rank, (cid, s) in enumerate(search(question, score, docs, k=len(docs), floor=floor)):
+    pairs = ((keyword_score, kw_floor), (meaning_score, mean_floor))
+    for score, floor in pairs:
+        hits = search(question, score, docs, k=len(docs), floor=floor)
+        for rank, (cid, s) in enumerate(hits):
             fused[cid] = fused.get(cid, 0) + 1 / (60 + rank)
-    return sorted(fused, key=fused.get, reverse=True)[:k]   # MM-037: may be empty
+    # MM-037: the result may be empty
+    return sorted(fused, key=fused.get, reverse=True)[:k]
 
 
 # MM-036: the top-k net, measured on labelled questions (question -> passages that answer it)
@@ -53,7 +56,8 @@ SEARCH_GOLDEN = [
     ("Where is my parcel?", {"S1"}),
     ("Can I swap a gift card for cash?", {"S4"}),
     ("I live in the EU, can I withdraw from my purchase?", {"S5"}),
-    ("My mug arrived cracked. Refund, and who pays return shipping?", {"R2", "S3"}),
+    ("My mug arrived cracked. Refund, and who pays return shipping?",
+     {"R2", "S3"}),
     ("The headphones cost INR 12,500 and arrived broken. Refund?", {"R2", "R4"}),
 ]
 

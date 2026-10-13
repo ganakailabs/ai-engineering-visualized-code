@@ -58,6 +58,13 @@ def _reply(messages, temperature, rng) -> str:
     system = " ".join(_content_text(m["content"]) for m in messages if m["role"] == "system")
     users = [_content_text(m["content"]) for m in messages if m["role"] == "user"]
     last = users[-1].lower() if users else ""
+
+    # Ch 15-17: retrieval-augmented prompts carry a PASSAGES block
+    if "passages:" in system.lower() or "closed book" in system.lower():
+        return _rag_reply(system, last)
+    # Ch 18: the router prompt asks for one label
+    if "classify the ticket" in system.lower():
+        return _route_label(last)
     everything = (system + " " + " ".join(users)).lower()
     has_policy = "policy (version" in everything
     pushy = any(w in last for w in ("manager", "insist", "lawyer", "unacceptable"))
@@ -90,7 +97,7 @@ def _reply(messages, temperature, rng) -> str:
     if _has_image(messages):
         return "approve: The photo shows a visible crack, so the item qualifies under R2."
 
-    # Ch 7: told to answer only from the page, the policy gap becomes an abstain
+    # Ch 7 (The Citation Gate): told to answer only from the policy, the policy gap becomes an abstain
     if ("price match" in last or "price-match" in last) and "answer only from the policy" in system.lower():
         return "escalate: The policy does not cover price matching."
 
@@ -214,3 +221,48 @@ def embed(text):
     vec = [sum(w in CONCEPT_WORDS[a] for w in words) for a in AXES]
     length = math.sqrt(sum(v * v for v in vec)) or 1.0
     return [v / length for v in vec]  # unit length, so dot product = cosine
+
+
+# Ch 15-17: answering from retrieved passages. Scripted, like everything here.
+_STOP = {"a", "an", "the", "i", "my", "me", "can", "do", "you", "is", "it", "of", "for", "to",
+         "in", "on", "and", "or", "what", "how", "get", "your", "be", "with", "if", "who", "was"}
+
+
+def _content_words(text):
+    return {w for w in re.findall(r"[a-z0-9-]+", text.lower()) if w not in _STOP}
+
+
+def _rag_reply(system, question):
+    rules = system.lower()
+    passages = dict(re.findall(r"^\[(\w+)\] (.+)$", system, flags=re.M))
+    cite = "cite" in rules
+    may_abstain = "if the passages do not answer" in rules
+    best, overlap = None, 0
+    for pid, text in passages.items():
+        n = len(_content_words(question) & _content_words(text))
+        if n > overlap:
+            best, overlap = pid, n
+    if best is None:                               # nothing on the page answers it
+        if may_abstain:
+            return "escalate: The passages do not answer this question."
+        if "price" in question:                    # scripted: fluent, from memory
+            first = next(iter(passages), None)
+            tag = f" [{first}]" if cite and first else ""
+            return f"answer: Yes, we match a lower price within 14 days{tag}."
+        return "answer: Electronics have a 6-month warranty."  # closed book: invented
+    tag = f" [{best}]" if cite else ""
+    reply = f"answer: {passages[best]}{tag}"
+    if "return shipping" in question and ("broken" in question or "damaged" in question):
+        reply += " We also refund the original delivery fee."   # scripted: an unsupported extra
+    return reply
+
+
+# Ch 18: a router label from the ticket's words (scripted)
+def _route_label(ticket):
+    if re.search(r"#\d{4}", ticket) and any(w in ticket for w in ("refund", "money back", "return")):
+        return "refund"
+    if any(w in ticket for w in ("where is", "track", "parcel")):
+        return "tracking"
+    if any(w in ticket for w in ("warranty", "stopped", "battery", "faulty")):
+        return "warranty"
+    return "other"

@@ -1,6 +1,6 @@
 """Chapter 7 exercise: count the invented clauses, then contain them.
 
-Send each ticket with the policy only, then with the answer-only-from-the-page rules,
+Send each ticket with the policy only, then with the Citation Gate rules (answer only from the policy),
 and pass every reply through the citation gate. Count replies that make a decision on
 a clause the policy does not have. Run: python3 solutions/ch07_solution.py
 """

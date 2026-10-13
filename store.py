@@ -33,3 +33,21 @@ def policy_text() -> str:
 
 def fetch_order(order_id):
     return ORDERS.get(order_id)
+
+
+# Ch 13-17: the help-centre handbook. The four refund clauses plus other pages.
+# Ids: R1-R4 are the refund clauses; S1-S5 are other handbook passages.
+HANDBOOK = dict(POLICY)
+HANDBOOK.update({
+    "S1": "Orders usually arrive within 5 business days. Track your parcel from the link in the shipping email.",
+    "S2": "NW-500 headphones carry a 12-month warranty against defects. A battery that stops charging counts as a defect.",
+    "S3": "Return shipping is free for damaged items. For other returns the customer pays return shipping.",
+    "S4": "Gift cards cannot be exchanged for cash.",
+    "S5": "Customers in the EU may withdraw from an online purchase within 14 days of delivery, without giving a reason.",
+})
+# Ch 14: labels on every passage (which customers it applies to)
+REGION = {cid: "ALL" for cid in HANDBOOK}
+REGION["S5"] = "EU"
+
+# Ch 14: the same handbook as one long page of text, the way it arrives from the help centre
+HANDBOOK_TEXT = " ".join(HANDBOOK[c] for c in ("S1", "R1", "R2", "S3", "R3", "R4", "S2", "S4", "S5"))

@@ -1,46 +1,45 @@
-"""Chapter 7 exercise (moved from the Oct 6 Ch 5; Ch 7 text not yet rewritten): roll the dice, then check what the answer cites.
+"""Chapter 7 exercise: count the invented clauses, then contain them.
 
-Send each ticket five times at temperature 1.0 and five times at 0.0, count the distinct
-decisions, and flag any approve/deny reply that cites a clause your policy does not
-have (or cites none). Run: python3 solutions/ch05_solution.py
+Send each ticket with the policy only, then with the answer-only-from-the-page rules,
+and pass every reply through the citation gate. Count replies that make a decision on
+a clause the policy does not have. Run: python3 solutions/ch07_solution.py
 """
 import _path  # noqa: F401  (adds code/support-assistant/ to the import path)
-from ch07 import cited_clauses_exist
-from store import policy_text
-from stub_model import call_model
+from ch02 import order_facts
+from ch07 import GROUNDED, ask, cited_clauses_exist, citation_gate
+from store import fetch_order, policy_text
 
 TICKETS = [
-    "I opened the box but never used it. Refund?",
-    "Do you do price match refunds?",
-    "Refund for order #1234?",
+    ("Do you do price match refunds?", None),
+    ("Is there a price-match guarantee if I find it cheaper?", None),
+    ("Refund for order #1234?", "1234"),
+    ("Refund for my jacket, order #4410?", "4410"),
 ]
 
 
-def run(ticket, temperature, n=5):
-    msgs = [{"role": "system", "content": policy_text()}, {"role": "user", "content": ticket}]
-    # a different seed per run; with one fixed seed every run rolls the same dice
-    return [call_model(msgs, temperature=temperature, seed=i)["text"] for i in range(n)]
+def invented(reply):
+    decision = reply.split(":", 1)[0].strip().lower()
+    return decision in ("approve", "deny") and not cited_clauses_exist(reply)
 
 
-def report(ticket, temperature):
-    replies = run(ticket, temperature)
-    decisions = [r.split(":", 1)[0].strip().lower() for r in replies]
-    # a decision must point at a clause that exists; an escalation does not need one
-    uncited = [r for r, d in zip(replies, decisions)
-               if d in ("approve", "deny") and not cited_clauses_exist(r)]
-    return sorted(set(decisions)), len(uncited)
+def run(system_base):
+    rows = []
+    for text, oid in TICKETS:
+        system = system_base + (order_facts(oid, fetch_order(oid)) if oid else "")
+        reply = ask(system, text)
+        rows.append((text, reply, citation_gate(reply)))
+    return rows
 
 
 if __name__ == "__main__":
-    results = {}
-    for ticket in TICKETS:
-        for t in (1.0, 0.0):
-            distinct, bad = report(ticket, t)
-            results[(ticket, t)] = (distinct, bad)
-            print(f"T={t}  distinct={distinct}  bad citations={bad}  | {ticket}")
+    counts = {}
+    for name, base in (("policy only", policy_text()), ("answer from page", GROUNDED)):
+        rows = run(base)
+        counts[name] = (sum(invented(r) for _, r, _ in rows), sum(invented(g) for _, _, g in rows))
+        for text, reply, gated in rows:
+            print(f"{name:16} | {text[:38]:38} | {reply[:44]:44} | gate: {gated.split(':')[0]}")
+        print(f"{name}: invented before gate={counts[name][0]}, after gate={counts[name][1]}")
     # self-test (run_solutions.py relies on these)
-    assert len(results[(TICKETS[0], 1.0)][0]) > 1, "a borderline ticket varies at temperature 1.0"
-    assert all(len(results[(tk, 0.0)][0]) == 1 for tk in TICKETS), "temperature 0 is stable in the stub"
-    assert results[(TICKETS[1], 0.0)][1] == 5, "the invented R5 is caught every time"
-    assert results[(TICKETS[2], 0.0)] == (["escalate"], 0)
+    assert counts["policy only"] == (2, 0), "two invented R5 answers, both held by the gate"
+    assert counts["answer from page"] == (0, 0), "told to answer from the page, it abstains"
     print("ch07 solution: OK")

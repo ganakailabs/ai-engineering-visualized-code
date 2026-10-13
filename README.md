@@ -18,11 +18,14 @@ Python 3.10+ and the standard library only. No API key, no network, no cost.
 ## The stub model
 
 `stub_model.py` replaces the real model call with a local, **scripted** stand-in that has
-the same reply shape as a chat API (`{"text", "usage", "finish_reason"}`). It reproduces the
+the same reply shape as a chat API (`{"text", "usage", "finish_reason"}`, plus
+`"tool_calls"` in Chapter 11). It reproduces the
 failure each chapter teaches so you can watch the mechanics. A real model may fail the same
 way, differently, or not at all on your tickets; that is why the book teaches you to measure.
 To use a real provider, replace the body of `call_model()` with your SDK call and keep the
-return shape. `store.py` holds the fictional store data: policy clauses and orders.
+return shape. Chapter 9's three models, their prices and speeds, and Chapter 12's
+`embed()` are toys made up for the demos, not measurements of any real model.
+`store.py` holds the fictional store data: policy clauses and orders.
 
 ## Chapters
 
@@ -34,7 +37,14 @@ return shape. `store.py` holds the fictional store data: policy clauses and orde
 | `ch04.py` | 4. Tokens: What the Model Reads and What You Pay |
 | `ch05.py` | 5. One Token at a Time: Why Answers Vary |
 | `ch06.py` | 6. Inside the Context Window: What the Model Pays Attention To |
-| `ch07.py` | 7. Fluent Is Not True (chapter not yet published) |
+| `ch07.py` | 7. Fluent Is Not True: Hallucination |
+| `ch08.py` | 8. Evals: Measuring a Probabilistic System |
+| `ch09.py` | 9. Choosing a Model |
+| `ch10.py` | 10. Anatomy of a Prompt |
+| `ch11.py` | 11. Structured Output and Tool Calling |
+| `ch12.py` | 12. Embeddings: Meaning as Coordinates |
+
+Chapters 7-12 are in first draft and not yet in the published early-access edition.
 
 ## Exercise solutions
 

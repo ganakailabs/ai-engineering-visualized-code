@@ -43,8 +43,14 @@ return shape. Chapter 9's three models, their prices and speeds, and Chapter 12'
 | `ch10.py` | 10. Anatomy of a Prompt |
 | `ch11.py` | 11. Structured Output and Tool Calling |
 | `ch12.py` | 12. Embeddings: Meaning as Coordinates |
+| `ch13.py` | 13. Search and Retrieval: Finding the Right Passage |
+| `ch14.py` | 14. Chunking: Cutting Documents So the Right Piece Is Found |
+| `ch15.py` | 15. The RAG Pipeline: Retrieve, Then Answer |
+| `ch16.py` | 16. Grounded Answers: Citations and "I Don't Know" |
+| `ch17.py` | 17. Is the RAG Working? Evaluating Retrieval and Answers |
+| `ch18.py` | 18. Workflows vs Agents: Rails or Steering Wheel |
 
-Chapters 7-12 are in first draft and not yet in the published early-access edition.
+Chapters 7-18 are in first draft and not yet in the published early-access edition.
 
 ## Exercise solutions
 

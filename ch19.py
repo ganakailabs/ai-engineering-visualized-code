@@ -1,6 +1,7 @@
 """Chapter 19: The Agent Loop: Think, Act, Observe."""
 import json
 
+from parse import first_json, warn
 from stub_model import call_model
 from store import CARRIER_REDIRECT, SHIPMENTS
 
@@ -39,16 +40,15 @@ AGENT = ("You are an agent for Northwind Goods. Tools: "
 # MM-051: the loop. MM-052: the trace. MM-053: the stop conditions.
 def parse_move(text):
     """The model's move must be a JSON object: a final reply, or an action."""
-    try:
-        move = json.loads(text)
-    except json.JSONDecodeError:
-        return None
-    if not isinstance(move, dict):
+    move = first_json(text, (dict,))      # tolerant: fences, prose first
+    if move is None:
+        warn(f"agent move is not a JSON object: {text[:60]!r}")
         return None
     if isinstance(move.get("final"), str):
         return move
     if isinstance(move.get("action"), str) and isinstance(move.get("args"), dict):
         return move
+    warn(f"agent move has neither 'final' nor 'action'+'args': {move}")
     return None
 
 
@@ -73,7 +73,10 @@ def run_agent(ticket, model=call_model, max_steps=5,
                           move["final"]))
             return move["final"], trace
         messages.append({"role": "assistant", "content": r["text"]})
-        seen = tools(move["action"], move["args"])   # act
+        try:
+            seen = tools(move["action"], move["args"])   # act
+        except (TypeError, KeyError, ValueError) as e:   # bad args: say so
+            seen = f"error: {move['action']} failed ({e})"
         trace.append((step, move.get("thought", ""), move["action"],
                       seen))
         messages.append({"role": "tool", "content": seen})  # observe

@@ -4,6 +4,7 @@ import time
 
 from ch15 import augment, generate, index, retrieve
 from ch16 import ABSTAIN, grounded, passage_gate
+from parse import decision_reply, label as parse_label
 from stub_model import call_model
 
 
@@ -138,13 +139,8 @@ def over_budget(timings, budget=BUDGET_MS):
 #       -> (swap: plan, run, replan on surprise)
 # with input/output guardrails around everything. Stub model, no keys.
 def handle_ticket(ticket, customer=None, log=print, model=call_model):
-    from ch11 import handle as decide_refund
     from ch18 import ROUTER, TRACKS
-    from ch19 import run_agent
-    from ch20 import run as run_plan
-    from ch22 import guard
     from ch23 import SAFE, check_in, check_out, mask
-    from store import ORDERS
     steps = []
 
     def say(kind, text):
@@ -156,10 +152,31 @@ def handle_ticket(ticket, customer=None, log=print, model=call_model):
     if problem:
         say("reply", SAFE)
         return SAFE, steps
-    label = model([{"role": "system", "content": ROUTER},
-                   {"role": "user", "content": masked}])["text"].strip()
-    label = label if label in TRACKS else "other"
+    text = model([{"role": "system", "content": ROUTER},
+                  {"role": "user", "content": masked}])["text"]
+    label = parse_label(text, TRACKS)
+    if label is None:                     # unknown label: say so, go safe
+        say("check", f"router reply {text[:40]!r} unknown -> other")
+        label = "other"
     say("route", label)
+    try:
+        reply = _run_track(label, masked, customer, model, say)
+    except (ValueError, KeyError, TypeError, AttributeError) as e:
+        say("check", f"track failed safely: {type(e).__name__}: {e}")
+        reply = "escalate: passed to a person."
+    problem = check_out(reply)
+    say("check", f"output guardrail: {problem or 'ok'}")
+    reply = SAFE if problem else reply
+    say("reply", reply)
+    return reply, steps
+
+
+def _run_track(label, masked, customer, model, say):
+    from ch11 import handle as decide_refund
+    from ch19 import run_agent
+    from ch20 import run as run_plan
+    from ch22 import guard
+    from store import ORDERS
     if label == "refund":
         d, _ = decide_refund(masked, model=model)
         say("think", f"decision {d['decision']} ({d['clause']})")
@@ -180,6 +197,7 @@ def handle_ticket(ticket, customer=None, log=print, model=call_model):
         passages = retrieve(masked, index())
         say("act", f"retrieve -> {list(passages)}")
         answer = generate(augment(passages), masked)
+        answer = decision_reply(answer) or answer   # tolerant label
         ok, why = passage_gate(answer, passages)
         say("check", f"citation gate: {why}")
         reply = answer if ok else ABSTAIN
@@ -191,6 +209,7 @@ def handle_ticket(ticket, customer=None, log=print, model=call_model):
             if action != "final":
                 say("act", action)
                 say("observe", seen)
+        reply = decision_reply(reply) or reply
     elif "swap" in masked.lower():
         out = run_plan(masked, model=model)
         for what, seen in out:
@@ -200,11 +219,7 @@ def handle_ticket(ticket, customer=None, log=print, model=call_model):
             + str(out[-1][1])
     else:
         reply = "escalate: passed to a person"
-    problem = check_out(reply)
-    say("check", f"output guardrail: {problem or 'ok'}")
-    reply = SAFE if problem else reply
-    say("reply", reply)
-    return reply, steps
+    return reply
 
 
 DEMO_TICKETS = [

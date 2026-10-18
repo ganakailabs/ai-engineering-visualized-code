@@ -56,9 +56,13 @@ Then point the code at it with one environment variable, in a second terminal:
     python3 ch24.py                      # the Chapter 24 agent run
     unset AIEV_MODEL                     # back to the stub
 
-If Ollama is not running, the code stops with a message that says so. Real-model output
-will differ from the expected outputs printed in the book, and that is the point: compare
-them, and let the evals tell you what changed. Tool calling needs a model that supports
+If Ollama is not running, the code stops with a message that says so. A real model
+follows only the format it is shown, so on this path the adapter adds the exact output
+format to each prompt, with a tiny example (`formats.py`), and asks for JSON mode where
+JSON is expected. Replies are then read tolerantly (`parse.py`): a reply that still
+cannot be parsed becomes a safe `escalate`, with the reason printed, never a crash.
+Real-model output will differ from the expected outputs printed in the book, and that
+is the point: compare them, and let the evals tell you what changed. Tool calling needs a model that supports
 it; if yours does not, the adapter asks again without tools and says why.
 `run_solutions.py` always checks the stub, because its checks match the stub's scripted
 answers (`tests/test_ollama_adapter.py` checks the adapter's request with no network).

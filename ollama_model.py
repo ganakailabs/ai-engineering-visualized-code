@@ -16,6 +16,8 @@ import sys
 import urllib.error
 import urllib.request
 
+import formats
+
 URL = os.environ.get("AIEV_OLLAMA_URL", "http://localhost:11434") + "/api/chat"
 _warned = set()
 
@@ -47,9 +49,18 @@ def build_request(messages, model, temperature=0.0, max_output_tokens=300,
     options = {"temperature": temperature, "num_predict": max_output_tokens}
     if seed is not None:
         options["seed"] = seed
+    msgs = [{"role": m["role"], "content": _text(m["content"])}
+            for m in messages]
+    hint, wants_json = formats.for_messages(messages)
+    if hint:                       # real models need the format spelled out
+        if msgs and msgs[0]["role"] == "system":
+            msgs[0] = dict(msgs[0], content=msgs[0]["content"] + "\n\n" + hint)
+        else:
+            msgs.insert(0, {"role": "system", "content": hint})
     body = {"model": model, "stream": False, "options": options,
-            "messages": [{"role": m["role"], "content": _text(m["content"])}
-                         for m in messages]}
+            "messages": msgs}
+    if wants_json:
+        body["format"] = "json"    # Ollama JSON mode
     if tools:
         body["tools"] = [_tool(t) for t in tools]
     return body

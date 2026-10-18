@@ -1,6 +1,7 @@
 """Chapter 20: Planning and Multi-Step Tasks."""
 import json
 
+from parse import first_json, warn
 from stub_model import call_model
 from store import STOCK
 
@@ -34,7 +35,13 @@ def make_plan(ticket, model=call_model, surprise=""):
     note = f"\nSURPRISE: {surprise}" if surprise else ""
     r = model([{"role": "system", "content": PLANNER},
                {"role": "user", "content": ticket + note}])
-    return json.loads(r["text"])
+    plan = first_json(r["text"])         # tolerant; None if no JSON
+    if isinstance(plan, dict):           # JSON mode wraps lists: {"steps": []}
+        plan = plan.get("steps")
+    if not isinstance(plan, list):
+        warn(f"plan is not a JSON list of steps: {r['text'][:60]!r}")
+        return None
+    return plan
 
 
 ARGS = {"check_stock": {"item"}, "reserve": {"item"},
@@ -47,6 +54,8 @@ def check_plan(plan, ticket=""):
         return "plan must be a list of at most 5 steps"
     checked = set()
     for step in plan:
+        if not isinstance(step, dict):
+            return "each step must be a JSON object"
         tool, args = step.get("tool"), step.get("args")
         if tool not in STEPS:
             return f"unknown tool {tool}"
@@ -66,7 +75,8 @@ def check_plan(plan, ticket=""):
 def run(ticket, model=call_model, replans=1):
     plan, log, done = make_plan(ticket, model), [], set()
     while True:
-        log.append(("plan", [s["tool"] for s in plan]))
+        log.append(("plan", [s.get("tool") if isinstance(s, dict) else s
+                             for s in plan or []]))
         problem = check_plan(plan, ticket)
         if problem:
             return log + [("escalate", problem)]

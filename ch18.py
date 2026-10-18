@@ -1,4 +1,5 @@
 """Chapter 18: Workflows vs Agents: Rails or Steering Wheel."""
+from parse import label as parse_label, warn
 from stub_model import call_model
 from ch11 import handle as decide_refund         # Ch 11: tool call + checked JSON decision
 from ch16 import grounded                         # Ch 16: answer from passages, or abstain
@@ -26,10 +27,12 @@ TRACKS = {"refund": refund_track, "tracking": answer_track,
 
 
 def route(ticket, model=call_model):
-    label = model([{"role": "system", "content": ROUTER},
-                   {"role": "user", "content": ticket}])["text"].strip()
-    # check the label like any model output
-    if label not in TRACKS:
+    text = model([{"role": "system", "content": ROUTER},
+                  {"role": "user", "content": ticket}])["text"]
+    # check the label like any model output (tolerant: case, <>, extra words)
+    label = parse_label(text, TRACKS)
+    if label is None:
+        warn(f"router reply {text[:40]!r} is not a known track: other")
         label = "other"
     return label, TRACKS[label](ticket)
 

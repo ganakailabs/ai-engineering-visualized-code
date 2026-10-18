@@ -1,4 +1,5 @@
 """Chapter 8: Evals: Measuring a Probabilistic System."""
+from parse import DECISIONS, label
 from stub_model import call_model
 from store import fetch_order, policy_text
 from ch02 import order_facts
@@ -31,7 +32,9 @@ GOLDEN = [
 
 
 def decision_of(reply):
-    return reply.split(":", 1)[0].strip().lower()
+    """The decision label, read tolerantly ('<Deny>', '**deny**:', ...)."""
+    found = label(reply, DECISIONS + ("answer", "done"))
+    return found if found else reply.split(":", 1)[0].strip().lower()
 
 
 # MM-021: the rubric. Written down, so a script can apply it the same way every time.

@@ -4,6 +4,8 @@ from collections import Counter
 from ch02 import order_facts
 from ch05 import softmax
 from store import fetch_order, policy_text
+from ollama_model import selected
+from parse import DECISIONS, label
 from stub_model import call_model
 
 # MM-014: ONE attention head, ONE query, as a toy. Chapter 5 used softmax to turn
@@ -51,7 +53,8 @@ def position_eval(tickets=HELD_OUT, model=call_model):
                       + policy_text() + "\n\n" + text)
             r = model([{"role": "system", "content": system},
                        {"role": "user", "content": ticket}])
-            counts.setdefault(where, Counter())[r["text"].split(":")[0]] += 1
+            decision = label(r["text"], DECISIONS) or "unparsed"
+            counts.setdefault(where, Counter())[decision] += 1
     return counts
 
 
@@ -65,4 +68,7 @@ if __name__ == "__main__":
     print({k: v.index("[R3]") for k, v in prompts.items()})
     for where, c in position_eval().items():
         print(f"position eval, facts at {where:6}: {dict(sorted(c.items()))}")
-    print("(the stub is position-blind, so the counts match; rerun with a real model)")
+    if selected():
+        print(f"(real model {selected()}: compare the rows; a difference is the finding)")
+    else:
+        print("(the stub is position-blind, so the counts match; rerun with a real model)")

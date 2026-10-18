@@ -1,6 +1,7 @@
 """Chapter 7: Fluent Is Not True: Hallucination."""
 import re
 
+from parse import decision_reply
 from stub_model import call_model
 from store import POLICY, policy_text
 
@@ -19,6 +20,7 @@ def cited_clauses_exist(text):
 
 def citation_gate(reply):
     """Decisions must cite a real clause; anything else goes to a person."""
+    reply = decision_reply(reply) or reply    # '<Approve> ...' -> 'approve: ...'
     decision = reply.split(":", 1)[0].strip().lower()
     if decision in ("approve", "deny") and not cited_clauses_exist(reply):
         return "escalate: held by the citation gate (no real clause cited)"

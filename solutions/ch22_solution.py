@@ -6,7 +6,7 @@
 Run: python3 solutions/ch22_solution.py
 """
 import _path  # noqa: F401
-from ch22 import APPROVALS, TROJAN, guard, run_any
+from ch22 import APPROVALS, TROJAN, approve, guard, run_any
 from ch19 import run_agent
 
 if __name__ == "__main__":
@@ -22,4 +22,8 @@ if __name__ == "__main__":
     assert safe_trace[0][3].startswith("blocked")
     assert big.startswith("waiting") and len(APPROVALS) == 1
     assert wrong == "blocked: amount does not match the order"
+    assert approve(0).startswith("refunded INR 12,500")
+    assert refund("issue_refund", {"order_id": "3100", "amount": 12500}) == "blocked: this order was already refunded"
+    assert refund("issue_refund", {"order_id": "1234", "amount": -100}).startswith("blocked: amount must be")
+    assert guard("refund", customer="C-08")("issue_refund", {"order_id": "1234", "amount": 100}) == "blocked: not this customer's order"
     print("ch22 solution: OK")

@@ -7,7 +7,7 @@ Run: python3 solutions/ch17_solution.py
 """
 import _path  # noqa: F401
 from ch15 import augment, generate, index, retrieve
-from ch17 import scorecards, unsupported
+from ch17 import fetched, passage_recall, scorecards, unsupported
 
 if __name__ == "__main__":
     search, answers, rows = scorecards()
@@ -24,4 +24,8 @@ if __name__ == "__main__":
     assert round(search, 2) == 0.83 and round(answers, 2) == 0.83
     assert "R1" not in before and "R1" in after and "[R1]" in fixed
     assert extra == ["We also refund the original delivery fee."]
+    two = "Can I get my money back for an unused lamp, and who pays return shipping?"
+    rec, ok = passage_recall(two, {"R1", "S3"}), fetched(two, {"R1", "S3"})
+    print("two passages: recall", rec, "all-evidence success", ok)
+    assert rec == 0.5 and ok is False
     print("ch17 solution: OK")

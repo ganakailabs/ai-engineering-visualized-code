@@ -27,4 +27,7 @@ if __name__ == "__main__":
     assert stubborn[-1] == ("escalate", "replan limit reached")
     assert blocked == [("plan", ["check_stock", "refund_everything"]),
                        ("escalate", "unknown tool refund_everything")]
+    unsafe = lambda messages, **kw: {"text": json.dumps(
+        [{"tool": "reserve", "args": {"item": "mug set blue"}}])}
+    assert run(T, model=unsafe)[-1] == ("escalate", "reserve mug set blue before check_stock")
     print("ch20 solution: OK")

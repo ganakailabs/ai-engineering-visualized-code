@@ -28,7 +28,21 @@ def passage_gate(reply, passages):
     said = set().union(*(words(passages[c]) for c in cited))
     if len(claim & said) < len(claim) / 2:
         return False, "the cited passage does not say this"
+    if negated(text) != any(negated(passages[c])
+                            for c in cited):
+        return False, "the claim flips a negation"
     return True, "ok"
+
+
+# Word overlap cannot see meaning: "can be refunded" and "cannot be refunded"
+# share almost every word. This toy polarity check catches a flipped negation.
+# It still misses other contradictions (numbers, dates, swapped subjects) and can
+# reject a correct paraphrase. Real systems need a claim-by-claim support check.
+NEGATIONS = {"not", "no", "never", "cannot", "can't", "won't", "isn't", "don't"}
+
+
+def negated(text):
+    return bool(NEGATIONS & set(text.lower().replace(".", " ").split()))
 
 
 # MM-045: the honest abstain is a designed outcome, not an error
@@ -54,3 +68,6 @@ if __name__ == "__main__":
     print("grounded  :", grounded(q, rules=CITE_ONLY))
     print("full rules:", grounded(q))
     print("battery   :", grounded("My NW-500 battery stopped charging. Is it covered?"))
+    r3 = {"R3": "Final-sale items cannot be refunded."}
+    flipped = "answer: Final-sale items can be refunded [R3]."
+    print("flipped   :", passage_gate(flipped, r3))

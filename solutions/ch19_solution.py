@@ -8,7 +8,7 @@ Run: python3 solutions/ch19_solution.py
 import json
 
 import _path  # noqa: F401
-from ch19 import run_agent, show
+from ch19 import run_agent, run_tool, show
 
 T = "Please change the address for #5120 to 12 Lake Road, Pune."
 
@@ -26,4 +26,13 @@ if __name__ == "__main__":
     assert reply.startswith("done") and len(trace) == 3
     assert short == "escalate: step limit reached"
     assert looped == "escalate: step limit reached" and len(loop_trace) == 5
+    ran = []
+    big = lambda messages, **kw: {"text": json.dumps(
+        {"thought": "Change it.", "action": "change_address",
+         "args": {"order_id": "5120", "address": "x"}}),
+        "usage": {"input_tokens": 2900, "output_tokens": 200}}
+    over, _ = run_agent(T, model=big, tools=lambda a, k: ran.append(a))
+    junk = lambda messages, **kw: {"text": "[1]", "usage": {"input_tokens": 1, "output_tokens": 1}}
+    assert over == "escalate: token budget used up" and ran == []   # held before acting
+    assert run_agent(T, model=junk)[0] == "escalate: the model's move was not valid"
     print("ch19 solution: OK")

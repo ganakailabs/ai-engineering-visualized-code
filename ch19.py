@@ -37,25 +37,46 @@ AGENT = ("You are an agent for Northwind Goods. Tools: "
 
 
 # MM-051: the loop. MM-052: the trace. MM-053: the stop conditions.
+def parse_move(text):
+    """The model's move must be a JSON object: a final reply, or an action."""
+    try:
+        move = json.loads(text)
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(move, dict):
+        return None
+    if isinstance(move.get("final"), str):
+        return move
+    if isinstance(move.get("action"), str) and isinstance(move.get("args"), dict):
+        return move
+    return None
+
+
 def run_agent(ticket, model=call_model, max_steps=5,
-              max_tokens=3000, tools=run_tool):
+              max_tokens=3000, max_output=300, tools=run_tool):
     messages = [{"role": "system", "content": AGENT},
                 {"role": "user", "content": ticket}]
     trace, spent = [], 0
     for step in range(1, max_steps + 1):
-        r = model(messages)                          # think
+        if spent + max_output > max_tokens:   # room for one more?
+            return "escalate: token budget used up", trace
+        r = model(messages, max_output_tokens=max_output)  # think
         use = r["usage"]
         spent += use["input_tokens"] + use["output_tokens"]
-        move = json.loads(r["text"])
-        if "final" in move:
-            reply = move["final"]
-            trace.append((step, move["thought"], "final", reply))
-            return reply, trace
-        seen = tools(move["action"], move["args"])   # act
-        trace.append((step, move["thought"], move["action"], seen))
-        messages.append({"role": "tool", "content": seen})  # observe
-        if spent > max_tokens:
+        if spent > max_tokens:                # before any act or reply
             return "escalate: token budget used up", trace
+        move = parse_move(r["text"])          # JSON object, right keys?
+        if move is None:
+            return "escalate: the model's move was not valid", trace
+        if "final" in move:
+            trace.append((step, move.get("thought", ""), "final",
+                          move["final"]))
+            return move["final"], trace
+        messages.append({"role": "assistant", "content": r["text"]})
+        seen = tools(move["action"], move["args"])   # act
+        trace.append((step, move.get("thought", ""), move["action"],
+                      seen))
+        messages.append({"role": "tool", "content": seen})  # observe
     return "escalate: step limit reached", trace
 
 
@@ -75,3 +96,16 @@ if __name__ == "__main__":
         {"thought": "Check again.", "action": "look_up_shipment",
          "args": {"order_id": "6001"}}), "usage": {"input_tokens": 50, "output_tokens": 10}}
     print("stuck model:", run_agent("Where is #6001?", model=stuck)[0])
+    calls = []
+    def logged(action, args):
+        calls.append(action)
+        return run_tool(action, args)
+    big = lambda messages, **kw: {"text": json.dumps(
+        {"thought": "Change it.", "action": "change_address",
+         "args": {"order_id": "5120", "address": "x"}}),
+        "usage": {"input_tokens": 2900, "output_tokens": 200}}
+    print("over budget:", run_agent("Change #5120.", model=big, tools=logged)[0],
+          "| tool calls:", calls)
+    junk = lambda messages, **kw: {"text": "sure, done!",
+                                   "usage": {"input_tokens": 5, "output_tokens": 3}}
+    print("malformed:", run_agent("Change #5120.", model=junk)[0])

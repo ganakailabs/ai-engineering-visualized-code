@@ -15,9 +15,15 @@ RAG_GOLDEN = [
 ]
 
 
-# MM-047: did we fetch it? recall@k = share of questions whose passage is in the top k
+# MM-047: did we fetch it? Two different scores, two different denominators.
 def fetched(question, want, k=3):
+    """All-evidence success@k for one question: every needed passage in the top k?"""
     return want <= set(retrieve(question, index(), k))
+
+
+def passage_recall(question, want, k=3):
+    """Passage recall@k: the share of the needed passages found in the top k."""
+    return len(want & set(retrieve(question, index(), k))) / len(want)
 
 
 # MM-048: did it stick to the source? Every sentence must be backed by a cited passage.
@@ -50,7 +56,13 @@ def scorecards(k=3):
 
 if __name__ == "__main__":
     search, answers, rows = scorecards()
-    print(f"search scorecard (recall@3): {search:.0%}   answer scorecard (faithful): {answers:.0%}")
+    print(f"search (all-evidence success@3): {search:.0%}   "
+          f"answers (faithful): {answers:.0%}")
     for q, got, faithful, reply in rows:
         if not (got and faithful):
             print(f"- {q}\n  fetched={got} faithful={faithful}: {reply}")
+    two = "Can I get my money back for an unused lamp, and who pays return shipping?"
+    need = {"R1", "S3"}                      # this question needs two passages
+    print("two-passage question, top 3:", list(retrieve(two, index())))
+    print(f"  passage recall@3: {passage_recall(two, need):.0%}   "
+          f"all-evidence success@3: {fetched(two, need):.0%}")

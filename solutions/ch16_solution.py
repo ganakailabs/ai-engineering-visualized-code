@@ -24,4 +24,9 @@ if __name__ == "__main__":
     assert fake == (False, "cites a passage we did not retrieve")
     assert grounded(q, rules=CITE_ONLY)[0] == ABSTAIN
     assert battery[1] == "ok" and "[S2]" in battery[0]
+    # word overlap is not support: a flipped negation shares almost every word
+    flipped = passage_gate("answer: Final-sale items can be refunded [R3].",
+                           {"R3": "Final-sale items cannot be refunded."})
+    print("flipped claim:", flipped)
+    assert flipped == (False, "the claim flips a negation")
     print("ch16 solution: OK")

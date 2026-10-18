@@ -27,21 +27,31 @@ def run_tool(call):
 
 # MM-031: parse, check, repair
 def check(text, order=None):
-    """Return (reply dict, None) or (None, the problem in one line)."""
+    """Return (reply dict, None) or (None, the problem in one line).
+    order: the verified order facts from fetch_order(), or None."""
     try:
         reply = json.loads(text)
     except json.JSONDecodeError as e:
         return None, f"not valid JSON ({e.msg})"
+    if not isinstance(reply, dict):
+        return None, "reply must be a JSON object"
     if set(reply) != set(CONTRACT):
         return None, f"fields must be exactly {sorted(CONTRACT)}"
-    if reply["decision"] not in CONTRACT["decision"]:
-        return None, f"decision must be one of {CONTRACT['decision']}"
     decision = reply["decision"]
-    if decision != "escalate" and reply["clause"] not in POLICY:
+    if decision not in CONTRACT["decision"]:
+        return None, f"decision must be one of {CONTRACT['decision']}"
+    if not isinstance(reply["reason"], str):
+        return None, "reason must be a string"
+    clause = reply["clause"]
+    if decision != "escalate" and clause not in POLICY:
         return None, "clause must be a real policy clause"
-    allowed = order is None or decide(order) == "approve"
-    if decision == "approve" and not allowed:
-        return None, "the policy does not allow approving this order"
+    if clause is not None and not isinstance(clause, str):
+        return None, "clause must be a string or null"
+    if decision == "approve":
+        if order is None:
+            return None, "approve needs verified order facts"
+        if decide(order) != "approve":
+            return None, "the policy does not allow this approve"
     return reply, None
 
 
@@ -55,8 +65,13 @@ def handle(ticket, model=call_model):
     r = model(messages, tools=TOOLS)
     order = None
     for call in r.get("tool_calls", []):            # round trip: model asks, code runs
-        order = fetch_order(call["arguments"]["order_id"])
-        messages.append({"role": "tool", "content": run_tool(call)})
+        try:
+            result = run_tool(call)                 # validated before it runs
+            order = fetch_order(call["arguments"]["order_id"])
+        except ValueError as e:
+            result = f"TOOL ERROR: {e}"
+            problems.append(str(e))
+        messages.append({"role": "tool", "content": result})
         r = model(messages, tools=TOOLS)            # model reads the result
     reply, problem = check(r["text"], order)
     if problem:                                     # one repair try, with the error
@@ -77,3 +92,8 @@ if __name__ == "__main__":
     for ticket in ("Refund for #4410?", "Refund for #2001?", "Refund for #3100?"):
         print(ticket, "->", handle(ticket))
     print("bad JSON:", check('{"decision": "deny", "clause": "R3"'))
+    # shape is not truth: these all fail safely instead of crashing
+    for bad in ("null", "[1, 2]",
+                '{"decision": "deny", "clause": "R3", "reason": 7}',
+                '{"decision": "approve", "clause": "R1", "reason": "ok"}'):
+        print(f"{bad[:40]:40} ->", check(bad)[1])

@@ -37,26 +37,46 @@ def make_plan(ticket, model=call_model, surprise=""):
     return json.loads(r["text"])
 
 
-def check_plan(plan):
-    """Check the whole plan before any step acts."""
+ARGS = {"check_stock": {"item"}, "reserve": {"item"},
+        "send_label": {"order_id"}, "ask_customer": {"question"}}
+
+
+def check_plan(plan, ticket=""):
+    """Check the whole plan before any step acts: names, args, order, task."""
+    if not isinstance(plan, list) or len(plan) > 5:
+        return "plan must be a list of at most 5 steps"
+    checked = set()
     for step in plan:
-        if step["tool"] not in STEPS:
-            return f"unknown tool {step['tool']}"
-    if len(plan) > 5:
-        return "plan too long for one ticket"
+        tool, args = step.get("tool"), step.get("args")
+        if tool not in STEPS:
+            return f"unknown tool {tool}"
+        if not isinstance(args, dict) or set(args) != ARGS[tool]:
+            return f"{tool} needs exactly {sorted(ARGS[tool])}"
+        if tool == "check_stock":
+            checked.add(args["item"])
+        if tool == "reserve" and args["item"] not in checked:
+            return f"reserve {args['item']} before check_stock"
+        oid = args.get("order_id")
+        if tool == "send_label" and f"#{oid}" not in ticket:
+            return f"order #{oid} is not in this ticket"
     return None
 
 
-# MM-055: replan on surprise, at most once
+# MM-055: replan on surprise, at most once. Completed steps are never re-run.
 def run(ticket, model=call_model, replans=1):
-    plan, log = make_plan(ticket, model), []
+    plan, log, done = make_plan(ticket, model), [], set()
     while True:
         log.append(("plan", [s["tool"] for s in plan]))
-        problem = check_plan(plan)
+        problem = check_plan(plan, ticket)
         if problem:
             return log + [("escalate", problem)]
         for step in plan:
+            key = json.dumps(step, sort_keys=True)
+            if key in done:
+                log.append((step["tool"], "skipped: already done"))
+                continue
             out = STEPS[step["tool"]](**step["args"])
+            done.add(key)
             log.append((step["tool"], out))
             if out.startswith("surprise"):
                 break               # stop: the plan is now wrong
@@ -74,3 +94,6 @@ if __name__ == "__main__":
         print(t)
         for what, out in run(t):
             print(f"  {what:12} {out}")
+    unsafe = lambda messages, **kw: {"text": json.dumps(
+        [{"tool": "reserve", "args": {"item": "mug set green"}}])}
+    print("known tool, wrong order:", run(t, model=unsafe)[-1])

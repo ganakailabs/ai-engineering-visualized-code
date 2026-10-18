@@ -1,5 +1,6 @@
 """Chapter 24: Ship It: Errors, Tracing, Latency and the Complete System."""
 import json
+import time
 
 from ch15 import augment, generate, index, retrieve
 from ch16 import grounded, passage_gate
@@ -34,17 +35,53 @@ GIVE_UP = "escalate: we are busy right now; a person will reply soon."
 
 
 def call_with_retry(call, ticket, tries=3, wait=1.0, timeout=10,
-                    sleep=None, log=print):
+                    deadline=30.0, sleep=time.sleep,
+                    clock=time.monotonic,
+                    log=print):
+    """Bounded retry: at most `tries` calls and `deadline` seconds in total.
+    The timeout is passed to the provider call; this helper does not interrupt
+    a call that hangs (a real client library or thread must do that)."""
+    start = clock()
     for n in range(1, tries + 1):
         try:
             return call(ticket, timeout=timeout)
         except Transient as e:
             log(f"try {n}: {e}")
-            if n < tries:
-                sleep(wait * 2 ** (n - 1))      # 1 s, 2 s, 4 s ...
+            pause = wait * 2 ** (n - 1)             # 1 s, 2 s, 4 s ...
+            if n == tries or clock() - start + pause > deadline:
+                break                     # out of tries or time
+            sleep(pause)
         except Permanent as e:
             log(f"try {n}: {e} (not retried)")
             break
+    return GIVE_UP
+
+
+# MM-064: a retried WRITE needs an idempotency key. Here the refund is made,
+# but the reply is lost on the way back, so the caller retries.
+class RefundService:
+    def __init__(self):
+        self.paid, self.seen, self.lose_next_reply = [], {}, True
+
+    def refund(self, order_id, amount, key=None):
+        if key is not None and key in self.seen:
+            return self.seen[key]         # same key: pay once
+        self.paid.append((order_id, amount))   # money moves
+        result = f"refunded INR {amount:,} on #{order_id}"
+        if key is not None:
+            self.seen[key] = result
+        if self.lose_next_reply:
+            self.lose_next_reply = False
+            raise Transient("reply lost after the refund was made")
+        return result
+
+
+def refund_with_retry(service, order_id, amount, key=None):
+    for _ in range(2):
+        try:
+            return service.refund(order_id, amount, key=key)
+        except Transient:
+            continue
     return GIVE_UP
 
 
@@ -59,7 +96,8 @@ def record(ticket):
 
 
 def replay(rec):
-    """Send the stored prompt again; same input, same output?"""
+    """Send the stored prompt again and compare. The stub is scripted, so it
+    matches; a hosted model may word it differently: compare, don't assume."""
     return generate(rec["prompt"], rec["ticket"]) == rec["reply"]
 
 
@@ -97,6 +135,10 @@ if __name__ == "__main__":
     rec = record(q)
     print("log record:", json.dumps(rec)[:72], "...")
     print("replay matches:", replay(rec))
+    for key in (None, "refund-3100-ticket-88"):
+        svc = RefundService()
+        refund_with_retry(svc, "3100", 12500, key=key)
+        print(f"retry after lost reply, key={key}: payments={svc.paid}")
     print("latency (total ms, slowest box, over budget):", over_budget())
     for box, where in DIAGRAM.items():
         print(f"  {box:10} {where}")

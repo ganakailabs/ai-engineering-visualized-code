@@ -37,7 +37,20 @@ def route(ticket, model=call_model):
 # MM-050: the autonomy ladder. 1 fixed chain, 2 router, 3 agent. Least that works.
 RUNG = {"refund": 1, "tracking": 1, "warranty": 1,   # each track alone is a fixed chain
         "whole inbox": 2,                            # the router picks the track
-        "change address": 3}                         # steps depend on what it finds: Ch 19
+        "change address": 3}                         # taught as an agent in Ch 19
+
+
+# Branching alone is not agency. The address change's KNOWN branches fit in
+# plain code: your code picks every step, so this is still a workflow.
+def address_workflow(order_id, address):
+    from ch19 import ask_carrier, change_address
+    from store import SHIPMENTS
+    status = SHIPMENTS.get(order_id)
+    if status == "packing":
+        return change_address(order_id, address)
+    if status == "in transit":
+        return ask_carrier(order_id)
+    return f"escalate: #{order_id} is {status or 'not found'}"
 
 if __name__ == "__main__":
     for ticket in ("Refund for #4410, please", "Where is my parcel?",
@@ -45,3 +58,5 @@ if __name__ == "__main__":
         label, out = route(ticket)
         print(f"{ticket!r:40} -> {label:8} -> {out[:70]}")
     print("rungs:", RUNG)
+    for oid in ("5120", "6001", "1234"):
+        print(f"address workflow #{oid}:", address_workflow(oid, "12 Lake Road, Pune"))

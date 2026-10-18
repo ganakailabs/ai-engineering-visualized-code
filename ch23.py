@@ -39,7 +39,7 @@ def check_in(ticket):
 
 
 def check_out(reply):
-    if not reply.startswith(LABELS):
+    if not reply.lstrip().lower().startswith(LABELS):   # answer:, done: too
         return "no decision label"
     if any(re.search(p, reply) for p in PII.values()):
         return "personal data in the reply"

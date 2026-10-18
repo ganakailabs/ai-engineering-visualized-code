@@ -200,6 +200,8 @@ def _run_track(label, masked, customer, model, say):
         answer = decision_reply(answer) or answer   # tolerant label
         ok, why = passage_gate(answer, passages)
         say("check", f"citation gate: {why}")
+        if ok and not answer.startswith(("answer:", "escalate:")):
+            answer = "answer: " + answer          # cited, but unlabelled
         reply = answer if ok else ABSTAIN
     elif "address" in masked.lower():
         reply, trace = run_agent(masked, model=model,

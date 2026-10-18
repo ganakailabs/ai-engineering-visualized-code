@@ -65,6 +65,20 @@ with quiet:
         r, _ = handle_ticket(t, log=lambda line: None, model=model_saying(GARBAGE))
         assert r.startswith("escalate"), (t, r)
 
+# a cited answer with no label (or 'Answer:') still passes the output guardrail
+from ch23 import check_out  # noqa: E402
+assert check_out("Answer: NW-500 carries a 12-month warranty [S2]") is None
+cited = ("NW-500 headphones carry a 12-month warranty against defects. A battery "
+         "that stops charging counts as a defect. [S2]")
+with contextlib.redirect_stderr(io.StringIO()):
+    def rag_model(messages, **kw):
+        system = messages[0]["content"].lower()
+        text = "warranty" if "classify the ticket" in system else cited
+        return {"text": text, "usage": {"input_tokens": 1, "output_tokens": 1}}
+    r, steps = handle_ticket("My NW-500 battery stopped charging. Warranty?",
+                             log=lambda line: None, model=rag_model)
+assert r == "answer: " + cited and ("check", "output guardrail: ok") in steps, (r, steps)
+
 # real-model path: the adapter adds the exact format and JSON mode
 agent_msgs = [{"role": "system", "content": "You are an agent for X."},
               {"role": "user", "content": "hi"}]

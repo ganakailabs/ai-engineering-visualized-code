@@ -6,6 +6,8 @@ from store import policy_text
 
 # Check current pricing on your provider's pricing page. Never hard-code from a book.
 PRICE_PER_MILLION = {"input": None, "output": None}
+# MADE-UP example rates, in toy units per million tokens, only to show the arithmetic.
+EXAMPLE_RATES = {"input": 1.0, "output": 4.0}
 
 
 # MM-009: byte-pair encoding in miniature: merge the most frequent pair, repeat
@@ -70,7 +72,9 @@ if __name__ == "__main__":
     log = []
     log_usage(call_model([{"role": "system", "content": rules + policy_text()},
                           {"role": "user", "content": "Refund for #1234?"}]), log)
-    print(log[-1], "cost:", cost(log[-1]))
+    print(log[-1], "cost:", cost(log[-1]))   # None: real prices not filled in
+    print("cost at made-up example rates:", cost(log[-1], EXAMPLE_RATES), "toy units",
+          "| x 10,000 tickets:", round(cost(log[-1], EXAMPLE_RATES) * 10_000, 2))
 
     # a long thread: 40 back-and-forth turns of pasted emails
     history = []

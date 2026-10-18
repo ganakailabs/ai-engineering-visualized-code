@@ -8,7 +8,7 @@ from stub_model import call_model
 from store import fetch_order
 from ch02 import order_facts
 from ch07 import GROUNDED, citation_gate
-from ch08 import GOLDEN, passes
+from ch08 import GOLDEN, decision_of, passes
 
 # MM-023: the menu. Toy cost units per 1,000 tokens; toy seconds per call and per token.
 TOY_MENU = {
@@ -30,14 +30,20 @@ def assistant(ticket, oid, model):
 def bake_off(models=TOY_MENU, golden=GOLDEN):
     rows = {}
     for name, p in models.items():
-        passed, cost, seconds = 0, 0.0, 0.0
+        passed, resolved, handoffs, cost, seconds = 0, 0, 0, 0.0, 0.0
         for ticket, oid, expected in golden:
             reply, u = assistant(ticket, oid, name)
-            passed += passes(reply, expected)
+            ok = passes(reply, expected)
+            passed += ok
+            # a correct approve/deny closes the ticket; escalate hands it to a person
+            handoff = decision_of(reply) == "escalate"
+            handoffs += handoff
+            resolved += ok and not handoff
             cost += (u["input_tokens"] * p["in"] + u["output_tokens"] * p["out"]) / 1000
             seconds += p["start_s"] + u["output_tokens"] * p["per_token_s"]
         rows[name] = {"pass_rate": passed / len(golden),
-                      "cost_per_resolved": cost / passed if passed else float("inf"),
+                      "resolved": resolved, "handoffs": handoffs,
+                      "cost_per_resolved": cost / resolved if resolved else float("inf"),
                       "avg_seconds": seconds / len(golden)}
     return rows
 
@@ -50,6 +56,8 @@ def pick(rows, bar=BAR):
 if __name__ == "__main__":
     rows = bake_off()
     for m, r in rows.items():
-        print(f"{m:15} pass {r['pass_rate']:.0%}  cost/resolved {r['cost_per_resolved']:.2f} toy units"
+        print(f"{m:15} pass {r['pass_rate']:.0%}  resolved {r['resolved']}"
+              f"  handoffs {r['handoffs']}"
+              f"  cost/resolved {r['cost_per_resolved']:.2f} toy units"
               f"  avg {r['avg_seconds']:.2f} toy s")
     print("pick:", pick(rows))

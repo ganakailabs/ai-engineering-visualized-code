@@ -12,6 +12,9 @@ SCORES = {"approve": 1.0, "escalate": 0.8, "deny": 0.6}
 
 def softmax(scores, temperature):
     """Scores -> probabilities. Lower temperature sharpens, higher flattens."""
+    if temperature <= 0:                  # greedy: the top score gets it all
+        top = max(scores, key=scores.get)
+        return {k: 1.0 if k == top else 0.0 for k in scores}
     exps = {k: math.exp(v / temperature) for k, v in scores.items()}
     total = sum(exps.values())
     return {k: e / total for k, e in exps.items()}
@@ -39,7 +42,7 @@ def top_p(probs, p):
 
 
 if __name__ == "__main__":
-    for t in (0.2, 1.0, 1.5):
+    for t in (0.0, 0.2, 1.0, 1.5):
         print(f"T={t}:", {k: f"{v:.0%}" for k, v in softmax(SCORES, t).items()})
     for t in (0.0, 0.5, 1.0, 2.0):
         print("20 rolls at temperature", t, dict(roll(t)))

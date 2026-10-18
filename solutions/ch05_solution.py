@@ -22,4 +22,6 @@ if __name__ == "__main__":
     assert all(abs(sum(p.values()) - 1) < 1e-9 for p in table.values()), "probabilities add to 100%"
     assert len(set(hot)) > 1 and len(set(cold)) == 1
     assert list(top_p(table[1.0], 0.6)) == ["approve", "escalate"]
+    greedy = softmax(SCORES, 0)          # T <= 0: greedy, no division by zero
+    assert greedy[max(SCORES, key=SCORES.get)] == 1.0 and sum(greedy.values()) == 1.0
     print("ch05 solution: OK")

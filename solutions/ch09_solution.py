@@ -22,4 +22,8 @@ if __name__ == "__main__":
     assert picks == {0.75: "stub-small", 0.90: "stub-large", 0.95: None}
     assert ratio > 3, "thinking tokens are billed, and the easy tickets did not need them"
     assert sum("#3100" in t for t in small_fails) == 3, "the R4 amount check is where small slips"
+    # resolutions and handoffs are counted apart: a correct escalate is not a resolution
+    assert {m: r["resolved"] for m, r in rows.items()} == dict.fromkeys(rows, 9)
+    assert rows["stub-small"]["handoffs"] < rows["stub-large"]["handoffs"], \
+        "small 'resolves' #3100 by approving it: fewer handoffs, wrong answers"
     print("ch09 solution: OK")

@@ -14,6 +14,7 @@ Python 3.10+ and the standard library only. No API key, no network, no cost.
     python3 run_all.py          # every chapter, then every exercise solution
     python3 run_solutions.py    # exercise solutions only (each checks its own result)
     python3 ch01.py             # one chapter
+    python3 ch24.py             # watch the whole agent work, step by step
 
 ## The stub model
 
@@ -26,6 +27,41 @@ To use a real provider, replace the body of `call_model()` with your SDK call an
 return shape. Chapter 9's three models, their prices and speeds, and Chapter 12's
 `embed()` are toys made up for the demos, not measurements of any real model.
 `store.py` holds the fictional store data: policy clauses and orders.
+
+## Run with a real local model (optional): Ollama
+
+Ollama runs open models on your own computer, with no key and no bill. `ollama_model.py`
+is an adapter behind the same `call_model()` (standard library only, one POST to
+`http://localhost:11434/api/chat`); the stub stays the default.
+
+Install from https://ollama.com/download, or `brew install ollama` on a Mac, or on Linux:
+
+    curl -fsSL https://ollama.com/install.sh | sh
+
+Pull a small model and start the server (the desktop app starts it for you; skip
+`ollama serve` if it is already running):
+
+    ollama pull llama3.2
+    ollama serve
+
+`llama3.2` is about 2 GB and supports tool calling. With 16 GB of memory or more you can
+try a larger one, such as `gpt-oss:20b` (about 14 GB). The library changes, so check
+https://ollama.com/library for current names and sizes.
+
+Then point the code at it with one environment variable, in a second terminal:
+
+    export AIEV_MODEL=ollama:llama3.2    # PowerShell: $env:AIEV_MODEL="ollama:llama3.2"
+    python3 ch06.py                      # the Chapter 6 position eval
+    python3 ch08.py                      # the Chapter 8 evals
+    python3 ch24.py                      # the Chapter 24 agent run
+    unset AIEV_MODEL                     # back to the stub
+
+If Ollama is not running, the code stops with a message that says so. Real-model output
+will differ from the expected outputs printed in the book, and that is the point: compare
+them, and let the evals tell you what changed. Tool calling needs a model that supports
+it; if yours does not, the adapter asks again without tools and says why.
+`run_solutions.py` always checks the stub, because its checks match the stub's scripted
+answers (`tests/test_ollama_adapter.py` checks the adapter's request with no network).
 
 ## Chapters
 

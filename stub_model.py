@@ -18,6 +18,8 @@ import math
 import random
 import re
 
+import ollama_model
+
 
 def rough_token_count(text: str) -> int:
     """PLACEHOLDER counter: one 'token' per word or punctuation mark.
@@ -133,6 +135,12 @@ def _reply(messages, temperature, rng) -> str:
         if amount > 5000:
             return "escalate: Amount above INR 5,000 needs an agent (R4)."
         return "approve: Within 30 days of delivery (R1)."
+    # Ch 10: a general final-sale question with no order. Scripted so that only the
+    # worked EXAMPLES layer (which shows this exact pattern) gets it right.
+    if "final-sale" in last and "#" not in last:
+        if "examples:" in system.lower():
+            return "deny: Final-sale items cannot be refunded (R3)."
+        return "escalate: I could not find the order. Please share your order number."
     seen = re.search(r"#(\d{4})", " ".join(users))
     if seen:
         return f"escalate: Order #{seen.group(1)} needs a lookup before I can decide."
@@ -176,6 +184,10 @@ def _json_reply(messages, temperature, rng, tools):
 
 def call_model(messages, temperature=0.0, max_output_tokens=300, seed=None,
                model="stub-large", tools=None):
+    real = ollama_model.selected()      # optional: AIEV_MODEL=ollama:<model>
+    if real:
+        return ollama_model.call_ollama(messages, real, temperature,
+                                        max_output_tokens, seed, tools)
     rng = random.Random(seed)
     tool_calls = None
     system = " ".join(_content_text(m["content"]) for m in messages if m["role"] == "system")

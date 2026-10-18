@@ -42,10 +42,11 @@ RUNG = {"refund": 1, "tracking": 1, "warranty": 1,   # each track alone is a fix
 
 # Branching alone is not agency. The address change's KNOWN branches fit in
 # plain code: your code picks every step, so this is still a workflow.
-def address_workflow(order_id, address):
+def address_workflow(order_id, address, log=lambda line: None):
     from ch19 import ask_carrier, change_address
     from store import SHIPMENTS
     status = SHIPMENTS.get(order_id)
+    log(f"  code reads status: {status} -> code picks the branch")
     if status == "packing":
         return change_address(order_id, address)
     if status == "in transit":
@@ -59,4 +60,5 @@ if __name__ == "__main__":
         print(f"{ticket!r:40} -> {label:8} -> {out[:70]}")
     print("rungs:", RUNG)
     for oid in ("5120", "6001", "1234"):
-        print(f"address workflow #{oid}:", address_workflow(oid, "12 Lake Road, Pune"))
+        print(f"address workflow #{oid}:")
+        print("  ->", address_workflow(oid, "12 Lake Road, Pune", log=print))

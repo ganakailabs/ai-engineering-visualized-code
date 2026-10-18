@@ -6,7 +6,7 @@
 Run: python3 solutions/ch06_solution.py
 """
 import _path  # noqa: F401  (adds code/support-assistant/ to the import path)
-from ch06 import LABELS, attention_shares, position_test_prompts
+from ch06 import HELD_OUT, position_eval, LABELS, attention_shares, position_test_prompts
 
 if __name__ == "__main__":
     r3 = {}
@@ -24,4 +24,7 @@ if __name__ == "__main__":
     assert r3[0] > r3[5] > r3[20], "more competing text, smaller share for R3"
     assert round(r3[0], 2) == 0.78 and round(r3[20], 2) == 0.25
     assert words["start"] == words["middle"] == words["end"], "same text, only the position moves"
+    counts = position_eval()             # the stub is position-blind
+    assert counts["start"] == counts["middle"] == counts["end"]
+    assert sum(counts["start"].values()) == len(HELD_OUT)
     print("ch06 solution: OK")

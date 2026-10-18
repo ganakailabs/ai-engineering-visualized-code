@@ -6,7 +6,7 @@ pack_context() and count again: which slice shrank, and which never did?
 Run: python3 solutions/ch04_solution.py
 """
 import _path  # noqa: F401  (adds code/support-assistant/ to the import path)
-from ch04 import pack_context
+from ch04 import EXAMPLE_RATES, PRICE_PER_MILLION, cost, pack_context
 from stub_model import rough_token_count  # placeholder counter: use your provider's
 from store import policy_text
 
@@ -47,4 +47,8 @@ if __name__ == "__main__":
     assert packed["ticket"] == full["ticket"], "the ticket is never trimmed"
     assert packed["rules + policy"] >= full["rules + policy"], "rules and policy are never trimmed"
     assert sum(packed.values()) <= 2000 - 300, "room for the answer stays free"
+    # real prices stay empty; the made-up example rates show the arithmetic
+    u = {"input_tokens": 1_000_000, "output_tokens": 1_000_000}
+    assert cost(u) is None and set(PRICE_PER_MILLION.values()) == {None}
+    assert cost(u, EXAMPLE_RATES) == EXAMPLE_RATES["input"] + EXAMPLE_RATES["output"]
     print("ch04 solution: OK")

@@ -7,10 +7,10 @@ weak layer. Run: python3 solutions/ch10_solution.py
 """
 import _path  # noqa: F401  (adds code/support-assistant/ to the import path)
 from ch08 import GOLDEN, passes
-from ch10 import INJECTED, LAYERS, build_messages
+from ch10 import EXAMPLES_CASE, INJECTED, LAYERS, build_messages
 from stub_model import call_model
 
-CASES = GOLDEN + [(INJECTED, "4410", "deny"), (INJECTED, "4410", "deny")]
+CASES = GOLDEN + [(INJECTED, "4410", "deny"), (INJECTED, "4410", "deny"), EXAMPLES_CASE]
 
 
 def score(layers):
@@ -34,5 +34,6 @@ if __name__ == "__main__":
         print(f"without {layer:13}: {drops[layer]:.0%}")
     # self-test (run_solutions.py relies on these)
     assert full > max(drops["rules"], drops["context"]), "rules and context both earn their place"
-    assert drops["examples"] == full, "no golden case tests the examples layer yet: add one"
+    assert drops["examples"] < full, "EXAMPLES_CASE makes the examples layer earn its place"
+    print("(scripted stub: these scores show the method, not that a layer helps a real model)")
     print("ch10 solution: OK")

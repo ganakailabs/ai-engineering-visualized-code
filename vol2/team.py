@@ -14,6 +14,7 @@ parent's pool, and cancel() reaches every worker that holds it.
 Equal outcomes on the stub show the wiring is consistent, nothing more.
 """
 import re
+import threading
 from datetime import timedelta
 
 import llm
@@ -49,12 +50,17 @@ class Budget:
     def __init__(self, world, steps, minutes, who="orchestrator", pool=None):
         self.world, self.who = world, who
         self.pool = pool or {"steps": steps, "until": world.clock + timedelta(minutes=minutes),
-                             "cancelled": False, "spent": {}}
+                             "cancelled": False, "spent": {},
+                             "lock": threading.Lock()}
 
     def child(self, who):
         return Budget(self.world, 0, 0, who=who, pool=self.pool)
 
     def spend(self, what):
+        with self.pool["lock"]:        # check and take the last unit as one step
+            self._spend(what)
+
+    def _spend(self, what):
         p = self.pool
         if p["cancelled"]:
             raise Exhausted(f"{self.who}: cancelled")
@@ -79,18 +85,25 @@ class Board:
     def __init__(self, world, customer, ticket):
         self.world, self.customer, self.ticket = world, customer, ticket
         self.facts, self.version, self.log = {}, {}, []
+        self.lock = threading.Lock()   # compare-and-set: check and write together
 
     def read(self, field):
         return self.facts.get(field), self.version.get(field, 0)
 
     def write(self, field, value, by, seen):
+        with self.lock:
+            return self._write(field, value, by, seen)
+
+    def _write(self, field, value, by, seen):
         if OWNER[field] != by:
-            raise self._refuse(f"board write by={by} field={field} -> refused not owner")
+            raise self._refuse(f"board write by={by} field={field} "
+                               "-> refused not owner")
         have = self.version.get(field, 0)
         if seen != have:
             raise self._refuse(f"board write by={by} field={field} -> refused "
-                               f"version conflict (saw v={seen}, board has v={have})")
-        ok, why = self.check(field, value)
+                               f"version conflict "
+                               f"(saw v={seen}, board has v={have})")
+        ok, why = self.check(field, value)      # verified at commit
         if not ok:
             raise self._refuse(f"board write {field}={value} by={by} -> refused {why}")
         self.facts[field], self.version[field] = value, have + 1

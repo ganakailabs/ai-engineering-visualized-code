@@ -48,9 +48,13 @@ class Memory:
         return rid
 
     def live(self, scope_id, reader="agent"):
+        """Expiry counts at read time: a record past its time is not read even if
+        the cleanup job (expire) has not run yet."""
+        now = self.world.now()
         return [r for r in self.store.values()
                 if r["scope_id"] == scope_id and r["superseded_by"] is None
-                and reader in r["readers"]]
+                and reader in r["readers"]
+                and not (r["expires"] and r["expires"] <= now)]
 
     def _summary(self, scope_id):
         facts = [f"{r['key']}: {r['value']}" for r in self.live(scope_id)
@@ -59,6 +63,9 @@ class Memory:
 
     def recall(self, scope_id, query="", reader="agent"):
         """Facts and episodes this reader may see, plus the cached summary."""
+        if any(r["expires"] and r["expires"] <= self.world.now()
+               for r in self.store.values() if r["scope_id"] == scope_id):
+            self.summaries[scope_id] = self._summary(scope_id)  # stale copy
         words = query.lower().split()
         hits = {rid for rid, text in self.index.items() if any(w in text for w in words)}
         records = [r for r in self.live(scope_id, reader) if not words or r["id"] in hits]

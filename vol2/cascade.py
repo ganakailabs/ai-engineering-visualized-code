@@ -120,12 +120,16 @@ def nested(fn, budget_for, dep):
     budget of its own; FIX hands every layer the ticket's one shared budget."""
     def wrap(inner, layer):
         def call():
+            # BREAK: a fresh budget; FIX: the ticket's one
             budget = budget_for(layer)
             while True:
                 try:
                     return inner()
                 except (WorldError, Exhausted) as e:
-                    budget.take(layer, f"{dep} {getattr(e, 'code', 'gave up below')}")
+                    if isinstance(e, WorldError) and not e.transient:
+                        raise                 # not retryable: spend nothing
+                    why = getattr(e, 'code', 'gave up below')
+                    budget.take(layer, f"{dep} {why}")
         return call
     for layer in reversed(LAYERS):
         fn = wrap(fn, layer)
@@ -140,7 +144,7 @@ def run_break(world, log=print):
     def label():
         out = world.send_label("2001", "Ceramic mug set")
         if not valid_label(out):
-            raise WorldError("MALFORMED")
+            raise WorldError("MALFORMED", transient=True)
         return out
 
     for dep, fn in (("payments", lambda: world.refund("2001", 950)), ("courier", label)):
@@ -165,7 +169,7 @@ def run_fix(world, retries=3, log=print):
         out = world.send_label("2001", "Ceramic mug set", key="k-T-2001-label")
         if not valid_label(out):
             log("observe malformed tool output -> rejected")
-            raise WorldError("MALFORMED")
+            raise WorldError("MALFORMED", transient=True)
         return out
 
     reason, dep = "success", "payments"

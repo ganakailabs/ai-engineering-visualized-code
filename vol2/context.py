@@ -19,6 +19,10 @@ from store import HANDBOOK
 OPEN = {"UNKNOWN", "NEEDS_HUMAN"}          # ledger states that are still owed
 
 
+class PinsOverBudget(Exception):
+    """The non-droppable part alone does not fit: split the task or stop."""
+
+
 def project(session, store, book, ticket_id, op_ids=(), approvals=()):
     """Rebuild pins and obligations from durable state.
     Never from history."""
@@ -93,6 +97,9 @@ class Context:
 
         Over budget: fold old turns into the summary; still over, keep fewer recent
         turns; still over, cut the summary (the only lossy part: pins are rebuilt)."""
+        if pin_block and self.pinned and count(pin_block) > self.budget:
+            raise PinsOverBudget(f"pins need {count(pin_block)} tokens, "
+                                 f"budget is {self.budget}")   # never trim them
         text, folded = self.assemble(pin_block), 0
         keep = self.keep_recent
         while count(text) > self.budget and keep >= 1:

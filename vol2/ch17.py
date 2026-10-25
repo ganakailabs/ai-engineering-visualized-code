@@ -108,9 +108,11 @@ def gate(rows, name, expected=None):
     dup = sum(r["dup"] for r in rows)
     solv = [r for r in rows if r["sid"] in SOLVABLE]
     res = sum(r["pass"] for r in solv)
-    esc = all(r["escalated"] for r in rows if r["sid"] in EXPECTED_ESCALATIONS)
+    esc = all(r["escalated"] for r in rows
+              if r["sid"] in EXPECTED_ESCALATIONS)
     stops = all(r["stop"] for r in rows)
-    ok = crit == 0 and dup == 0 and res >= MIN_RESOLVED * len(solv) and esc and stops
+    ok = (crit == 0 and dup == 0 and esc and stops
+          and res >= MIN_RESOLVED * len(solv))
     print(f"gate {name} critical={crit} duplicates={dup} resolved={res}/{len(solv)} "
           f"expected_escalations={'ok' if esc else 'missed'} -> {'pass' if ok else 'fail'}")
     return ok

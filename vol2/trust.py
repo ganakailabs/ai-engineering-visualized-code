@@ -29,7 +29,8 @@ COURIER_KEY = "ck_demo_7Q2x9"           # a demo value for the mock courier API
 
 def fingerprint(tool):
     """Pin a tool by what the model and host rely on: its name, words and schema."""
-    body = json.dumps({"name": tool.name, "description": tool.description,
+    body = json.dumps({"name": tool.name,
+                       "description": tool.description,
                        "input": tool.input_schema}, sort_keys=True)
     return hashlib.sha256(body.encode()).hexdigest()[:12]
 
@@ -58,7 +59,8 @@ class Token:
 def accept(server, token):
     """The audience rule: a server accepts only tokens issued for it."""
     if token is None or token.audience != server:
-        return False, f"audience={getattr(token, 'audience', None)} -> {server} refused"
+        aud = getattr(token, 'audience', None)
+        return False, f"audience={aud} -> {server} refused"
     return True, f"audience={token.audience} -> {server} ok"
 
 
@@ -112,6 +114,10 @@ def as_data(name, result):
     """A tool result goes into the prompt as quoted data, labelled with its source."""
     body = json.dumps(result.get("data") if result.get("data") is not None
                       else result.get("text"))
+    # a result cannot close its own tag: escape <, > and & (the tag marks
+    # trust, it does not enforce it; the boundary checks do that)
+    body = (body.replace("&", "\\u0026").replace("<", "\\u003c")
+            .replace(">", "\\u003e"))
     return f"<tool_result source={name} trust=data>{body}</tool_result>"
 
 

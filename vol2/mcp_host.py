@@ -26,6 +26,8 @@ SERVERS = {"orders": "orders", "courier": "courier"}   # namespace -> mcp_server
 STEP_NAMESPACES = {"tracking": ["orders", "courier"],  # which servers a step may use
                    "refund": ["orders"]}
 HOST_FILLS = {"customer_id", "operation_id", "idempotency_key"}  # never the model's
+TYPES = {"string": str, "integer": int, "number": (int, float), "boolean": bool,
+         "array": list, "object": dict}
 
 
 def params(arg, env=None):
@@ -57,7 +59,8 @@ class Host:
         return await self.stack.__aexit__(*exc)
 
     def shortlist(self, step, query, k=2, namespace_first=True):
-        allowed = STEP_NAMESPACES[step] if namespace_first else list(self.clients)
+        allowed = (STEP_NAMESPACES[step] if namespace_first
+                   else list(self.clients))
         docs = {n: f"{t.name.replace('_', ' ')}. {t.description}"
                 for n, t in self.tools.items() if self.owner[n] in allowed}
         return hybrid(query, docs=docs, k=k)
@@ -68,7 +71,25 @@ class Host:
         args = [a for a in t.input_schema.get("properties", {}) if a not in HOST_FILLS]
         return {"name": name, "description": t.description, "arguments": args}
 
+    def refuse(self, name, arguments):
+        """Checked by the host before any request: an explicit error, not a crash.
+        A shortlist is a selection aid; this check, and the server's own
+        authorization, are what enforce."""
+        if name not in self.tools:
+            return f"unknown tool {name!r}"
+        props = self.tools[name].input_schema.get("properties", {})
+        for k, v in (arguments or {}).items():
+            want = props.get(k, {}).get("type")
+            if k not in props:
+                return f"unknown argument {k!r} for {name}"
+            if want and not isinstance(v, TYPES.get(want, object)):
+                return f"argument {k!r} must be {want}, got {type(v).__name__}"
+        return None
+
     async def call(self, name, arguments):
+        why = self.refuse(name, arguments)
+        if why:
+            return {"is_error": True, "text": f"refused: {why}", "data": None}
         ns, tool = self.owner[name], self.tools[name].name
         r = await self.clients[ns].call_tool(tool, arguments)
         text = r.content[0].text if r.content else ""

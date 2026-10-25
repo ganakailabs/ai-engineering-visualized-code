@@ -66,6 +66,7 @@ optional and needs Node.js: run `npm ci` in `vol2/interop` once; without it the 
 | `vol2/ch15.py` | 15. Agent Failure Engineering: Loops, Cascades and Side Effects |
 | `vol2/ch16.py` | 16. Agent Evaluation: Outcomes and Trajectories |
 | `vol2/ch17.py` | 17. Agent Reliability: Repeat Runs, Scorecards and Gates |
+| `vol2/capstone.py` | Capstone: one ticket through policy, approval, ledger, handoff and the gate |
 
 Exercise solutions are in `vol2/solutions/chNN_solution.py`; tests in `vol2/tests/`.
 

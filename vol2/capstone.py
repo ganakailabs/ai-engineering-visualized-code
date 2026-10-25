@@ -22,14 +22,17 @@ SESSION = Session("c-42")
 
 def refund_once(world, ledger, action, approval, op_id):
     def call(key):
-        r = approvals.commit(world, SESSION, action, approval, key=key)
+        r = approvals.commit(world, SESSION, action,
+                             approval, key=key)
         if not r["ok"]:
             raise WorldError(r["error"])
         return r["receipt"]["receipt_id"]
-    args = {"order_id": action["order_id"], "amount": action["amount"]}
-    return ledger.execute(op_id, args, call,
-                          lambda key: (world.find_payment(key) or {}).get("receipt_id"))
-
+    args = {"order_id": action["order_id"],
+            "amount": action["amount"]}
+    return ledger.execute(
+        op_id, args, call,
+        lambda key: (world.find_payment(key) or {}).get(
+            "receipt_id"))
 
 def main():
     world, ledger = World(), Ledger()

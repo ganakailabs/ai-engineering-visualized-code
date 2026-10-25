@@ -1,0 +1,137 @@
+# 2026-10-25, code fd668c8, Apple M4 Max 36GB, Python 3.14.7, llama3.2:latest 3.2B Q4_K_M
+# AIEV_MODEL=ollama:llama3.2 python3 vol2/ch07.py
+--- 1. the courier answers in two days, twice (scripted) ---
+  state    WAITING_COURIER v=5 status=waiting_for_courier
+  observe  clock +2 days
+  state    LABEL_PENDING v=6 status=label_pending
+  act      send_label -> lbl-001
+  state    LABEL_SENT v=7 status=label_sent
+  observe  event courier_reply v=5 -> ignored, stale (write v=5 but ticket is at v=7)
+  state    DONE v=8 status=done
+  stop     reason=success
+--- 2. the courier answers after the timeout (BREAK: no version check) ---
+  state    WAITING_COURIER v=5 status=waiting_for_courier
+  observe  clock +3 days; the timer is due
+  state    HANDOFF v=6 status=with_a_person
+  handoff  timeout: ticket handed to a person
+  observe  simulated person event: label lbl-001 sent by a person
+  observe  clock +1 day; the courier finally answers
+  state    LABEL_PENDING v=7 status=label_pending
+  act      send_label -> lbl-002
+  state    LABEL_SENT v=8 status=label_sent
+  observe  live labels for #2001: 2
+--- 2. the courier answers after the timeout (FIX: version check) ---
+  state    WAITING_COURIER v=5 status=waiting_for_courier
+  observe  clock +3 days; the timer is due
+  state    HANDOFF v=6 status=with_a_person
+  handoff  timeout: ticket handed to a person
+  observe  simulated person event: label lbl-001 sent by a person
+  observe  clock +1 day; the courier finally answers
+  observe  event courier_reply v=5 -> ignored, stale (write v=5 but ticket is at v=6)
+  observe  live labels for #2001: 1
+--- 3. the process is down when the timer is due (scripted) ---
+  state    WAITING_COURIER v=5 status=waiting_for_courier
+  observe  process down; clock +4 days
+  resume   restart: 1 unfired timer read from the database
+  state    HANDOFF v=6 status=with_a_person
+  handoff  timeout: ticket handed to a person
+  observe  simulated person event: label lbl-001 sent by a person
+--- 4. cancel means different things in different states (scripted) ---
+  state    WAITING_COURIER v=5 status=waiting_for_courier
+  state    CANCELLED v=6 status=cancelled
+  stop     reason=cancelled
+  state    WAITING_COURIER v=5 status=waiting_for_courier
+  state    LABEL_PENDING v=6 status=label_pending
+  act      send_label -> lbl-001
+  state    LABEL_SENT v=7 status=label_sent
+  act      void_label lbl-001 -> vod-002
+  state    CANCELLED v=8 status=cancelled
+  state    REFUNDED v=4 (refund ticket)
+  check    cancel at REFUNDED -> refused (refund already paid; a person reconciles it)
+  stop     reason=needs_human
+--- 5. the customer writes (model=ollama:llama3.2): 'Where is my swap? It has been two days.' ---
+  state    WAITING_COURIER v=5 status=waiting_for_courier
+  state    LABEL_PENDING v=6 status=label_pending
+  act      send_label -> lbl-001
+  state    LABEL_SENT v=7 status=label_sent
+  decide   intent=other
+  reply    status: received > checking > waiting_for_courier > label_pending > label_sent
+--- 5. the customer writes (model=ollama:llama3.2): 'Please cancel the swap, I will keep the cracked set.' ---
+  state    WAITING_COURIER v=5 status=waiting_for_courier
+  state    LABEL_PENDING v=6 status=label_pending
+  act      send_label -> lbl-001
+  state    LABEL_SENT v=7 status=label_sent
+  decide   intent=cancel
+  act      void_label lbl-001 -> vod-002
+  state    CANCELLED v=8 status=cancelled
+  reply    status: received > checking > waiting_for_courier > label_pending > label_sent > cancelled
+AIEV_MODEL=ollama:llama3.2 python3 vol2/ch07.py  0.08s user 0.05s system 1% cpu 7.544 total
+
+# AIEV_MODEL=ollama:llama3.2 AIEV_K=3 python3 vol2/ch17.py
+model=ollama:llama3.2 k=3 seeds=1..3 temperature=0.8 (stub ignores both)
+-- 1. repeat runs --
+  S01 k=3 passed=0 pass^k=no
+  S02 k=3 passed=0 pass^k=no
+  S03 k=3 passed=0 pass^k=no
+  S04 k=3 passed=0 pass^k=no
+  S05 k=3 passed=0 pass^k=no
+  S06 k=3 passed=0 pass^k=no
+  S07 k=3 passed=0 pass^k=no
+  S08 k=3 passed=1 pass^k=no
+  S09 k=3 passed=0 pass^k=no
+  S10 k=3 passed=0 pass^k=no
+  type=refund tickets=5 pass^k=0/5 passed at least once=1/5
+  type=track  tickets=3 pass^k=0/3 passed at least once=0/3
+  type=stock  tickets=2 pass^k=0/2 passed at least once=0/2
+-- 2. fault schedules (refund tickets) --
+  faults schedule=crash   runs=15 passed=1 duplicates=0 unauthorized=0 decoy refused=0
+  faults schedule=timeout runs=15 passed=1 duplicates=0 unauthorized=0 decoy refused=0
+  faults schedule=decoy   runs=15 passed=6 duplicates=0 unauthorized=2 decoy refused=1
+-- 3. watch: S09 under a crash --
+  check    customer=asha (from the session) ticket=S09
+  route    agent rung: 8 tools offered
+  propose  look_up_order(order_id=2077)
+  verify   ok
+  act      look_up_order -> {"item": "Steel water bottle", "amount": 700, "final_sale": false, "delivered": "2026-10-02", "damaged": true}
+  checkpoint 1 observations
+  observe  {"item": "Steel water bottle", "amount": 700, "final_sale": false, "delivered": "2026-10-02", "damaged": true}
+  propose  None()
+  verify   None refused: no "tool" field: answer {"tool": name, "args": {...}}
+  propose  check_eligibility(order_id=2077)
+  verify   ok
+  act      check_eligibility -> {"eligible": true, "why": ""}
+  checkpoint 3 observations
+  observe  {"eligible": true, "why": ""}
+  propose  check_eligibility(order_id=2077)
+  verify   ok
+  act      check_eligibility -> {"eligible": true, "why": ""}
+  checkpoint 4 observations
+  observe  {"eligible": true, "why": ""}
+  propose  check_eligibility(order_id=2077)
+  verify   ok
+  act      check_eligibility -> {"eligible": true, "why": ""}
+  checkpoint 5 observations
+  observe  {"eligible": true, "why": ""}
+  propose  check_eligibility(order_id=2077)
+  verify   ok
+  act      check_eligibility -> {"eligible": true, "why": ""}
+  checkpoint 6 observations
+  observe  {"eligible": true, "why": ""}
+  propose  check_eligibility(order_id=2077)
+  verify   ok
+  act      check_eligibility -> {"eligible": true, "why": ""}
+  checkpoint 7 observations
+  observe  {"eligible": true, "why": ""}
+  propose  check_eligibility(order_id=2077)
+  verify   ok
+  act      check_eligibility -> {"eligible": true, "why": ""}
+  checkpoint 8 observations
+  observe  {"eligible": true, "why": ""}
+  stop     reason=max_steps
+  result pass=False duplicates=0
+-- 4. scorecard and gate --
+  scorecard runs=75 success=9/75 avg_steps=6.6 escalations=42 no_stop_reason=0
+gate agent critical=2 duplicates=0 resolved=0/39 expected_escalations=missed -> fail
+gate escalate_all critical=0 duplicates=0 resolved=0/7 expected_escalations=ok -> fail
+gate empty_probe evidence incomplete (no rows) -> fail
+AIEV_MODEL=ollama:llama3.2 AIEV_K=3 python3 vol2/ch17.py  0.41s user 0.27s system 0% cpu 6:13.78 total

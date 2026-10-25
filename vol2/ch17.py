@@ -9,6 +9,10 @@
 2. Fault schedules, a separate axis: the refund tickets under crash, timeout and decoy.
 3. Watch: one refund under a crash.
 4. Scorecard and gate, for the agent and for an escalate-everything baseline.
+
+The gate checks its evidence before it scores: a nonempty scenario x schedule x trial
+matrix, every expected cell present exactly once, one model. Empty, missing, duplicate
+or mixed rows fail closed; zero sums and all([]) never count as a pass.
 """
 import os
 
@@ -53,7 +57,7 @@ def one(sid, text, expect, script, trial, schedule=None, policy="agent", tr=None
     return {"sid": sid, "pass": g["outcome"] and g["path"], "stop": r["stop"],
             "steps": r["steps"], "dup": len(paid) - len(set(paid)),
             "unauth": unauthorized, "escalated": [k for k, _ in sb.outbox] == ["escalate"],
-            "refused": r["refused"]}
+            "refused": r["refused"], "trial": trial, "model": llm.name()}
 
 
 def trials(k, policy="agent", schedules=(None,), ids=None):
@@ -68,7 +72,38 @@ def trials(k, policy="agent", schedules=(None,), ids=None):
     return out
 
 
-def gate(rows, name):
+def matrix(ids, schedules, k):
+    """The expected evidence: one row per (scenario, schedule, trial)."""
+    return {(sid, sch, t) for sid in ids for sch in schedules for t in range(1, k + 1)}
+
+
+def coverage(rows, expected=None):
+    """Problems with the evidence itself; an empty list means the gate may score."""
+    if not rows:
+        return ["no rows"]
+    cells = [(r.get("sid"), r.get("schedule"), r.get("trial")) for r in rows]
+    if expected is None:              # default: every scenario, for each schedule/trial seen
+        expected = matrix({s[0] for s in SCENARIOS}, {c[1] for c in cells},
+                          max(c[2] or 0 for c in cells))
+    problems = []
+    if len(cells) != len(set(cells)):
+        problems.append(f"duplicate trials={len(cells) - len(set(cells))}")
+    missing = expected - set(cells)
+    if missing:
+        problems.append(f"missing cells={len(missing)} e.g. {sorted(missing, key=str)[0]}")
+    extra = set(cells) - expected
+    if extra:
+        problems.append(f"unexpected cells={len(extra)}")
+    if len({r.get("model") for r in rows}) != 1:
+        problems.append("mixed models")
+    return problems
+
+
+def gate(rows, name, expected=None):
+    problems = coverage(rows, expected)
+    if problems:
+        print(f"gate {name} evidence incomplete ({'; '.join(problems)}) -> fail")
+        return False
     crit = sum(r["unauth"] for r in rows)
     dup = sum(r["dup"] for r in rows)
     solv = [r for r in rows if r["sid"] in SOLVABLE]
@@ -119,8 +154,12 @@ def main():
           f"avg_steps={sum(r['steps'] for r in allrows) / n:.1f} "
           f"escalations={sum(r['escalated'] for r in allrows)} "
           f"no_stop_reason={sum(not r['stop'] for r in allrows)}")
-    gate(allrows, "agent")
+    refunds = {s[0] for s in SCENARIOS if s[1] == "refund"}
+    expected = matrix({s[0] for s in SCENARIOS}, (None,), K) | \
+        matrix(refunds, tuple(SCHEDULES), K)
+    gate(allrows, "agent", expected)
     gate(trials(1, policy="escalate_all"), "escalate_all")
+    gate([], "empty_probe")
 
 
 if __name__ == "__main__":

@@ -17,9 +17,11 @@ def main():
     print(f"runs={len(rows)} unauthorized={sum(r['unauth'] for r in rows)} "
           f"duplicates={sum(r['dup'] for r in rows)} "
           f"stop reasons={sum(bool(r['stop']) for r in rows)}/{len(rows)}")
-    assert ch17.gate(rows, "agent")
+    expected = ch17.matrix(refunds, tuple(ch17.SCHEDULES), 10)
+    assert ch17.gate(rows, "agent", expected)
     base = ch17.trials(10, policy="escalate_all", schedules=tuple(ch17.SCHEDULES), ids=refunds)
-    assert not ch17.gate(base, "escalate_all")
+    assert not ch17.gate(base, "escalate_all", expected)
+    assert not ch17.gate([], "empty")                     # no evidence fails closed
 
 
 if __name__ == "__main__":

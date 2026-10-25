@@ -4,6 +4,14 @@ MM-100 The Agent as a State Machine: a transition table; an illegal move raises.
 MM-101 Checkpoint and Resume: one SQLite transaction per transition, a version on
        every write, and a write carrying an old version is refused (stale).
 MM-172 Every Stop Has a Reason: a run ends only in a named stop, with a reply.
+
+Three ways a run can end early, and what records them:
+  application exception  -> the finally block in run_loop writes a stop;
+  graceful cancellation  -> the cancel path writes the CANCELLED stop;
+  process death (kill -9, power loss, os._exit) -> NOTHING in this process runs.
+For the last one, run_loop writes a durable attempt row before it starts and closes it
+when it stops. A fresh worker calls recover(store): every attempt still open with no
+stop record is handed to a person with a recorded reason.
 """
 import json
 import sqlite3
@@ -48,7 +56,8 @@ class Store:
             CREATE TABLE IF NOT EXISTS history (id TEXT, version INTEGER, state TEXT,
                 observation TEXT);
             CREATE TABLE IF NOT EXISTS stops (id TEXT PRIMARY KEY, reason TEXT,
-                reply TEXT, detail TEXT);""")
+                reply TEXT, detail TEXT);
+            CREATE TABLE IF NOT EXISTS attempts (id TEXT, n INTEGER, open INTEGER);""")
 
     def create(self, ticket_id, data=None):
         self.db.execute("BEGIN IMMEDIATE")
@@ -64,9 +73,10 @@ class Store:
         return state, version, json.loads(data)
 
     def move(self, ticket_id, to, expected_version, data=None,
-             observation=""):
+             observation="", also=()):
         """One transition = one transaction: legal move,
-        current version, or nothing."""
+        current version, or nothing. `also` is extra (sql, params) written in the
+        same transaction (Chapter 7: the status event)."""
         state, version, old = self.load(ticket_id)
         # checked again inside the UPDATE
         if version != expected_version:
@@ -90,6 +100,8 @@ class Store:
             self.db.execute("INSERT INTO history VALUES (?, ?, ?, ?)",
                             (ticket_id, expected_version + 1, to,
                              observation))
+            for sql, params in also:
+                self.db.execute(sql, params)
             self.db.execute("COMMIT")
         except BaseException:
             self.db.execute("ROLLBACK")
@@ -111,6 +123,22 @@ class Store:
                               (ticket_id,)).fetchone()
         return dict(zip(("reason", "reply", "detail"), row)) if row else None
 
+    def begin_attempt(self, ticket_id):
+        """Durable before any work: an attempt that never closes was interrupted."""
+        n = self.db.execute("SELECT COUNT(*) FROM attempts WHERE id = ?",
+                            (ticket_id,)).fetchone()[0] + 1
+        self.db.execute("INSERT INTO attempts VALUES (?, ?, 1)", (ticket_id, n))
+        return n
+
+    def end_attempt(self, ticket_id):
+        self.db.execute("UPDATE attempts SET open = 0 WHERE id = ?", (ticket_id,))
+
+    def abandoned(self):
+        """Tickets with an open attempt and no stop record: the worker died."""
+        return [r[0] for r in self.db.execute(
+            "SELECT DISTINCT a.id FROM attempts a LEFT JOIN stops s ON s.id = a.id "
+            "WHERE a.open = 1 AND s.id IS NULL ORDER BY a.id")]
+
     def history(self, ticket_id):
         return self.db.execute("SELECT version, state, observation FROM history "
                                "WHERE id = ? ORDER BY version", (ticket_id,)).fetchall()
@@ -125,6 +153,7 @@ def run_loop(store, ticket_id, propose, act, tr, goal_met, max_steps=8, repeat_l
     A call named in waits is a deliberate wait: the budget bounds it, not the watchdog.
     """
     calls, context, reason, detail, steps = [], f"Ticket {ticket_id}", None, "", 0
+    store.begin_attempt(ticket_id)
     try:
         for steps in range(1, max_steps + 1):
             move = propose(context)
@@ -146,9 +175,20 @@ def run_loop(store, ticket_id, propose, act, tr, goal_met, max_steps=8, repeat_l
         else:
             reason, detail = "budget_exhausted", f"steps={max_steps}/{max_steps}"
     finally:
-        if reason is None:                    # a crash still leaves a stop record
-            reason, detail = "needs_human", "the run crashed"
+        if reason is None:                    # an exception still leaves a stop record;
+            reason, detail = "needs_human", "the run crashed"   # process death does not
         store.stop(ticket_id, reason, detail)
+        store.end_attempt(ticket_id)
         tr.emit("stop", f"reason={reason} {detail}"
                 + (" -> handoff" if STOPS[reason][0] == "HANDOFF" else ""), reason=reason)
     return reason
+
+
+def recover(store):
+    """Run by a fresh worker: hand every abandoned attempt to a person, with a reason."""
+    out = []
+    for ticket_id in store.abandoned():
+        store.stop(ticket_id, "needs_human", "worker died mid-run; recovered on restart")
+        store.end_attempt(ticket_id)
+        out.append(ticket_id)
+    return out

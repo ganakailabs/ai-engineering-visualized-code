@@ -97,7 +97,8 @@ def run(pinned=True, budget=BUDGET, steps=STEPS, echo=True):
     store, book = state.Store(), ledger.Ledger()
     store.create(TICKET, {"order_id": "2001"})
     v = store.move(TICKET, "VERIFYING", 1)
-    v = store.move(TICKET, "ACTING", v)
+    v = store.move(TICKET, "ACTING", v, data={"verification": {
+        "ok": True, "checks": ["owner", "R2 damaged within 7 days"]}})
     ctx = context.Context(budget, summarize, pinned=pinned)
     ctx.add("step 1 customer: My mug set #2001 arrived cracked. Refund please.")
     ctx.add("step 2 check: asha owns #2001; R2 damaged within 7 days; photo needed")

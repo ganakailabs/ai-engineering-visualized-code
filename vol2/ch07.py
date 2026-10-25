@@ -83,7 +83,8 @@ def cancels():
     store.create("T-2001-r")
     v, tr.echo = 1, False
     for to in ("VERIFYING", "ACTING", "REFUNDED"):
-        v = w.move("T-2001-r", to, v)
+        v = w.move("T-2001-r", to, v,
+                   data=waits.CHECKED if to == "ACTING" else None)
     tr.echo = True
     tr.emit("state", f"REFUNDED v={v} (refund ticket)")
     world.refund("2001", 950, key="k-T-2001-r-refund")

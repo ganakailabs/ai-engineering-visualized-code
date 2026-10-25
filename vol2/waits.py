@@ -38,6 +38,9 @@ CANCEL = {"NEW": "cancel", "VERIFYING": "cancel", "CHOOSING": "cancel",
           "DONE": "refuse", "HANDOFF": "refuse", "CANCELLED": "refuse"}
 
 
+CHECKED = {"verification": {"ok": True, "checks": ["owner", "damage photo"]}}
+
+
 class Waits:
     def __init__(self, store, world, tr):
         self.store, self.world, self.tr = store, world, tr
@@ -46,9 +49,9 @@ class Waits:
         store.db.execute("CREATE TABLE IF NOT EXISTS status (ticket TEXT, v INTEGER, "
                          "status TEXT, at TEXT)")
 
-    def move(self, ticket, to, version, why=""):
+    def move(self, ticket, to, version, why="", data=None):
         """A transition and its status event, written together."""
-        v = self.store.move(ticket, to, version, observation=why, also=[(
+        v = self.store.move(ticket, to, version, data=data, observation=why, also=[(
             "INSERT INTO status VALUES (?, ?, ?, ?)",
             (ticket, version + 1, STATUS[to], self.world.now()))])
         self.tr.emit("state", f"{to} v={v} status={STATUS[to]}", state_to=to,
@@ -150,7 +153,7 @@ def start_swap(store, world, tr, ticket="T-2001-w", days=3):
     store.db.execute("INSERT INTO status VALUES (?, 1, 'received', ?)", (ticket, world.now()))
     v, echo, tr.echo = 1, tr.echo, False          # the earlier moves, not printed
     for to in ("VERIFYING", "CHOOSING", "ACTING"):
-        v = w.move(ticket, to, v)
+        v = w.move(ticket, to, v, data=CHECKED if to == "ACTING" else None)
     tr.echo = echo
     return w, w.wait(ticket, v, days)
 

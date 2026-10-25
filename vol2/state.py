@@ -46,10 +46,25 @@ class StaleWrite(Exception):
     pass
 
 
+class GuardFailed(IllegalMove):
+    """The move is in the table, but its precondition does not hold."""
+
+
+def verified(data):
+    """ACTING needs a passing verification result recorded on the ticket.
+    Being in VERIFYING proves nothing; the result has to be there."""
+    v = data.get("verification") or {}
+    return v.get("ok") is True and bool(v.get("checks"))
+
+
+GUARDS = {"ACTING": verified}         # state -> what must be true to enter it
+
+
 class Store:
-    def __init__(self, path=":memory:", transitions=None):
+    def __init__(self, path=":memory:", transitions=None, guards=None):
         self.db = sqlite3.connect(path, isolation_level=None)   # we BEGIN ourselves
         self.table = transitions or TRANSITIONS
+        self.guards = GUARDS if guards is None else guards
         self.db.executescript("""
             CREATE TABLE IF NOT EXISTS tickets (id TEXT PRIMARY KEY, state TEXT,
                 version INTEGER, data TEXT);
@@ -84,6 +99,10 @@ class Store:
                              f"but ticket is at v={version}")
         if to not in self.table.get(state, set()):
             raise IllegalMove(f"{state} -> {to} is not in the table")
+        guard = self.guards.get(to)
+        if guard and not guard({**old, **(data or {})}):
+            raise GuardFailed(f"{state} -> {to} refused: "
+                              f"no passing verification")
         try:
             self.db.execute("BEGIN IMMEDIATE")
             cur = self.db.execute(

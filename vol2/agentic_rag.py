@@ -137,7 +137,8 @@ def agentic(question, session, stub, extra_rounds=EXTRA_ROUNDS, gate=True, echo=
     tr = Trace(world, ticket, session["customer_id"], model=llm.name(), echo=echo)
     store = state.Store()
     store.create(ticket, {"question": question})
-    store.move(ticket, "ACTING", store.move(ticket, "VERIFYING", 1))
+    store.move(ticket, "ACTING", store.move(ticket, "VERIFYING", 1),
+               data={"verification": {"ok": True, "checks": ["session identity"]}})
     need, evidence, order, searched, rounds = slots(question, session), {}, None, set(), 0
     cap = 1 + extra_rounds if extra_rounds is not None else 10    # BREAK: demo cap only
     missing, filled, reason, reply, cites = list(need), {}, None, "", []

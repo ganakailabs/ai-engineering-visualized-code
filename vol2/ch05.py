@@ -26,7 +26,10 @@ def worker(path, ticket_id, tr, crash_after=None):
         tr.emit("resume", f"from {current} v={version}")
     path_to_done = ["VERIFYING", "CHOOSING", "ACTING", "DONE"]
     for to in path_to_done[path_to_done.index(current) + 1 if current != "NEW" else 0:]:
-        version = store.move(ticket_id, to, version, observation=f"entered {to}")
+        checks = ({"verification": {"ok": True, "checks": ["owner", "stock"]}}
+                  if to == "ACTING" else None)   # ACTING needs a recorded pass
+        version = store.move(ticket_id, to, version, data=checks,
+                             observation=f"entered {to}")
         tr.emit("state", f"{current} -> {to} v={version}", state_to=to, state_version=version)
         if to == "CHOOSING":
             tr.emit("checkpoint", f"saved state={to} v={version}")

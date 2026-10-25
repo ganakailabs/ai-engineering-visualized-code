@@ -10,7 +10,7 @@ def run(moves, goal=lambda: False, max_steps=8, crash_at=None, at="NEW"):
     store, tr = state.Store(), Trace(World(), "T", "asha", echo=False)
     store.create("T")
     for v, to in enumerate(("VERIFYING", "ACTING")[:("NEW", "VERIFYING", "ACTING").index(at)], 1):
-        store.move("T", to, v)
+        store.move("T", to, v, data={"verification": {"ok": True, "checks": ["owner"]}})
     it = iter(moves)
 
     def propose(ctx):

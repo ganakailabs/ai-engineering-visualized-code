@@ -19,8 +19,10 @@ for first in ("courier_reply", "timeout"):
         w.deliver(ch07.T, "courier_reply", armed)
     moves = [s for _, s, _ in store.history(ch07.T)][5:]          # after WAITING_COURIER
     stale = [e for e in w.tr.of("observe") if "stale" in e["text"]]
-    assert len(moves) == 1, moves                                  # exactly one commit
-    assert moves[0] == ("LABEL_SENT" if first == "courier_reply" else "HANDOFF")
+    # exactly one winning commit; the courier path then records intent before the
+    # label effect (LABEL_PENDING) and confirms it after (LABEL_SENT)
+    want = ["LABEL_PENDING", "LABEL_SENT"] if first == "courier_reply" else ["HANDOFF"]
+    assert moves == want, moves
     assert len(stale) == 1
     assert len(world.live_labels("2001")) == 1 and len(world.labels) == 1
 

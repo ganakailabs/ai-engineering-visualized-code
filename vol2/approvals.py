@@ -4,6 +4,12 @@ MM-108 Approval Policies: a grid of actions by amount band -> AUTO, APPROVE or
        HUMAN_ONLY. An approval is a record bound to one action hash, the order
        version, the approver and an expiry; it is rechecked at commit.
 MM-109 The Clean Handoff: a person gets a card with every field filled, or nothing.
+
+The execution boundary (commit) does not trust the caller. It re-reads the CURRENT grid
+(HUMAN_ONLY never runs through automated commit), resolves the approval by id from the
+trusted store (a dictionary built anywhere else is not an approval), checks that the
+approver holds authority for the amount, that the record is not revoked or already
+used, and consumes it for exactly one idempotency key before the write.
 """
 import hashlib
 import json
@@ -20,6 +26,17 @@ GRID = {   # action -> [(largest INR in the band, decision)], checked in order
     "cancel_order": [(tools.CAP_INR, "AUTO"), (None, "APPROVE")],
     "close_account": [(None, "HUMAN_ONLY")],
 }
+
+
+# Who may approve, up to which INR amount (fixture staff; trusted configuration).
+APPROVERS = {"sup-meera": 50000}
+
+
+def _store(world):
+    """The trusted approval store. In the mock it lives beside the world's records."""
+    if not hasattr(world, "approval_records"):
+        world.approval_records = {}
+    return world.approval_records
 
 
 def action_hash(action):
@@ -54,10 +71,19 @@ def policy(world, action, customer_id, rules=()):
 def approve(world, action, approver, hours=24):
     """A supervisor's yes, as a record bound to exactly this action."""
     order = world.order(action["order_id"])
-    return {"id": f"apv-{action['order_id']}-{order['version']}",
-            "action": action_hash(action), "order_v": order["version"],
-            "approver": approver, "policy": POLICY_VERSION,
-            "expires": (world.clock + timedelta(hours=hours)).isoformat(timespec="seconds")}
+    store = _store(world)
+    base = f"apv-{action['order_id']}-{order['version']}"
+    rid = base if base not in store else f"{base}-{len(store) + 1}"
+    record = {"id": rid,
+              "action": action_hash(action), "order_v": order["version"],
+              "approver": approver, "policy": POLICY_VERSION,
+              "expires": (world.clock + timedelta(hours=hours)).isoformat(timespec="seconds")}
+    store[rid] = dict(record, status="issued", used_by=None)
+    return record
+
+
+def revoke(world, approval_id):
+    _store(world)[approval_id]["status"] = "revoked"
 
 
 def still_valid(world, approval, action):
@@ -76,13 +102,33 @@ def still_valid(world, approval, action):
 
 
 def commit(world, session, action, approval, key, bound=True):
-    """Run the refund only under a valid approval
-    (or none needed: AUTO)."""
-    if approval is not None and bound:
-        ok, why = still_valid(world, approval, action)
-        if not ok:
-            return {"ok": False, "error": "APPROVAL_STALE",
-                    "detail": why}
+    """The execution boundary. bound=False is the Chapter 8 BREAK (approval by id
+    only, no recheck of action/version/expiry); the grid and the trusted record are
+    enforced either way."""
+    decision = grid(action)                       # current policy, read now
+    if decision == "HUMAN_ONLY":
+        return {"ok": False, "error": "HUMAN_ONLY",
+                "detail": "a person executes this action; automated commit refused"}
+    if approval is not None:
+        record = _store(world).get(approval.get("id"))
+        fields = ("action", "order_v", "approver", "policy", "expires")
+        if record is None or any(record[f] != approval.get(f) for f in fields):
+            return {"ok": False, "error": "APPROVAL_UNKNOWN",
+                    "detail": "no matching record in the approval store"}
+        if record["status"] == "revoked":
+            return {"ok": False, "error": "APPROVAL_REVOKED", "detail": record["id"]}
+        if record["used_by"] not in (None, key):
+            return {"ok": False, "error": "APPROVAL_USED",
+                    "detail": f"already consumed by {record['used_by']}"}
+        if APPROVERS.get(record["approver"], -1) < action["amount"]:
+            return {"ok": False, "error": "APPROVER_NOT_AUTHORISED",
+                    "detail": record["approver"]}
+        if bound:
+            ok, why = still_valid(world, record, action)
+            if not ok:
+                return {"ok": False, "error": "APPROVAL_STALE",
+                        "detail": why}
+        record["used_by"] = key                   # one approval, one write (same key ok)
     args = {"order_id": action["order_id"],
             "amount_inr": action["amount"]}
     return tools.call(tools.ISSUE_REFUND, world, session, args,

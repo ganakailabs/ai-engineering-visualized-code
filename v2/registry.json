@@ -1,0 +1,16 @@
+{
+  "orders": {
+    "tools": {
+      "look_up_order": "775d8612060e",
+      "look_up_shipment": "426046a4d10e",
+      "issue_refund": "37c76a85cae2"
+    }
+  },
+  "courier": {
+    "tools": {
+      "ask_carrier": "b1acdd5a5f28",
+      "book_pickup": "2609f7f5509e",
+      "cancel_pickup": "a971ce44165f"
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "aiev-v2-interop",
+  "private": true,
+  "type": "module",
+  "description": "Chapter 12: an MCP client we did not write calls our server",
+  "dependencies": {
+    "@modelcontextprotocol/client": "2.4.0"
+  }
+}

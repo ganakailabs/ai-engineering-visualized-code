@@ -1,0 +1,45 @@
+# Attempt 1 (kept for the record): ch12.py crashed on llama3.2 sending "arguments" as a list; fixed in mcp_agent.py, rerun in 2026-10-24-llama3.2-ch12.txt
+# Real-model run: AIEV_MODEL=ollama:llama3.2 (Ollama on Prateek's Mac), temperature 0, seed 7
+# date: 2026-10-24 05:26 IST
+ollama version is 0.40.5
+
+# python Python 3.13.3; mcp 2.3.0; node v20.19.0
+##### python v2/ch12.py
+Python(37177) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+model=ollama:llama3.2
+-- 1. message shapes (stdlib toy) --
+  {"jsonrpc":"2.0","id":1,"method":"server/discover","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{},"io.modelcontextprotocol/clientInfo":{"name":"northwind-host","version":"2.12.0"}}}}
+  {"jsonrpc":"2.0","id":2,"method":"tools/list","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{},"io.modelcontextprotocol/clientInfo":{"name":"northwind-host","version":"2.12.0"}}}}
+-- 2. discover --
+discover servers=2 tools=6 protocol=2026-07-28
+  orders: orders.look_up_order, orders.look_up_shipment, orders.issue_refund
+  courier: courier.ask_carrier, courier.book_pickup, courier.cancel_pickup
+-- 3. shortlist and pick --
+  model raw: {"calls": [{"tool": "orders.look_up_shipment", "arguments": ["6001"]}, {"tool": "courier.ask_carrier", "arguments": ["6001"]}]}
+shortlist [orders.look_up_shipment, courier.ask_carrier]
+  refused 'orders.look_up_shipment' (arguments not an object)
+  refused 'courier.ask_carrier' (arguments not an object)
+-- 4. a dropped reply, re-issued --
+  BREAK try 1: request_id=5 op_id=op-001 key=key-001 -> lost reply
+  BREAK try 2: request_id=6 op_id=op-002 key=key-002 -> ok
+  BREAK payments for #2001: 2
+  FIX   try 1: request_id=5 op_id=op-003 key=key-003 -> lost reply
+  FIX   try 2: request_id=6 op_id=op-003 key=key-003 -> ok
+  FIX   payments for #2001: 1 (replayed)
+reissue request_id=new op_id=same key=same
+-- 5. interop --
+interop client=@modelcontextprotocol/client@2.3.1 protocol=2026-07-28 list_tools ok call ok
+##### python v2/solutions/ch12_solution.py
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/Users/prateek/aiev-ch12b/support-assistant/v2/solutions/ch12_solution.py", line 26, in main
+    assert called and called[0] == "orders.look_up_shipment", results
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: [{'tool': 'orders.look_up_shipment', 'refused': True, 'why': 'arguments not an object'}, {'tool': 'courier.ask_carrier', 'refused': True, 'why': 'arguments not an object'}]
+exit=1

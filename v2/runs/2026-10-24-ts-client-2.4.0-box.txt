@@ -1,0 +1,6 @@
+# Box check, 2026-10-24 ~05:40 IST: @modelcontextprotocol/client 2.4.0 (npm, published 2026-10-23T18:21Z), node on box
+# pinned to 2026-07-28 (stranger.mjs):
+{"version":"2026-07-28","tools":["look_up_order","look_up_shipment","issue_refund"],"is_error":false,"text":"{\n  \"order_id\": \"6001\",\n  \"status\": \"in transit\"\n}"}
+# unpinned (default legacy mode): negotiated "2025-11-25"
+# python3 v2/ch12.py: interop client=@modelcontextprotocol/client@2.4.0 protocol=2026-07-28 list_tools ok call ok
+# test_mcp: OK; ch12 solution: OK

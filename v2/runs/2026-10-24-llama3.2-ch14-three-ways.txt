@@ -1,0 +1,41 @@
+# Real-model run: AIEV_MODEL=ollama:llama3.2 (Ollama on Prateek's Mac), temperature 0, seed 7
+# date: 2026-10-24 06:02 IST
+ollama version is 0.40.5
+# python Python 3.13.3
+##### python v2/ch14.py
+model=ollama:llama3.2
+-- 1. team --
+delegate to=refunds facts=[order_id, decision] budget_left=6
+  board write order_id=2001 owner=orchestrator v=1
+  board write decision=refund owner=refunds v=1
+  steps orchestrator=1
+  steps refunds=3
+  outcome: refunded 2001 INR 950
+  board write by=shipping field=order_id -> refused not owner
+  board write by=refunds field=decision -> refused version conflict (saw v=0, board has v=1)
+-- 2. telephone --
+BREAK free text: summary='Asha wants a refund for her damaged order #2077.'
+  board write decision=refund owner=refunds v=1
+  outcome: refunded 2077 INR 700  payments=[('2077', 700)]
+FIX typed board: summary='Asha wants a refund for her damaged order #2077.'
+  board write order_id=2077 by=orchestrator -> refused not in the ticket
+  outcome: human  payments=[]
+-- 3. budget --
+  board write order_id=2001 owner=orchestrator v=1
+  stop refunds: budget exhausted before model call
+  outcome: human  cancelled=True spent={'orchestrator': 1, 'refunds': 1}
+  a sibling desk tries a step -> shipping: cancelled
+-- 4. three ways --
+  mode       correct steps payments
+  workflow       8/8     8        1
+  one agent      7/8    16        1
+    T2 got 'stock mug set blue 0', expected 'track 6001 in transit'
+  team           8/8    21        1
+exit=0
+##### python v2/solutions/ch14_solution.py
+mode       correct steps payments
+workflow       8/8     8        1
+one agent      7/8    16        1
+team           8/8    21        1
+ch14 solution: OK
+exit=0

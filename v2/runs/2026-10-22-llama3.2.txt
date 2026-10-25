@@ -1,0 +1,171 @@
+# Real-model run: AIEV_MODEL=ollama:llama3.2 (Ollama on Prateek's Mac), temperature 0, seed 7
+# date: 2026-10-22 05:55 IST; ollama ollama version is 0.40.5
+##### python3 v2/ch01.py
+--- refund, asha's own order ---
+  harness  model=ollama:llama3.2 tools=4 limits steps=8
+  route    type=refund rung=agent
+  propose  issue_refund order=2001
+  check    caller=asha order=2001 owner=asha -> authorized
+  act      issue_refund -> receipt pay-001
+  observe  receipt_id=pay-001 order_id=2001 amount=950
+  propose  issue_refund order=2001
+  check    caller=asha order=2001 owner=asha -> authorized
+  act      issue_refund -> receipt pay-001
+  observe  receipt_id=pay-001 order_id=2001 amount=950 replayed=True
+  propose  look_up_shipment order=2001
+  check    caller=asha order=2001 owner=asha -> authorized
+  act      look_up_shipment -> read
+  observe  order_id=2001 status=not found
+  propose  issue_refund order=2001
+  check    caller=asha order=2001 owner=asha -> authorized
+  act      issue_refund -> receipt pay-001
+  observe  receipt_id=pay-001 order_id=2001 amount=950 replayed=True
+  propose  look_up_shipment order=2001
+  check    caller=asha order=2001 owner=asha -> authorized
+  act      look_up_shipment -> read
+  observe  order_id=2001 status=not found
+  propose  issue_refund order=2001
+  check    caller=asha order=2001 owner=asha -> authorized
+  act      issue_refund -> receipt pay-001
+  observe  receipt_id=pay-001 order_id=2001 amount=950 replayed=True
+  propose  issue_refund order=2001
+  check    caller=asha order=2001 owner=asha -> authorized
+  act      issue_refund -> receipt pay-001
+  observe  receipt_id=pay-001 order_id=2001 amount=950 replayed=True
+  propose  issue_refund order=2001
+  check    caller=asha order=2001 owner=asha -> authorized
+  act      issue_refund -> receipt pay-001
+  observe  receipt_id=pay-001 order_id=2001 amount=950 replayed=True
+  reply    escalate: step limit reached
+--- refund, someone else's order ---
+  harness  model=ollama:llama3.2 tools=4 limits steps=8
+  route    type=refund rung=agent
+  propose  issue_refund order=3100
+  check    caller=asha order=3100 owner=c-42 -> refused
+  observe  refused: not the caller's order
+  propose  issue_refund order=3100
+  check    caller=asha order=3100 owner=c-42 -> refused
+  observe  refused: not the caller's order
+  propose  look_up_shipment order=3100
+  check    caller=asha order=3100 owner=c-42 -> refused
+  observe  refused: not the caller's order
+  propose  issue_refund order=3100
+  check    caller=asha order=3100 owner=c-42 -> refused
+  observe  refused: not the caller's order
+  propose  look_up_shipment order=3100
+  check    caller=asha order=3100 owner=c-42 -> refused
+  observe  refused: not the caller's order
+  propose  look_up_shipment order=3100
+  check    caller=asha order=3100 owner=c-42 -> refused
+  observe  refused: not the caller's order
+  propose  look_up_shipment order=3100
+  check    caller=asha order=3100 owner=c-42 -> refused
+  observe  refused: not the caller's order
+  reply    I'm sorry, but the refund has been refused as this order does not belong to you. Please contact our customer service team for further assistance.
+--- a scripted model asks for a tool that does not exist ---
+  harness  model=scripted tools=4 limits steps=8
+  route    type=refund rung=agent
+  propose  bulk_refund
+  check    bulk_refund -> refused (not in registry)
+  observe  refused: not in registry
+  reply    escalate: stopped
+--- address change, agent rung ---
+  harness  model=ollama:llama3.2 tools=4 limits steps=8
+  route    type=address_change rung=agent
+  propose  change_address order=6001
+  check    caller=asha order=6001 owner=asha -> authorized
+  act      change_address -> error TOO_LATE_TO_CHANGE
+  observe  error: TOO_LATE_TO_CHANGE
+  propose  ask_carrier order=6001
+  check    caller=asha order=6001 owner=asha -> authorized
+  act      ask_carrier -> read
+  observe  order_id=6001 redirect=False
+  propose  look_up_shipment order=6001
+  check    caller=asha order=6001 owner=asha -> authorized
+  act      look_up_shipment -> read
+  observe  order_id=6001 status=in transit
+  propose  change_address order=6001
+  check    caller=asha order=6001 owner=asha -> authorized
+  act      change_address -> error TOO_LATE_TO_CHANGE
+  observe  error: TOO_LATE_TO_CHANGE
+  propose  change_address order=6001
+  check    caller=asha order=6001 owner=asha -> authorized
+  act      change_address -> error TOO_LATE_TO_CHANGE
+  observe  error: TOO_LATE_TO_CHANGE
+  propose  change_address order=6001
+  check    caller=asha order=6001 owner=asha -> authorized
+  act      change_address -> error TOO_LATE_TO_CHANGE
+  observe  error: TOO_LATE_TO_CHANGE
+  propose  change_address order=6001
+  check    caller=asha order=6001 owner=asha -> authorized
+  act      change_address -> error TOO_LATE_TO_CHANGE
+  observe  error: TOO_LATE_TO_CHANGE
+  reply    We are unable to change the address for your parcel #6001 as it is too late. Please contact our customer service team to discuss alternative solutions.
+--- tracking, fixed chain (no model call) ---
+  harness  model=ollama:llama3.2 tools=4 limits steps=8
+  route    type=tracking rung=fixed_chain
+  act      look_up_shipment 6001 -> in transit
+  reply    answer: #6001 is in transit
+world: payments=[('2001', 950)] carrier_asks=1
+##### python3 v2/ch02.py
+--- 1. the old refund tool, two guesses (scripted) ---
+  act      old issue_refund('#2001', '950')
+  observe  Traceback ... KeyError: '#2001'
+  act      old issue_refund('2001', '9500')
+  observe  paid INR 9,500 on a INR 950 order
+world: payments=[9500]
+--- 2. the new refund tool, the same kind of guesses (scripted) ---
+  act      issue_refund(#2001, INR 9500) as asha
+  observe  error=AMOUNT_NOT_ORDER_TOTAL class=business next_step=refund exactly the order amount, or request_approval
+  act      issue_refund(3100, 12500) as c-42
+  observe  error=AMOUNT_OVER_CAP class=business next_step=request_approval
+  act      issue_refund(dry_run) -> preview INR 950 on #2001 (not reserved)
+world: payments=[]
+--- 3. a lost reply, then one retry (scripted) ---
+old tool: payments=2   new tool with a key: payments=1
+--- 4. the model drives the new tools (model=ollama:llama3.2) ---
+  propose  look_up_order {"order_id": "3100"}
+  observe  order_id=3100 item=Noise-cancelling headphones amount=12500 damaged=False
+  propose  issue_refund {"order_id": "3100", "amount_inr": 12500}
+  observe  error=AMOUNT_OVER_CAP class=business next_step=request_approval
+  propose  issue_refund {"order_id": "3100", "amount_inr": 12500}
+  observe  error=AMOUNT_OVER_CAP class=business next_step=request_approval
+  propose  issue_refund {"order_id": "3100", "amount_inr": 12500}
+  observe  error=AMOUNT_OVER_CAP class=business next_step=request_approval
+  reply    escalate: step limit reached
+world: payments for #3100=0
+##### python3 v2/ch03.py
+--- repair only the broken branch (model=ollama:llama3.2) ---
+  check    plan invalid: plan must be a list of 1-10 steps
+  escalate a person will plan this ticket
+world: live labels=[] send_label calls=0
+--- BREAK: replan everything, fresh keys ---
+  check    plan invalid: plan must be a list of 1-10 steps
+  escalate a person will plan this ticket
+world: live labels=[] send_label calls=0
+##### python3 v2/run_solutions.py --real
+===== solutions/ch01_solution.py (model=ollama:llama3.2) =====
+  harness  model=ollama:llama3.2 tools=4 limits steps=8
+  route    type=address_change rung=router
+  act      look_up_shipment 6001 -> in transit
+  reply    escalate: parcel is in transit; a person must handle it
+steps: agent rung=7 router rung=1; ask_carrier calls: agent rung=1 router rung=0
+ch01 solution: OK
+===== solutions/ch02_solution.py (model=ollama:llama3.2) =====
+preview: cancel #5120 (packing); after shipping: error=ALREADY_SHIPPED class=business; cancels in the world: 1
+ch02 solution: OK
+===== solutions/ch03_solution.py (model=ollama:llama3.2) =====
+  check    plan invalid: plan must be a list of 1-10 steps
+  escalate a person will plan this ticket
+status=escalated send_label calls=0 drop-offs=0 live labels=0
+ch03 solution: OK
+===== tests/test_harness.py (model=stub) =====
+test_harness: OK
+===== tests/test_planner.py (model=stub) =====
+test_planner: OK
+===== tests/test_tools.py (model=stub) =====
+test_tools: OK
+===== tests/test_world.py (model=stub) =====
+test_world: OK
+
+all passed

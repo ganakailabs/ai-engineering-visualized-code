@@ -103,6 +103,55 @@ Chapters 7-24 are in first draft and not yet in the published early-access editi
 `solutions/chNN_solution.py` solves the Exercise at the end of chapter NN. Each runs on its
 own (`python3 solutions/ch01_solution.py`) and exits non-zero if its check fails.
 
+## Vol 2: agents in production (`v2/`)
+
+`v2/` is the companion code for **AI Engineering Visualized, Volume 2**. It keeps building
+the same Northwind Goods support assistant, now as an agent with a harness, tools, plans,
+checkpoints, approvals, memory, MCP servers and evals. It reuses the Vol 1 modules in this
+folder (`store.py`, `parse.py`, `stub_model.py`, `ollama_model.py`, ...), so keep `v2/`
+inside this repo. Python 3.10+ and the standard library only; the stub is the default.
+
+Run from the repo root:
+
+    python3 v2/ch01.py               # one chapter
+    python3 v2/run_solutions.py      # every Vol 2 exercise solution and test
+
+With a real local model, after `ollama pull llama3.2` and `ollama serve` (see above):
+
+    AIEV_MODEL=ollama:llama3.2 python3 v2/ch01.py
+    # PowerShell: $env:AIEV_MODEL="ollama:llama3.2"; python3 v2/ch01.py
+
+A 3B model like `llama3.2` will often differ from the book's printed output, and
+sometimes fail a step; the harness turns a bad reply into a stop or an escalation, never a
+crash. `v2/runs/` holds logs of real `llama3.2` runs, so you can compare yours.
+`v2/run_solutions.py` always checks the stub.
+
+Chapter 12's interop step has the official MCP TypeScript client call our server. It is
+optional and needs Node.js: run `npm ci` in `v2/interop` once; without it the step prints
+`skipped`.
+
+| File | Chapter |
+|---|---|
+| `v2/ch01.py` | 1. The Agent Harness: Everything Around the Model |
+| `v2/ch02.py` | 2. Tool Engineering: Schemas, Validation and Safe Actions |
+| `v2/ch03.py` | 3. Planning: Dependencies, Validation and Replanning |
+| `v2/ch04.py` | 4. Verification Before Commit: Checks, Bounded Revision and Postconditions |
+| `v2/ch05.py` | 5. State Machines, Checkpoints and Stop Reasons |
+| `v2/ch06.py` | 6. Side Effects: Idempotency, Transactions and Compensation |
+| `v2/ch07.py` | 7. Long-Running Tickets: Waits, Progress and Cancellation |
+| `v2/ch08.py` | 8. Human Oversight: Approvals, Interrupts and Escalations |
+| `v2/ch09.py` | 9. Agent Memory: Lifetime, Scope and Correction |
+| `v2/ch10.py` | 10. Context Engineering for Long-Running Agents |
+| `v2/ch11.py` | 11. Agentic RAG: Retrieval the Agent Chooses |
+| `v2/ch12.py` | 12. MCP: Hosts, Clients, Servers and Discovery |
+| `v2/ch13.py` | 13. Tool Trust: Credentials, Allow-Lists and Untrusted Output |
+| `v2/ch14.py` | 14. Multi-Agent Systems: Handoffs, Coordination and Trade-offs |
+| `v2/ch15.py` | 15. Agent Failure Engineering: Loops, Cascades and Side Effects |
+| `v2/ch16.py` | 16. Agent Evaluation: Outcomes and Trajectories |
+| `v2/ch17.py` | 17. Agent Reliability: Repeat Runs, Scorecards and Gates |
+
+Exercise solutions are in `v2/solutions/chNN_solution.py`; tests in `v2/tests/`.
+
 ## License
 
 Code: MIT (see LICENSE). The book text and illustrations are not covered by this license.

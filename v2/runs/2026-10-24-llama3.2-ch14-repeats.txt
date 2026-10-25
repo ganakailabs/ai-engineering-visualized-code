@@ -1,0 +1,24 @@
+# Real-model repeats: AIEV_MODEL=ollama:llama3.2, temperature 0, seed 7 (fixed in v2/llm.py)
+# date: 2026-10-24 06:07 IST
+ollama version is 0.40.5
+##### repeat 2: python v2/solutions/ch14_solution.py
+mode       correct steps payments
+workflow       8/8     8        1
+one agent      7/8    16        1
+team           8/8    21        1
+ch14 solution: OK
+exit=0
+##### repeat 3: python v2/solutions/ch14_solution.py
+mode       correct steps payments
+workflow       8/8     8        1
+one agent      7/8    16        1
+team           8/8    21        1
+ch14 solution: OK
+exit=0
+##### repeat 4: python v2/solutions/ch14_solution.py
+mode       correct steps payments
+workflow       8/8     8        1
+one agent      7/8    16        1
+team           8/8    21        1
+ch14 solution: OK
+exit=0

@@ -1,0 +1,74 @@
+# Real-model run: AIEV_MODEL=ollama:llama3.2 (Ollama on Prateek's Mac), temperature 0, seed 7
+# date: 2026-10-24 05:23 IST
+ollama version is 0.40.5
+##### python3 v2/ch11.py
+model=ollama:llama3.2
+--- 1. Asha's two-part question, fixed pipeline vs agentic loop ---
+  fixed    retrieve top=3 ids=['S3', 'R2'] -> answer (one round); not covered: [none]
+  act      look_up_order 2001 -> delivered 2026-10-01 damaged=yes
+  judge    sufficient=no missing=[refund clause, return shipping]
+  decide   retrieve source=handbook query="refund clause for damaged item"
+  retrieve ids=['R2', 'S3', 'R3'] round=1
+  judge    sufficient=yes -> answer
+  stop     reason=success rounds=1/3
+  reply    cites=[R2, S3] refund approved: delivered 3 days ago (photo needed); return shipping free (damaged)
+--- 2. one well-formed policy question: the pipeline is enough ---
+  fixed    retrieve top=3 ids=['S4'] -> answer (one round); not covered: [none]
+  decide   retrieve source=handbook query="gift card swap policy"
+  retrieve ids=['S4'] round=1
+  judge    sufficient=yes -> answer
+  stop     reason=success rounds=1/3
+  reply    cites=[S4] gift card cannot be exchanged for cash
+--- 3. BREAK: no budget, no gate (search forever) ---
+  decide   retrieve source=handbook query="price match policy"
+  retrieve ids=[] round=1
+  requery  query="price match policy" for=price match round=2/10
+  retrieve ids=[] round=2
+  requery  query="price match policy" for=price match round=3/10
+  retrieve ids=[] round=3
+  requery  query="price match policy" for=price match round=4/10
+  retrieve ids=[] round=4
+  requery  query="price match policy" for=price match round=5/10
+  retrieve ids=[] round=5
+  requery  query="price match policy" for=price match round=6/10
+  retrieve ids=[] round=6
+  requery  query="price match policy" for=price match round=7/10
+  retrieve ids=[] round=7
+  requery  query="price match policy" for=price match round=8/10
+  retrieve ids=[] round=8
+  requery  query="price match policy" for=price match round=9/10
+  retrieve ids=[] round=9
+  requery  query="price match policy" for=price match round=10/10
+  retrieve ids=[] round=10
+  stop     reason=no_progress rounds=10/10 -> handoff
+  reply    I could not move this forward. A person has your ticket and will reply today.
+--- 4. FIX: two extra rounds, then stop with a reason ---
+  decide   retrieve source=handbook query="price match policy"
+  retrieve ids=[] round=1
+  judge    sufficient=no missing=[price match]
+  requery  query="price match policy" for=price match round=2/3
+  retrieve ids=[] round=2
+  judge    sufficient=no missing=[price match]
+  requery  query="price match policy" for=price match round=3/3
+  retrieve ids=[] round=3
+  judge    sufficient=no missing=[price match]
+  stop     reason=no_progress rounds=3/3 -> handoff
+  reply    I could not move this forward. A person has your ticket and will reply today.
+##### python3 v2/solutions/ch11_solution.py
+  decide   retrieve source=handbook query="EU return desk lamp #1234"
+  retrieve ids=[] round=1
+  judge    sufficient=no missing=[order facts, delivery date, refund clause, EU withdrawal, return shipping]
+  requery  query="EU return desk lamp #1234" for=EU withdrawal round=2/3
+  retrieve ids=[] round=2
+  judge    sufficient=no missing=[order facts, delivery date, refund clause, EU withdrawal, return shipping]
+  requery  query="EU return desk lamp #1234" for=EU withdrawal round=3/3
+  retrieve ids=[] round=3
+  judge    sufficient=no missing=[order facts, delivery date, refund clause, EU withdrawal, return shipping]
+  stop     reason=no_progress rounds=3/3 -> handoff
+  reply    I could not move this forward. A person has your ticket and will reply today.
+Traceback (most recent call last):
+  File "/Users/prateek/aiev-ch1112/support-assistant/v2/solutions/ch11_solution.py", line 20, in <module>
+    assert r["reason"] == "success", f"stopped with {r['reason']}: {r['reply']}"
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: stopped with no_progress: I could not move this forward. A person has your ticket and will reply today.
+exit=1

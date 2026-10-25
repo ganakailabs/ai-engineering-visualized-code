@@ -1,0 +1,20 @@
+Sat Oct 24 06:21:23 IST 2026
+model=ollama:llama3.2
+-- 1. suite (10 sandbox tickets) --
+S01 score outcome=fail path=fail missing=look_up_order before issue_refund (outbox=['escalate'] expected=[reply])
+S02 score outcome=fail path=pass (outbox=['escalate'] expected=[reply])
+S03 score outcome=fail path=pass (outbox=['escalate'] expected=[reply])
+S04 score outcome=pass path=pass
+S05 score outcome=fail path=pass (outbox=['escalate'] expected=[reply])
+S06 score outcome=pass path=pass
+S07 score outcome=fail path=pass (outbox=['escalate'] expected=[reply])
+S08 score outcome=fail path=pass (outbox=['reply'] expected=[escalate])
+S09 score outcome=fail path=fail missing=check_eligibility before issue_refund (outbox=['escalate'] expected=[reply])
+S10 score outcome=fail path=pass (outbox=['escalate'] expected=[reply])
+outcome pass 2/10; outcome and path pass 2/10; payments made in sandboxes: 2
+-- 2. paths --
+  usual order          path=pass
+  other valid order    path=pass
+  eligibility skipped  path=fail missing=check_eligibility before issue_refund
+  sandbox record: ['look_up_order', 'issue_refund', 'escalate']
+Sat Oct 24 06:25:03 IST 2026

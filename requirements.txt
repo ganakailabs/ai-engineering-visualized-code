@@ -1,0 +1,2 @@
+# Vol 2 Chapters 12-13 and the Vol 2 suite. Vol 1 needs nothing beyond Python 3.10+.
+mcp==2.3.0

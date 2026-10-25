@@ -2,13 +2,14 @@
 
 Companion code for the **AI Engineering Visualized** series by Prateek Singh / Ganak AI Labs.
 Every volume builds the same Northwind Goods support assistant, one folder per volume.
-Python 3.10+ and the standard library only; a scripted stub model is the default, so no API
-key, network or cost is needed. Run every command from the repo root (this folder).
+Python 3.10+. Vol 1 uses the standard library only; Vol 2 Chapters 12-13 (and the Vol 2 suite)
+also need the official MCP Python SDK, pinned in `requirements.txt` (`mcp==2.3.0`). A scripted
+stub model is the default, so no API key, network or cost is needed. Run every command from the repo root (this folder).
 
 | Folder | Book | Run |
 |---|---|---|
 | [`vol1/`](vol1/) | Vol 1: A Visual Guide to Building LLM Apps, RAG and Agents (Ch 1-24) | `python3 vol1/run_all.py` |
-| [`vol2/`](vol2/) | Vol 2: Agents in production (Ch 1-17) | `python3 vol2/run_solutions.py` |
+| [`vol2/`](vol2/) | Vol 2: Agents in production (Ch 1-17) | `pip install -r requirements.txt`, then `python3 vol2/run_solutions.py` |
 
 Get the book: https://leanpub.com/ai-engineering-visualized
 

@@ -4,7 +4,29 @@
 the same Northwind Goods support assistant, now as an agent with a harness, tools, plans,
 checkpoints, approvals, memory, MCP servers and evals. It reuses the Vol 1 modules in `../vol1/`
 (`store.py`, `parse.py`, `stub_model.py`, `ollama_model.py`, ...; `_root.py` puts that folder on
-the import path), so keep `vol2/` next to `vol1/` in this repo. Python 3.10+ and the standard library only; the stub is the default.
+the import path), so keep `vol2/` next to `vol1/` in this repo. Python 3.10+; the stub is the default.
+Chapters 12-13 (MCP servers, host and trust) and `run_solutions.py` need `mcp==2.3.0`;
+every other chapter is standard library only.
+
+## Start here
+
+From the repo root:
+
+    python3 -m venv .venv
+    source .venv/bin/activate            # Windows: .venv\Scripts\activate
+    python -m pip install -r requirements.txt
+    python vol2/run_solutions.py         # ends with "all passed"
+
+## Troubleshooting
+
+- `ModuleNotFoundError: No module named 'mcp'`: the venv is not active, or `pip install -r
+  requirements.txt` was not run in it.
+- `ModuleNotFoundError` for `store`, `parse` or `stub_model`: `vol2/` was copied without
+  `vol1/`; keep both folders from this repo together.
+- Python older than 3.10: the code uses 3.10 syntax; check `python --version`.
+- Chapter 12 prints `skipped` for interop: expected without Node.js (see below).
+- With `AIEV_MODEL=ollama:llama3.2`, connection refused: start `ollama serve`; output that
+  differs from the book is expected for a 3B model.
 
 Run from the repo root:
 

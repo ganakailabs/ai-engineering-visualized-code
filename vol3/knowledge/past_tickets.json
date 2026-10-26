@@ -1,0 +1,17 @@
+{
+  "_note": "Closed support tickets (fictional fixture data). Each is a snapshot of what was true when it closed. Vol 3 Chapter 1.",
+  "tickets": [
+    {"id": "PT-0001", "closed": "2026-09-02", "customer": "asha",
+     "text": "Asked how long delivery takes for the desk lamp order #1234. Told orders usually arrive within 5 business days."},
+    {"id": "PT-0002", "closed": "2026-09-18", "customer": "c-42",
+     "text": "NW-500 headphones battery stopped charging after two months. Replaced under the 12-month warranty."},
+    {"id": "PT-0003", "closed": "2026-09-21", "customer": "c-42",
+     "text": "Asked whether a gift card can be exchanged for cash. Told gift cards cannot be exchanged for cash."},
+    {"id": "PT-0004", "closed": "2026-09-29", "customer": "asha",
+     "text": "Can I return my mug set order #2001? Snapshot of order #2001: status in transit, not delivered yet, so no return is possible until it arrives."},
+    {"id": "PT-0005", "closed": "2026-09-30", "customer": "asha",
+     "text": "Asked about the clearance jacket order #4410. Told it is final sale."},
+    {"id": "PT-0006", "closed": "2026-10-02", "customer": "c-42",
+     "text": "Asked how to reset the NW-500 headphones. Pointed to the manual: hold the power button for 10 seconds."}
+  ]
+}

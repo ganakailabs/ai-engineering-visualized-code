@@ -1,0 +1,10 @@
+title: DL-1 Desk Lamp: User Guide
+source: man-dl1
+version: 2026-05-10
+note: fictional fixture manual, pre-extracted text
+=== page 1 ===
+Screw the lamp head onto the arm until it clicks. Plug the cable into a wall socket.
+
+Tap the base once to switch on. Tap again to change brightness. Hold the base for 2 seconds to switch off.
+=== page 2 ===
+Clean the lamp with a dry cloth only. Do not use water or sprays on the base.

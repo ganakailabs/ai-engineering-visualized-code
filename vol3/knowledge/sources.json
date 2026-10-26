@@ -1,0 +1,33 @@
+{
+  "_note": "Source contracts for the Northwind Goods assistant (fictional fixture data). One entry per source the assistant may read. Vol 3 Chapter 1.",
+  "sources": [
+    {"id": "policy", "kind": "document", "title": "Refund policy R1-R4",
+     "authority": "authoritative", "owner": "support policy lead",
+     "freshness": "versioned; current version is store.POLICY_VERSION",
+     "scope": "same text for every customer", "uniform_scope": true,
+     "answers": ["rule"], "decides": true},
+    {"id": "handbook", "kind": "document", "title": "Help-centre passages S1-S5",
+     "authority": "authoritative", "owner": "help-centre editor",
+     "freshness": "versioned with the policy (fixture)",
+     "scope": "per passage: region label ALL or EU", "uniform_scope": false,
+     "answers": ["delivery", "warranty", "region"], "decides": true},
+    {"id": "manuals", "kind": "document", "title": "Product manuals (pre-extracted text)",
+     "authority": "reference", "owner": "product team",
+     "freshness": "one version per manual, stamped in its header",
+     "scope": "same text for every customer", "uniform_scope": true,
+     "answers": ["how_to"], "decides": false},
+    {"id": "past_tickets", "kind": "document", "title": "Closed support tickets",
+     "authority": "informative", "owner": "support team",
+     "freshness": "a snapshot of what was true when each ticket closed",
+     "scope": "support staff only; never quoted to another customer", "uniform_scope": false,
+     "answers": ["history"], "decides": false},
+    {"id": "orders", "kind": "record", "title": "Order system",
+     "authority": "authoritative", "owner": "order system",
+     "freshness": "live", "scope": "the order's owner only", "uniform_scope": false,
+     "answers": ["order_fact"], "decides": true},
+    {"id": "stock", "kind": "record", "title": "Stock levels",
+     "authority": "authoritative", "owner": "warehouse system",
+     "freshness": "live", "scope": "same for every customer", "uniform_scope": true,
+     "answers": ["stock"], "decides": true}
+  ]
+}

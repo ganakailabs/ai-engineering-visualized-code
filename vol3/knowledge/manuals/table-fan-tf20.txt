@@ -1,0 +1,12 @@
+title: TF-20 Table Fan: User Guide
+source: man-tf20
+version: 2026-06-20
+note: fictional fixture manual, pre-extracted text
+=== page 1 ===
+Attach the front grille by turning it clockwise until the clips lock.
+
+Press the speed button to cycle through low, medium and high.
+=== page 2 ===
+To clean the blades, unplug the fan first, then remove the front grille.
+
+Press and hold the swing button for 2 seconds to stop the fan turning from side to side.

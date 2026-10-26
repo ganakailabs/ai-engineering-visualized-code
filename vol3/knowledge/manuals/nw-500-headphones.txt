@@ -1,0 +1,14 @@
+title: NW-500 Noise-cancelling Headphones: User Guide
+source: man-nw500
+version: 2026-07-01
+note: fictional fixture manual, pre-extracted text
+=== page 1 ===
+Thank you for choosing the NW-500. This guide covers charging, pairing and resetting.
+
+Charge the headphones fully before first use. A full charge takes about 2 hours with the supplied cable.
+=== page 2 ===
+To pair, hold the power button for 3 seconds until the light flashes blue, then choose NW-500 on your phone.
+
+To reset, hold the power button for 10 seconds until the light flashes red. Pair again after a reset.
+=== page 3 ===
+Warranty: NW-500 headphones carry a 12-month warranty against defects. A battery that stops charging counts as a defect.

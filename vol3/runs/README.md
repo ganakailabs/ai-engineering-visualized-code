@@ -34,3 +34,14 @@ for embeddings, so Ollama must be running for the whole script.
     AIEV_MODEL=ollama:llama3.2 python3 vol3/run_solutions.py --real 2>&1 | tee vol3/runs/$(date +%F)-llama3.2-solutions.txt
 
 Tests always run on the stub; `--real` sends only the solutions to the model.
+
+## Chapter 3: documents with layout
+- Parser: `python3 -m venv .venv-parse && .venv-parse/bin/pip install pdfplumber==0.11.10`, then `AIEV_PARSER=pdfplumber .venv-parse/bin/python vol3/ch03.py`.
+- Vision: `ollama pull qwen2.5vl:3b`, then `AIEV_VISION=qwen2.5vl:3b python3 vol3/ch03.py`. Record the answer in place of [TO MEASURE] in Ch 3.
+
+## Chapters 4 and 5
+No model needed; the stub output in the chapter is the real output.
+
+## Chapter 6: embedding models
+`ollama pull nomic-embed-text && ollama pull mxbai-embed-large`, then
+`AIEV_EMBED=nomic-embed-text,mxbai-embed-large python3 vol3/ch06.py`. Record recall@1 per model in place of [TO MEASURE] in Ch 6.

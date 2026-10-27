@@ -61,10 +61,10 @@ events.KINDS.update({"load", "ingest", "rerun", "index"})  # Vol 3 (series contr
 def path_for(cid):
     c = CONTRACTS[cid]
     if c["kind"] == "record":
-        return "lookup"                  # exact facts: ask the system that owns them
+        return "lookup"                  # exact facts: ask the owner
     if c["uniform_scope"] and c["tokens"] <= WHOLE_DOC_TOKENS:
-        return "whole_doc"               # short and the same for everyone: read it all
-    return "retrieve"                    # long, or filtered per reader: search it
+        return "whole_doc"               # short, same for all: read it
+    return "retrieve"                    # long or per reader: search
 
 
 KEYWORDS = [("order_fact", r"#\d+|\bmy order\b"), ("stock", r"\bin stock\b|\bavailable\b"),
@@ -155,7 +155,7 @@ def check_decision(evidence, world):
     for e in evidence:
         c = CONTRACTS[e["source"]]
         if not c["decides"]:
-            why.append(f"{e['id']} from {e['source']} cannot decide ({c['authority']})")
+            why.append(f"{e['id']}: {c['authority']}, cannot decide")
             continue
         if e["path"] != path_for(e["source"]):
             why.append(f"{e['id']} read by {e['path']}: a snapshot, not the {path_for(e['source'])}")

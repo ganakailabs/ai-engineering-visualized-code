@@ -79,8 +79,8 @@ def refund_window_report(customer, world):
 if __name__ == "__main__":
     print("Part 1 (MM-068): the source contracts")
     for cid, c in S.CONTRACTS.items():
-        auth = f"{c['authority']} decides={str(c['decides']).lower()}"
-        print(f"  {cid:<13}{c['kind']:<9}{auth:<26} path={S.path_for(cid)}"
+        dec = "decides" if c["decides"] else "-"
+        print(f"  {cid:<13}{c['kind']:<9}{c['authority']:<14}{dec:<8}path={S.path_for(cid)}"
               + (f" tokens={c['tokens']}" if "tokens" in c else ""))
     print("\nPart 2 (MM-069): route six questions")
     for q in Q:

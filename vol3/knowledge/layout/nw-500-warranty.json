@@ -1,0 +1,41 @@
+{
+  "_note": "Fictional fixture: what a layout-aware parser returns for a 5-page NW-500 warranty sheet (Vol 3 Chapter 3). Blocks are in stream order, the order a plain text extractor reads them. Page 5 is a scan; its text and confidence stand in for an OCR engine's output.",
+  "source": "warranty-nw500",
+  "version": "2026-08-01",
+  "pages": [
+    {"page": 1, "blocks": [
+      {"type": "heading", "col": 1, "text": "NW-500 Warranty Card"},
+      {"type": "text", "col": 1, "line": 1, "text": "Keep your receipt. The warranty starts on"},
+      {"type": "text", "col": 2, "line": 1, "text": "Claims are made by email to the support team"},
+      {"type": "text", "col": 1, "line": 2, "text": "the delivery date shown on your order."},
+      {"type": "text", "col": 2, "line": 2, "text": "with the order number and a short description."},
+      {"type": "footer", "text": "Northwind Goods | warranty-nw500 | page 1"}
+    ]},
+    {"page": 2, "blocks": [
+      {"type": "heading", "col": 1, "text": "Warranty by region"},
+      {"type": "table", "caption": "NW-500 warranty by region",
+       "header": ["Region", "Warranty", "Claim by"],
+       "rows": [["India", "12 months", "email"],
+                ["EU", "24 months", "email or store"],
+                ["UK", "12 months", "email"]]},
+      {"type": "footer", "text": "Northwind Goods | warranty-nw500 | page 2"}
+    ]},
+    {"page": 3, "blocks": [
+      {"type": "text", "col": 1, "line": 1, "text": "A battery that stops charging counts as a defect."},
+      {"type": "footer", "text": "Northwind Goods | warranty-nw500 | page 3"}
+    ]},
+    {"page": 4, "blocks": [
+      {"type": "text", "col": 1, "line": 1, "text": "Damage from drops or water is not covered."},
+      {"type": "footer", "text": "Northwind Goods | warranty-nw500 | page 4"}
+    ]},
+    {"page": 5, "scan": true, "blocks": [
+      {"type": "text", "col": 1, "line": 1, "ocr_conf": 0.62,
+       "text": "Battery rep1acement: send the headphones to the serv1ce centre."}
+    ]}
+  ],
+  "gold": {
+    "1": "Keep your receipt. The warranty starts on the delivery date shown on your order.",
+    "2": "Region: EU | Warranty: 24 months | Claim by: email or store",
+    "3": "A battery that stops charging counts as a defect."
+  }
+}

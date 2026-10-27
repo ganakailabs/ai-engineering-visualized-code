@@ -60,3 +60,29 @@ Record the rewritten parts and the check line for the two-part ticket in place o
 No model needed for precedence; the stub output is the real output. Abstain floors on a
 real model and scorer must be recalibrated: score your own dev cases per source, then run
 `calibrate()` on them. Record the floors in place of [TO MEASURE] in Ch 10.
+
+## Chapter 11: a real model on the evidence pack
+`AIEV_MODEL=ollama:llama3.2 python3 vol3/ch11.py 2>&1 | tee vol3/runs/$(date +%F)-llama3.2-ch11.txt`.
+Record which labels the reply cites and whether `validate_citations()` passes, in place of
+the first [TO MEASURE] in Ch 11. For accuracy per k, answer the six held-out questions with
+`pack_for(question, k)` at k = 2, 3, 5, 10, grade each reply by hand against the needed
+passages, and record correct/6 per k. The distraction experiment is the same run with one
+unrelated passage added to each pack.
+
+## Chapter 12: a real model filling QuerySpecs
+`AIEV_MODEL=ollama:llama3.2 python3 vol3/ch12.py 2>&1 | tee vol3/runs/$(date +%F)-llama3.2-ch12.txt`.
+Record, per question, whether the spec validated, and the rows returned. Specs that fail
+validation are refused, never repaired; count them.
+
+## Chapter 13: graph hops vs plain RAG
+For each part asked about in `vol3/ch13.py` ("NW charger", "NW-500 ear tips", "NW-500 cable"),
+record the verdict and path from `graph.coverage(part)`, then answer the same question with plain retrieval (Ch 6 index, k=5) on
+`AIEV_MODEL=ollama:llama3.2`. Record, per method, correct/total, model calls and tokens
+in place of [TO MEASURE] in Ch 13.
+
+## Chapter 14: a real embedder migration
+Build `INDEX v1` and `INDEX v2` with two real embedders (for example `nomic-embed-text`
+and `mxbai-embed-large` from Ch 6) by passing `model="ollama:nomic-embed-text"` and `model="ollama:mxbai-embed-large"` to
+`build(src, name, model)`, then run
+`check()` and `switch()`. Record held-out recall for each and whether the switch happened,
+in place of [TO MEASURE] in Ch 14.

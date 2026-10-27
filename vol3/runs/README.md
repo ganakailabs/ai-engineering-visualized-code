@@ -45,3 +45,18 @@ No model needed; the stub output in the chapter is the real output.
 ## Chapter 6: embedding models
 `ollama pull nomic-embed-text && ollama pull mxbai-embed-large`, then
 `AIEV_EMBED=nomic-embed-text,mxbai-embed-large python3 vol3/ch06.py`. Record recall@1 per model in place of [TO MEASURE] in Ch 6.
+
+## Chapter 8: a real reranker
+`python3 -m venv .venv-rerank && .venv-rerank/bin/pip install sentence-transformers`, then
+`AIEV_RERANKER=cross-encoder/ms-marco-MiniLM-L6-v2 .venv-rerank/bin/python vol3/ch08.py`.
+Record reranked recall@5 per net size in place of [TO MEASURE] in Ch 8.
+
+## Chapter 9: a real rewriter
+`AIEV_MODEL=ollama:llama3.2 python3 vol3/ch09.py 2>&1 | tee vol3/runs/$(date +%F)-llama3.2-ch09.txt`.
+Record the rewritten parts and the check line for the two-part ticket in place of
+[TO MEASURE] in Ch 9. If the check fails, the script asks the customer instead of searching; record that too.
+
+## Chapter 10
+No model needed for precedence; the stub output is the real output. Abstain floors on a
+real model and scorer must be recalibrated: score your own dev cases per source, then run
+`calibrate()` on them. Record the floors in place of [TO MEASURE] in Ch 10.

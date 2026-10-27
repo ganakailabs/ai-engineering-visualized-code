@@ -1,0 +1,13 @@
+Ch 15 real run  model=ollama:llama3.2  seed=7 temperature=0.0  date=2026-10-27
+  refund window      human=A judge=B swapped=B
+  EU withdrawal      human=A judge=B swapped=A  FLIP
+  battery warranty   human=A judge=B swapped=A  FLIP
+  final sale         human=A judge=B swapped=A  FLIP
+  charger cover      human=A judge=A swapped=A
+  opened earbuds     human=A judge=B swapped=A  FLIP
+  gift card          human=A judge=B swapped=A  FLIP
+  lifetime warranty  human=A judge=B swapped=A  FLIP
+  exchange size      human=B judge=B swapped=A  FLIP
+  stand return       human=B judge=B swapped=A  FLIP
+judge agreement=3/10 flips=8/10 trusted=False labelled_set=10
+unparsed replies (counted as 'first'): 0

@@ -1,0 +1,20 @@
+Ch 10 real run  model=ollama:llama3.2  seed=7 temperature=0.0  date=2026-10-27  embedder=ollama:nomic-embed-text
+dev cases: the Ch 6 golden set over Ch 6 DOCS and the Ch 8 golden set over Ch 8
+CHUNKS, one source ('docs'). score = top-1 cosine; right = top-1 is the labelled id.
+Alternate cases go to dev and held-out. These are retrieval checks, graded by code.
+  dev  score=0.8449 right=1 top=nw550-batt want=nw550-batt  NW-550 battery replacement cost
+  dev  score=0.7024 right=1 top=nw550-pair want=nw550-pair  pair my NW-550
+  dev  score=0.9200 right=1 top=ship-eu want=ship-eu  how long does delivery to the EU take
+  dev  score=0.6571 right=0 top=ret-status want=ret-window  what is the return window
+  dev  score=0.6387 right=0 top=ret-intl want=pay-cod  can I pay when the parcel arrives
+  dev  score=0.8732 right=1 top=nw550-pair want=nw550-pair  how do I pair my NW-550
+  dev  score=0.8204 right=1 top=mug-dmg want=mug-dmg  my mug came broken
+  held score=0.7138 right=1 top=nw500-batt want=nw500-batt  is the NW-500 battery covered
+  held score=0.7939 right=1 top=mug-dmg want=mug-dmg  mug arrived broken
+  held score=0.8306 right=1 top=ret-final want=ret-final  can I return a final sale item
+  held score=0.8331 right=1 top=ret-window want=ret-window  how many days to return an item for a refund
+  held score=0.7242 right=1 top=lamp-bulb want=lamp-bulb  what bulb does the lamp need
+  held score=0.7551 right=1 top=gift-expiry want=gift-expiry  do gift cards run out
+  held score=0.7257 right=1 top=pay-refund want=pay-refund  when will my refund reach my card
+docs floor=0.70  dev right=7/7  held-out right=7/7
+floors searched: 0.30..0.90 step 0.05

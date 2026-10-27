@@ -1,0 +1,103 @@
+Ch 11 real run  model=ollama:llama3.2  seed=7 temperature=0.0  date=2026-10-27
+Six held-out questions, pack_for(question, k), with and without one unrelated
+passage (store-window). Replies are graded BY HAND in the grading sheet;
+coverage and the citation check below are code checks, not accuracy.
+  k=2  distractor=no  q1 covered=False citations_in_pack=False -> escalate
+     reply: The return window varies depending on the type of return. For domestic returns, it is within a two-day window, while international returns take 21 days.
+  k=2  distractor=no  q2 covered=True citations_in_pack=True -> send
+     reply: To get a refund for your broken mug, send a photo within 7 days as stated in [S2] (ret-damaged). Once the photo is received, the refund will be processed.
+  k=2  distractor=no  q3 covered=False citations_in_pack=False -> escalate
+     reply: No, the clearance jacket is not returnable due to being a final sale.
+  k=2  distractor=no  q4 covered=False citations_in_pack=True -> send
+     reply: No, according to [S1], international returns take longer and allow 21 days for the parcel to arrive, which means you cannot pay when the parcel arrives.
+  k=2  distractor=no  q5 covered=True citations_in_pack=True -> send
+     reply: The refund timeline varies depending on the type of refund. According to [S1], refunds reach the original payment method in 5 to 7 days. However, for damaged items, a photo needs to be sent within 7 days, and then the refund is processed, as stated in [S2].
+  k=2  distractor=no  q6 covered=True citations_in_pack=False -> escalate
+     reply: To claim warranty on your NW-500 battery, follow these steps: 1. Go to the manufacturer's website and find the warranty claim form. 2. Fill out the form with your order number and a detailed description of the fault. 3. Attach a photo of the faulty battery as proof. 4. Submit the form and supporting documents to the manufacturer's customer service department. Alternatively, you can contact their customer service team directly to initiate the claim process.
+  k=3  distractor=no  q1 covered=True citations_in_pack=False -> escalate
+     reply: The return window varies depending on the type of return: 
+  - Courier returns: 2 days 
+  - International returns: 21 days 
+  - Most items: 30 days
+  k=3  distractor=no  q2 covered=True citations_in_pack=False -> escalate
+     reply: To get a refund for your broken mug, follow these steps: 1. Take a clear photo of the broken mug within 7 days of delivery. 2. Contact our customer service team with the order number and a brief description of the issue. 3. We will review your case and process a refund once we receive the photo.
+  k=3  distractor=no  q3 covered=False citations_in_pack=False -> escalate
+     reply: No, the clearance jacket is not returnable due to being a final sale.
+  k=3  distractor=no  q4 covered=False citations_in_pack=True -> send
+     reply: No, according to [S1], international returns take longer and allow 21 days for the parcel to arrive, which means you cannot pay when the parcel arrives.
+  k=3  distractor=no  q5 covered=True citations_in_pack=False -> escalate
+     reply: Based on the provided information, it is unclear when a refund will reach a card, as there is no specific information about refunds being sent to a card. Refunds are stated to reach the original payment method in 5 to 7 days (S1), but this does not specify whether the payment method is a card or not. Therefore, it is not possible to provide a definitive answer to this question based on the provided evidence.
+  k=3  distractor=no  q6 covered=True citations_in_pack=True -> send
+     reply: To claim warranty on your NW-500 battery, send the order number and a photo of the fault to the manufacturer, as stated in claim [S2]. Note that the NW-500 battery replacement is free within the 12-month warranty, as stated in claim [S1]. However, the NW-550 battery replacement is a paid service, as stated in claim [S3].
+  k=5  distractor=no  q1 covered=True citations_in_pack=False -> escalate
+     reply: The return window varies depending on the type of return: 2 days for courier collection, 21 days for international returns, and 30 days for most items.
+  k=5  distractor=no  q2 covered=True citations_in_pack=True -> send
+     reply: To get a refund for your broken mug, you can follow these steps: 1. Send a photo of the broken mug to us within 7 days of delivery (claim [S2]). 2. Please note that international returns take longer, so if you're outside the US, allow 21 days for the parcel to arrive (claim [S4]). 3. If you're within the US, most items can be sent back within 30 days of delivery for a full refund (claim [S5]). 4. Additionally, please ensure that you've taken proper care of the mug, as stated in claim [S3], to avoid any further damage (claim [S3]). Once we receive the photo, we'll process your refund.
+  k=5  distractor=no  q3 covered=False citations_in_pack=True -> send
+     reply: No, the clearance jacket is final sale, as stated in [S2].
+  k=5  distractor=no  q4 covered=False citations_in_pack=True -> send
+     reply: No, according to [S1], international returns take longer and allow 21 days for the parcel to arrive, which means you cannot pay when the parcel arrives.
+  k=5  distractor=no  q5 covered=True citations_in_pack=True -> send
+     reply: The refund will reach your card within 5 to 7 days, as stated in [S1].
+  k=5  distractor=no  q6 covered=True citations_in_pack=False -> escalate
+     reply: To claim warranty on your NW-500 battery, follow steps S1 and S2. Since your device is the NW-500 and not the NW-550, the warranty claim process is applicable. The NW-500 battery replacement is free within the 12-month warranty, as stated in S1. You can pair the NW-500 by following the instructions in S4, but this is not related to the warranty claim process. To reset the NW-500, hold the power button for 10 seconds, as mentioned in S5. However, this is also not related to the warranty claim process. Please send the order number and a photo of the fault to claim warranty.
+  k=10 distractor=no  q1 covered=True citations_in_pack=True -> send
+     reply: The return window varies depending on the item and the type of return. According to [S1], return parcels are collected within a two-day window, while international returns take 21 days. [S3] states that most items can be returned within 30 days of delivery for a full refund. However, [S7] notes that final sale items cannot be returned or refunded. [S8] mentions that returned gifts are refunded as store credit to the gift giver, and [S9] specifies that opened headphones can be returned only if they are faulty.
+  k=10 distractor=no  q2 covered=True citations_in_pack=True -> send
+     reply: To get a refund for your broken mug, send a photo within 7 days as stated in [S2]. If you are an international customer, allow 21 days for the parcel to arrive as mentioned in [S4]. If you are unsure about the return process, contact support for assistance.
+  k=10 distractor=no  q3 covered=False citations_in_pack=False -> escalate
+     reply: No direct information about clearance jacket returnability is provided. However, since the clearance jacket is labeled as 
+  k=10 distractor=no  q4 covered=False citations_in_pack=True -> send
+     reply: No, according to [S1], international returns take longer, which implies that payment is not possible when the parcel arrives, as the return process takes 21 days.
+  k=10 distractor=no  q5 covered=True citations_in_pack=True -> send
+     reply: The refund will reach your card within 5 to 7 days, as stated in [S1].
+  k=10 distractor=no  q6 covered=True citations_in_pack=True -> send
+     reply: To claim warranty on your NW-500 battery, send the order number and a photo of the fault to the manufacturer, as stated in [S1] (nw500-batt).
+  k=2  distractor=yes q1 covered=False citations_in_pack=True -> send
+     reply: The return window refers to the time frame within which a parcel can be returned. According to [S1], the return window is a two-day window for domestic returns. For international returns, the return window is 21 days, as stated in [S2]. There is no information provided in [S3] about a return window, as it relates to the shop window display.
+  k=2  distractor=yes q2 covered=True citations_in_pack=False -> escalate
+     reply: To get a refund for your broken mug, follow these steps: 1. Take a clear photo of the broken mug within 7 days of delivery. 2. Contact our customer service team with the order number and a brief description of the issue. 3. We will review your case and process a refund once we receive the photo.
+  k=2  distractor=yes q3 covered=False citations_in_pack=True -> send
+     reply: No, the clearance jacket is not returnable. According to [S2], it is a final sale.
+  k=2  distractor=yes q4 covered=False citations_in_pack=True -> send
+     reply: No, you cannot pay when the parcel arrives. According to [S1], international returns take at least 21 days to arrive, which means the parcel will have already been delivered before you can pay.
+  k=2  distractor=yes q5 covered=True citations_in_pack=True -> send
+     reply: There is no information about the refund processing time in relation to the original payment method. According to [S1], refunds reach the original payment method in 5 to 7 days. However, there is no information about the refund processing time in relation to the card. The information about refunds for damaged items is related to [S2], which states that refunds are processed within 7 days of receiving a photo of the damaged item. The information about the shop window display is unrelated to the refund processing time.
+  k=2  distractor=yes q6 covered=True citations_in_pack=True -> send
+     reply: To claim warranty on your NW-500 battery, send the order number and a photo of the fault to the manufacturer, as stated in claim [S2]. However, there is no information available on the NW-500 battery replacement being free within the 12-month warranty, which is claim [S1]. Additionally, the 30-day display cycle of the shop window, claim [S3], is unrelated to the warranty claim process.
+  k=3  distractor=yes q1 covered=True citations_in_pack=False -> escalate
+     reply: The return window varies depending on the type of return and location. For domestic returns, the return window is within a two day window (S1). International returns take 21 days (S2). For most items, the return window is 30 days from delivery for a full refund (S3). The shop window display changes every 30 days (S4).
+  k=3  distractor=yes q2 covered=True citations_in_pack=True -> send
+     reply: To get a refund for your broken mug, follow these steps: 1. Take a clear photo of the broken mug within 7 days of delivery. 2. Contact our customer service team with the order number and a brief description of the issue. 3. We will review your case and process a refund once we receive the photo. Note that this policy is stated in our [S2] (ret-damaged) Damaged items: send a photo within 7 days and we refund the item. Additionally, our [S3] (mug-care) The mug set is dishwasher safe and microwave safe, so it's possible that the breakage occurred due to misuse. However, we will still process the refund if you provide the required photo and follow the proper return procedure.
+  k=3  distractor=yes q3 covered=False citations_in_pack=True -> send
+     reply: No direct information is provided about the returnability of the clearance jacket. However, it can be inferred that the jacket is not returnable due to the label [S2] stating it is a final sale. This implies that the jacket is sold in a way that is not eligible for returns or exchanges.
+  k=3  distractor=yes q4 covered=False citations_in_pack=True -> send
+     reply: No, you cannot pay when the parcel arrives, as per [S1] international returns take longer and allow 21 days for the parcel to arrive.
+  k=3  distractor=yes q5 covered=True citations_in_pack=True -> send
+     reply: Based on the provided information, it is unclear when a refund will reach a card, as there is no specific claim related to refunds being processed via card. However, claim [S1] states that refunds reach the original payment method in 5 to 7 days, but it does not specify whether this applies to refunds processed via card or not.
+  k=3  distractor=yes q6 covered=True citations_in_pack=True -> send
+     reply: To claim warranty on your NW-500 battery, send the order number and a photo of the fault to the manufacturer, as stated in claim [S2]. Note that the NW-500 battery replacement is free within the 12-month warranty, as stated in claim [S1]. The NW-550 battery replacement is a paid service, as stated in claim [S3]. The information about the shop window display changing every 30 days, claim [S4], is not relevant to claiming warranty on your NW-500 battery.
+  k=5  distractor=yes q1 covered=True citations_in_pack=False -> escalate
+     reply: The return window varies depending on the item and location, but most items can be returned within 30 days of delivery for a full refund.
+  k=5  distractor=yes q2 covered=True citations_in_pack=True -> send
+     reply: To get a refund for your broken mug, you need to send a photo of the damaged item within 7 days as stated in [S2] (ret-damaged). Make sure to follow the return process and provide the required documentation to initiate the refund.
+  k=5  distractor=yes q3 covered=False citations_in_pack=False -> escalate
+     reply: No direct information about clearance jacket returnability is provided. However, S2 states that the clearance jacket is a final sale, which implies that returns may not be accepted. S1 mentions a size discrepancy, but this does not directly address returnability. S3, S4, and S5 provide information about payment processing and refund timelines, but do not address returns. S6 is unrelated to return policies.
+  k=5  distractor=yes q4 covered=False citations_in_pack=True -> send
+     reply: No, according to [S1], international returns take longer, which implies that payment is not made upon arrival of the parcel, but rather after a delay of 21 days.
+  k=5  distractor=yes q5 covered=True citations_in_pack=False -> escalate
+     reply: There is no information in the provided evidence pack that specifies when a refund will reach a card. Claims S1 and S5 mention timeframes for refunds to reach the original payment method and for return parcels to be collected, respectively, but do not address refunds being processed or reaching a card. Therefore, the exact timeframe for a refund to reach a card cannot be determined from the provided evidence pack.
+  k=5  distractor=yes q6 covered=True citations_in_pack=False -> escalate
+     reply: To claim warranty on your NW-500 battery, follow steps S1 and S2. Since your device is the NW-500 and not the NW-550, S3 does not apply to you. For pairing instructions, refer to S4. To reset your NW-500, follow S5. The shop window display changes every 30 days, as stated in S6, but this information is unrelated to claiming warranty on your battery.
+  k=10 distractor=yes q1 covered=True citations_in_pack=True -> send
+     reply: The return window varies depending on the item and the type of return. According to [S1], return parcels are collected within a two-day window, while international returns take 21 days ([S2]). For most items, the return window is 30 days from delivery for a full refund ([S3]). However, [S7] states that final sale items cannot be returned or refunded. [S8] mentions that returned gifts are refunded as store credit to the gift giver. [S9] notes that opened headphones can be returned only if they are faulty. It is also worth noting that the shop window display changes every 30 days ([S10] and [S11]).
+  k=10 distractor=yes q2 covered=True citations_in_pack=True -> send
+     reply: To get a refund for your broken mug, send a photo within 7 days as stated in [S2]. If you are an international customer, allow 21 days for the parcel to arrive as mentioned in [S4]. If you are unsure about the return process, contact support for assistance.
+  k=10 distractor=yes q3 covered=False citations_in_pack=False -> escalate
+     reply: No direct information about clearance jacket returnability is provided. However, since the clearance jacket is labeled as 
+  k=10 distractor=yes q4 covered=False citations_in_pack=True -> send
+     reply: No, according to [S1], international returns take longer, which implies that payment is not possible when the parcel arrives, as the return process takes 21 days.
+  k=10 distractor=yes q5 covered=True citations_in_pack=True -> send
+     reply: There is no specific information provided in the given evidence pack about when a refund will reach a card. However, according to [S1], refunds reach the original payment method in 5 to 7 days, but this does not specify whether it refers to the refund being processed or the refund being deposited into the card.
+  k=10 distractor=yes q6 covered=True citations_in_pack=True -> send
+     reply: To claim warranty on your NW-500 battery, send the order number and a photo of the fault to the manufacturer, as stated in claim [S1].

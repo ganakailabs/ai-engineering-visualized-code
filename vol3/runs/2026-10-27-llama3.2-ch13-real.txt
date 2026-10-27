@@ -1,0 +1,14 @@
+Ch 13 real run  model=ollama:llama3.2  seed=7 temperature=0.0  date=2026-10-27  plain-RAG embedder=ollama:nomic-embed-text k=5
+Reference verdicts are the graph fixture's (covered / excluded / unknown);
+verdicts are compared by code. Tokens are Ollama's prompt_eval_count + eval_count.
+  graph  NW charger: verdict=covered steps=2 path=NW-500 charger -PART_OF-> NW-500 Travel Bundle [catalogue p.4 bundle contents] ; NW-500 Travel Bundle -COVERED_BY-> W2 bundle warranty [policy W2@2026-09-15]
+  graph  NW-500 ear tips: verdict=excluded steps=1 path=NW-500 ear tips -EXCLUDES-> W2 bundle warranty [policy W2.3 wear parts excluded]
+  graph  NW-500 cable: verdict=unknown steps=0 path=none
+graph  correct=3/3 model_calls=0 tokens=0
+  plain  NW charger: retrieved=['nw500-batt', 'nw550-batt', 'nw550-pair', 'nw500-pair', 'gift-card'] verdict=excluded reference=covered
+     raw: {"verdict": "excluded", "reply": "The NW charger is not explicitly mentioned in the evidence, and the provided warranty information only covers battery replacements and bluetooth pairing resets for the NW-500 and NW-550 headphones, not the charger."}
+  plain  NW-500 ear tips: retrieved=['nw500-batt', 'nw550-batt', 'nw500-pair', 'nw550-pair', 'mug-care'] verdict=excluded reference=excluded
+     raw: {"verdict": "excluded", "reply": "The bundle warranty does not explicitly mention ear tips, and the provided evidence only covers battery replacements and pairing steps for the NW-500 and NW-550 headphones, as well as care for a ceramic mug, but not ear tips."}
+  plain  NW-500 cable: retrieved=['nw500-batt', 'nw550-batt', 'nw500-pair', 'nw550-pair', 'ret-30'] verdict=excluded reference=unknown
+     raw: {"verdict": "excluded", "reply": "The NW-500 cable is not mentioned in the evidence, and the bundle warranty only covers replacement of the battery and other related items, not the cable."}
+plain  correct=1/3 model_calls=3 tokens=665 (prompt=507 output=158)

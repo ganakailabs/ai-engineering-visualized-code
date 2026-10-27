@@ -1,0 +1,39 @@
+Part 1 (MM-068): the source contracts
+  policy       document authoritative decides path=whole_doc tokens=72
+  handbook     document authoritative decides path=retrieve tokens=88
+  manuals      document reference     -       path=retrieve tokens=233
+  past_tickets document informative   -       path=retrieve tokens=132
+  orders       record   authoritative decides path=lookup
+  stock        record   authoritative decides path=lookup
+
+Part 2 (MM-069): route six questions
+  What did I pay for order #2001?
+    -> orders:lookup
+  How do I reset my NW-500 headphones?
+    -> manuals:retrieve
+  What is your refund policy?
+    -> handbook:retrieve  past_tickets:retrieve
+  When will my order #6001 arrive?
+    -> handbook:retrieve
+  Has anyone else had NW-500 battery trouble before?
+    -> policy:whole_doc
+  Can I still return my mug set from #2001?
+    -> handbook:retrieve  past_tickets:retrieve
+
+Part 3 (Break/Fix): Can I still return my mug set from #2001?
+BREAK (one retriever over everything):
+  retrieve naive k=3 -> PT-0004, S1, S3
+  check    evidence -> refused: PT-0004: informative, cannot decide
+  decision=None stop=refused
+FIX (routed by contract):
+  route    warranty->handbook:retrieve  history->past_tickets:retrieve
+  retrieve retrieve handbook -> S3, S1
+  retrieve retrieve past_tickets -> PT-0004
+  check    evidence -> refused: PT-0004: informative, cannot decide
+  decision=None cites=['S3', 'S1', 'PT-0004']
+
+Part 4 (MM-086): which of my delivered orders can still be refunded?
+  delivered=4 refundable={'2001': 'R2', '2077': 'R2'}
+    not_refundable={'1234': 'R1', '4410': 'R3'}
+  retrieved as text, k=3: ['policy', 'S1', 'PT-0001']
+    (no count can come from this)

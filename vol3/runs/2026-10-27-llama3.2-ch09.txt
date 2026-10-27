@@ -1,0 +1,15 @@
+Part 1 (MM-081): rewrite from ticket history, then check the meaning
+  "It broke again, and can I return the charger too, but not the case?"
+Traceback (most recent call last):
+  File "/Users/prateek/aiev-runs/vol3/ch09.py", line 28, in <module>
+    show("It broke again, and can I return the charger too, but not the case?", HISTORY)
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/prateek/aiev-runs/vol3/ch09.py", line 17, in show
+    for kind, detail in Q.understand(message, history):
+                        ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/Users/prateek/aiev-runs/vol3/query.py", line 102, in understand
+    kept = meaning_kept(message, parts)
+  File "/Users/prateek/aiev-runs/vol3/query.py", line 51, in meaning_kept
+    want, got = facts(original), facts(" . ".join(parts))
+                                       ~~~~~~~~~~^^^^^^^
+TypeError: sequence item 0: expected str instance, dict found

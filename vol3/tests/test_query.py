@@ -50,6 +50,25 @@ def test_two_part_ticket_routes():
     assert [d for k, d in steps if k == "route"] == [(1, "manuals"), (2, "policy")]
 
 
+
+
+def test_non_string_parts_fail_check_and_ask():
+    # llama3.2 run 2026-10-27 returned parts as objects; that must not crash
+    # and must not be coerced: the check fails and the customer is asked.
+    real = Q.llm.ask_json
+    Q.llm.ask_json = lambda *a, **k: ({"parts": [{"text": "NW-500 broke again?"},
+                                                 {"text": "return the charger?"}]}, None)
+    try:
+        steps = Q.understand(
+            "It broke again, and can I return the charger too, but not the case?",
+            {"product": "NW-500"})
+    finally:
+        Q.llm.ask_json = real
+    kinds = [k for k, _ in steps]
+    check = dict(steps)["check"]
+    assert check["parts_are_text"] is False and not all(check.values())
+    assert kinds[-1] == "clarify" and "route" not in kinds
+
 if __name__ == "__main__":
     from _run import run_all
     run_all("test_query")

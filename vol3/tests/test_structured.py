@@ -35,6 +35,24 @@ def test_readonly_is_not_row_security():
     assert S.readonly_guard(raw) and len(S.db().execute(raw).fetchall()) == len(S.ORDERS)
 
 
+
+
+def test_disallowed_filter_is_refused_and_counted():
+    # llama3.2 run 2026-10-27 filled refund_count with final_sale=1.
+    real = S.llm.ask_json
+    S.llm.ask_json = lambda *a, **k: ({"spec": {"metric": "refund_count", "year": 2026,
+                                                "filters": {"final_sale": 1}}}, None)
+    try:
+        result, reason = S.try_ask("How many refunds did I get this year?", ASHA)
+    finally:
+        S.llm.ask_json = real
+    assert result is None and reason == "filter not allowed: final_sale=1"
+
+
+def test_try_ask_passes_valid_spec():
+    result, reason = S.try_ask("How many refunds did I get this year?", ASHA)
+    assert reason is None and result[3] == [(1,)]
+
 if __name__ == "__main__":
     from _run import run_all
     run_all("test_structured")

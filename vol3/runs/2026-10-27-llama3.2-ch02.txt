@@ -1,0 +1,36 @@
+Part 1 (MM-148): every chunk knows its source
+  load     files=3
+  ingest   file=1 man-dl1@2026-05-10 chunks=3
+  ingest   file=2 man-nw500@2026-07-01 chunks=5
+  ingest   file=3 man-tf20@2026-06-20 chunks=4
+  index    n=12 duplicates=0 orphans=0
+  man-nw500@2026-07-01:p2.b2  file=nw-500-headphones.txt page=2 block=2
+    sha256=d162d66cec8a...
+  text: To reset, hold the power button for 10 seconds until the light
+    flashes red. Pair again after a reset.
+
+Part 2 (MM-070 Break): random ids, crash on file 2, full rerun
+  crash  file=2 (nw-500-headphones.txt) after 5 rows written
+  rerun  rows=17 duplicates=5 (a clean run has 12)
+
+Part 3 (MM-070 Fix): stable ids, commit per file, manifest
+  load     files=3
+  ingest   file=1 man-dl1@2026-05-10 chunks=3
+  ingest   file=2 crash (nothing committed)
+  load     files=3
+  ingest   file=2 man-nw500@2026-07-01 chunks=5
+  ingest   file=3 man-tf20@2026-06-20 chunks=4
+  rerun    skipped=1 retried=1
+  index    n=12 duplicates=0 orphans=0
+  same ids as the clean run: True
+  the desk lamp manual gets a new version:
+  load     files=3
+  ingest   file=1 man-dl1@2026-10-01 chunks=3
+  rerun    skipped=2 retried=0 changed=1
+  index    n=12 duplicates=0 orphans=0
+
+Part 4: top 3 passages for 'How do I charge the NW-500 headphones?'
+  naive index: ['nw-500-headphones:p1.b2', 'nw-500-headphones:p1.b2', 'nw-500-headphones:p3.b1']
+  fixed index: ['nw-500-headphones:p1.b2', 'nw-500-headphones:p3.b1', 'nw-500-headphones:p1.b1']
+  ollama:llama3.2 (naive): Use the supplied cable to charge the NW-500 headphones. [nw-500-headphones:p1.b2#0]
+  ollama:llama3.2 (fixed): To charge the NW-500 headphones, use the supplied cable and plug it into a power source. A full charge takes about 2 hours. [nw-500-headphones:p1.b2#0]

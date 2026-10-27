@@ -120,6 +120,15 @@ def ask(question, s: Session, conn=None):
     return spec, sql, params, rows
 
 
+def try_ask(question, s: Session, conn=None):
+    """Like ask(), but a refused spec is returned, not raised: (result or None, reason).
+    Refusal is the designed outcome for a spec outside the allow-list; count it."""
+    try:
+        return ask(question, s, conn), None
+    except Refused as e:
+        return None, str(e)
+
+
 def readonly_guard(sql):
     """The BREAK: 'read-only' is necessary, not sufficient. This guard passes UNIONs."""
     return sql.lstrip().upper().startswith("SELECT") and ";" not in sql

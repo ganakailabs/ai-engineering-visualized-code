@@ -1,0 +1,15 @@
+Part 1 (MM-150): assemble the pack
+  assemble in=8 dupes=3 kept=4 tokens=48 budget=60 over_budget=1
+  [S1] (R1@2026-09-15) Returns accepted within 30 days of delivery.
+  [S2] (R2@2026-09-15) Damaged items need a photo sent within 7 days.
+  [S3] (R5@2026-01-01) Final sale items cannot be returned.
+  [S4] (jacket-sale) The clearance jacket is final sale.
+  reply  To return your clearance jacket, you do not need a photo. According to [S1], returns are accepted within 30 days of delivery, and [S4] states that the clearance jacket is a final sale item, which means it cannot be returned. Therefore, you are not eligible for a return.
+  check  citations=[S1,S4] in pack=yes -> send
+  break  citations=[S1,S7] unknown=['S7'] -> escalate
+
+Part 2 (MM-151): coverage per k on held-out questions
+  k=2  coverage=3/6
+  k=3  coverage=4/6
+  k=5  coverage=4/6
+  k=10 coverage=4/6

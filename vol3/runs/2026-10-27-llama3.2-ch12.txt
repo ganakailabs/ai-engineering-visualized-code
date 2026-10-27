@@ -1,0 +1,14 @@
+Part 1 (MM-085): question to query
+Traceback (most recent call last):
+  File "/Users/prateek/aiev-runs/vol3/ch12.py", line 19, in <module>
+    spec, sql, params, rows = S.ask("How many refunds did I get this year?", ASHA, conn)
+                              ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/prateek/aiev-runs/vol3/structured.py", line 118, in ask
+    sql, params = compile_spec(spec, s)
+                  ~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/prateek/aiev-runs/vol3/structured.py", line 79, in compile_spec
+    validate(spec)
+    ~~~~~~~~^^^^^^
+  File "/Users/prateek/aiev-runs/vol3/structured.py", line 74, in validate
+    raise Refused(f"filter not allowed: {f}={v!r}")
+structured.Refused: filter not allowed: final_sale=1

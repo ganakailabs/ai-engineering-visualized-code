@@ -1,0 +1,135 @@
+===== solutions/ch01_solution.py (model=ollama:llama3.2) =====
+stock: lookup -> 4 green mug sets
+final sale: 1 order (#4410), reason R3 from policy 2026-09-15
+ch01 solution: OK
+===== solutions/ch02_solution.py (model=ollama:llama3.2) =====
+fixed: skipped=2 retried=1 n=12 duplicates=0
+naive: rows=22 duplicates=10
+ch02 solution: OK
+===== solutions/ch03_solution.py (model=ollama:llama3.2) =====
+layout: warranty-nw500@2026-08-01:p2.e5 cells kept=yes
+naive:  cells kept=no
+ch03 solution: OK
+===== solutions/ch04_solution.py (model=ollama:llama3.2) =====
+today=2026-10-04: R5 excluded; 2026-11-02: R5 used
+ch04 solution: OK
+===== solutions/ch05_solution.py (model=ollama:llama3.2) =====
+revoked=['a-ret.1', 'a-ret.2'] hits=0 parent=0 cache=0 cite=refused
+ch05 solution: OK
+===== solutions/ch06_solution.py (model=ollama:llama3.2) =====
+probe=1 recall=5/6 compared=20
+probe=2 recall=6/6 compared=42
+ch06 solution: OK
+===== solutions/ch07_solution.py (model=ollama:llama3.2) =====
+words    no lane -> nw500-batt
+meaning  no lane -> nw500-batt
+rrf      no lane -> nw500-batt
+score    no lane -> nw500-batt
+score + exact lane -> nw550-batt
+ch07 solution: OK
+===== solutions/ch08_solution.py (model=ollama:llama3.2) =====
+smallest net=20 reranked recall@5=7/8 calls=160
+ch08 solution: OK
+===== solutions/ch09_solution.py (model=ollama:llama3.2) =====
+Traceback (most recent call last):
+  File "/Users/prateek/aiev-runs/vol3/solutions/ch09_solution.py", line 11, in <module>
+    steps = dict((k, v) for k, v in Q.understand(MSG, {}) if k in ("rewrite", "check"))
+                                    ~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/prateek/aiev-runs/vol3/query.py", line 102, in understand
+    kept = meaning_kept(message, parts)
+  File "/Users/prateek/aiev-runs/vol3/query.py", line 51, in meaning_kept
+    want, got = facts(original), facts(" . ".join(parts))
+                                       ~~~~~~~~~~^^^^^^^
+TypeError: sequence item 0: expected str instance, dict found
+===== solutions/ch10_solution.py (model=ollama:llama3.2) =====
+precedence kept=R1@2026-09-15 dropped=ticket-9001 reason=authority
+cite [policy R1@2026-09-15 clause R1.1, effective 2026-09-15]
+ch10 solution: OK
+===== solutions/ch11_solution.py (model=ollama:llama3.2) =====
+k=2  coverage=3/6
+k=3  coverage=4/6
+k=4  coverage=4/6
+k=5  coverage=4/6
+k=6  coverage=4/6
+k=7  coverage=4/6
+k=8  coverage=4/6
+k=9  coverage=4/6
+k=10 coverage=4/6
+ch11 solution: OK
+===== solutions/ch12_solution.py (model=ollama:llama3.2) =====
+Traceback (most recent call last):
+  File "/Users/prateek/aiev-runs/vol3/solutions/ch12_solution.py", line 12, in <module>
+    spec, sql, params, rows = S.ask("Which of my orders were final sale?", asha)
+                              ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/prateek/aiev-runs/vol3/structured.py", line 118, in ask
+    sql, params = compile_spec(spec, s)
+                  ~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/prateek/aiev-runs/vol3/structured.py", line 79, in compile_spec
+    validate(spec)
+    ~~~~~~~~^^^^^^
+  File "/Users/prateek/aiev-runs/vol3/structured.py", line 68, in validate
+    raise Refused(f"metric not allowed: {spec.get('metric')!r}")
+structured.Refused: metric not allowed: 'final_sale'
+===== solutions/ch13_solution.py (model=ollama:llama3.2) =====
+nw pouch      coverage covered  source=policy W2@2026-09-15
+nw foam tips  coverage excluded  source=policy W2.3 wear parts excluded
+nw stand      coverage unknown  -> escalate
+ch13 solution: OK
+===== solutions/ch14_solution.py (model=ollama:llama3.2) =====
+sync {'changed': 0, 'access_changed': 1, 'added': 0, 'removed': 0}  customer top-3=['nw550-pair', 'nw550-batt', 'nw500-batt']
+ch14 solution: OK
+===== solutions/ch15_solution.py (model=ollama:llama3.2) =====
+flips 1/10: ['EU withdrawal']
+always-first judge: agreement (8, 10), flips 10/10
+===== solutions/ch16_solution.py (model=ollama:llama3.2) =====
+graduation  answered=12/13 abstained=3/3 -> pass
+abstain_all answered=0/13 -> blocked
+no_precedence critical=['refund-vs-ticket', 'old-vs-new-window'] categories=['conflicts'] -> blocked
+===== tests/test_access.py (model=stub) =====
+test_access: OK
+===== tests/test_assemble.py (model=stub) =====
+test_assemble: OK
+===== tests/test_capstone.py (model=stub) =====
+test_capstone: OK
+===== tests/test_chunking.py (model=stub) =====
+test_chunking: OK
+===== tests/test_gate.py (model=stub) =====
+test_gate: OK
+===== tests/test_graph.py (model=stub) =====
+test_graph: OK
+===== tests/test_hybrid.py (model=stub) =====
+test_hybrid: OK
+===== tests/test_ingest.py (model=stub) =====
+test_ingest: OK
+===== tests/test_layout.py (model=stub) =====
+test_layout: OK
+===== tests/test_lifecycle.py (model=stub) =====
+test_lifecycle: OK
+===== tests/test_metrics.py (model=stub) =====
+test_metrics: OK
+===== tests/test_precedence.py (model=stub) =====
+test_precedence: OK
+===== tests/test_query.py (model=stub) =====
+test_query: OK
+===== tests/test_rerank.py (model=stub) =====
+test_rerank: OK
+===== tests/test_sources.py (model=stub) =====
+test_sources: OK
+===== tests/test_start.py (model=stub) =====
+  decide   retrieve source=handbook query="refund damaged item"
+  retrieve ids=['R2', 'R4'] round=1
+  judge    sufficient=no missing=[order facts, delivery date, refund clause, return shipping]
+  act      look_up_order 2001 -> delivered 2026-10-01 damaged=yes
+  judge    sufficient=no missing=[return shipping]
+  decompose sub="return shipping for damaged items" for=return shipping
+  retrieve ids=['S3', 'R2', 'S1'] round=2
+  judge    sufficient=yes -> answer
+  stop     reason=success rounds=2/3
+  reply    cites=[R2, S3] refund approved: delivered 3 days ago (photo needed); return shipping free (damaged)
+test_start: OK
+===== tests/test_structured.py (model=stub) =====
+test_structured: OK
+===== tests/test_vectors.py (model=stub) =====
+test_vectors: OK
+
+FAILED: ch09_solution.py, ch12_solution.py

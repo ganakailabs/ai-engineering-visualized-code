@@ -16,12 +16,19 @@ ASHA = Session("a", "asha", "customer", "IN")
 if __name__ == "__main__":
     conn = S.db()
     print("Part 1 (MM-085): question to query")
-    spec, sql, params, rows = S.ask("How many refunds did I get this year?", ASHA, conn)
-    print(f"  think  queryspec metric={spec['metric']} range={spec['year']}")
-    print(f"  sql    {sql}")
-    print(f"  check  scope customer={params[1]} tenant={params[0]} bound")
-    print(f"  act    rows={rows}")
-    print(f"  reply  You had {rows[0][0]} refund in {spec['year']}.")
+    refused = 0
+    result, reason = S.try_ask("How many refunds did I get this year?", ASHA, conn)
+    if result is None:
+        refused += 1
+        print(f"  check  spec refused ({reason}); not repaired")
+    else:
+        spec, sql, params, rows = result
+        print(f"  think  queryspec metric={spec['metric']} range={spec.get('year')}")
+        print(f"  sql    {sql}")
+        print(f"  check  scope customer={params[1]} tenant={params[0]} bound")
+        print(f"  act    rows={rows}")
+        print(f"  reply  You had {rows[0][0]} refund in {spec.get('year')}.")
+    print(f"  refused specs: {refused}")
 
     print("\nPart 2 (MM-169): scope before you query")
     raw = ("SELECT order_id, item FROM orders WHERE customer_id = 'asha' "

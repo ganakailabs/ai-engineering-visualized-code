@@ -47,7 +47,11 @@ def facts(text):
 
 def meaning_kept(original, parts):
     """Every fact in the original must appear in some part. Parts may add entities
-    resolved from history (an 'it' made explicit) but may not drop any."""
+    resolved from history (an 'it' made explicit) but may not drop any.
+    Parts that are not strings (a model may return objects) fail the check; they are
+    never coerced into text."""
+    if not all(isinstance(p, str) for p in parts):
+        return {"parts_are_text": False, **{k: False for k in facts(original)}}
     want, got = facts(original), facts(" . ".join(parts))
     return {k: want[k] <= got[k] for k in want}
 
@@ -102,5 +106,7 @@ def understand(message, history):
     kept = meaning_kept(message, parts)
     steps = [("rewrite", parts), ("check", kept)]
     if not all(kept.values()):
+        if not kept.get("parts_are_text", True):
+            return steps + [("clarify", "could you say that another way?")]
         return steps + [("clarify", "did you mean: " + " / ".join(parts))]
     return steps + [("route", (i, route(p))) for i, p in enumerate(parts, 1)]

@@ -1,0 +1,15 @@
+W1027 12:51:57.299000 8049 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 19852.23it/s]
+Part 1 (MM-079): "what is the return window"
+  first stage top 5: ['ret-courier', 'ret-label', 'lamp-return', 'ret-status', 'ret-final']
+  ret-window first-stage rank=16
+  reranked top 5 from net 20: ['ret-courier', 'ret-status', 'ret-gift', 'ret-label', 'lamp-return']
+
+Part 2 (MM-080): recall over the 8 golden questions
+  first stage alone, top 5: 4/8
+  net= 5  first-stage recall@5=4/8  reranked recall@5=4/8  reranker calls=40
+  net=10  first-stage recall@10=6/8  reranked recall@5=6/8  reranker calls=80
+  net=20  first-stage recall@20=7/8  reranked recall@5=6/8  reranker calls=160
+  net=30  first-stage recall@30=8/8  reranked recall@5=7/8  reranker calls=240
+  net=40  first-stage recall@40=8/8  reranked recall@5=7/8  reranker calls=320

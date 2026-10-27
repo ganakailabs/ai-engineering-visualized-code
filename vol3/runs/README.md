@@ -50,6 +50,17 @@ No model needed; the stub output in the chapter is the real output.
 `ollama pull nomic-embed-text && ollama pull mxbai-embed-large`, then
 `AIEV_EMBED=nomic-embed-text,mxbai-embed-large python3 vol3/ch06.py 2>&1 | tee vol3/runs/$(date +%F)-ch06-embed.txt`. Record recall@1 per model in place of [TO MEASURE] in Ch 6.
 
+## The remaining runs in one script
+`AIEV_MODEL=ollama:llama3.2 python3 vol3/runs/real_runs.py` (needs `ollama pull
+nomic-embed-text mxbai-embed-large llama3.2`; standard library only, any Python 3).
+It writes `<date>-llama3.2-ch10-real.txt`, `-ch11-`, `-ch13-`, `-ch14-`, `-ch15-` and
+`-ch16-real.txt` here, plus `<date>-llama3.2-grading-sheet.csv` with the Ch 11 replies
+(six questions at k = 2, 3, 5, 10, with and without one unrelated passage) and the Ch 16
+replies. Grade the `grade` column by hand (correct / wrong / abstained); the script never
+grades those. Ch 16: only the 7 BENCH cases with fixture evidence are asked; the other 9
+are listed as not run. Ch 10 uses one source ('docs': the Ch 6 and Ch 8 golden sets), not
+the three in the chapter.
+
 ## Chapter 8: a real reranker
 `uv venv --python 3.12 .venv-rerank && uv pip install --python .venv-rerank sentence-transformers`, then
 `AIEV_RERANKER=cross-encoder/ms-marco-MiniLM-L6-v2 .venv-rerank/bin/python vol3/ch08.py`.

@@ -1,0 +1,15 @@
+Part 1 (MM-081): rewrite from ticket history, then check the meaning
+  "It broke again, and can I return the charger too, but not the case?"
+    rewrite [{'part': 'Can I return the charger?', 'product': 'NW-500', 'order': '3100'}, {'part': 'Can I return the case?', 'product': 'NW-500', 'order': '3100'}, {'part': 'Can I return the charger too?', 'product': 'NW-500', 'order': '3100'}]
+    check   parts_are_text kept=NO entities kept=NO negation kept=NO dates kept=NO constraints kept=NO
+    clarify could you say that another way?
+
+  a rewrite that dropped the exclusion:
+    ['can I return the NW-500 charger and case?'] -> entities=yes negation=NO dates=yes constraints=yes
+
+Part 2 (MM-082): pass through, route, or ask
+  "how do I reset the NW-550"
+    pass    how do I reset the NW-550
+    route   part=1 source=manuals
+  "is it still covered?"
+    clarify which order?

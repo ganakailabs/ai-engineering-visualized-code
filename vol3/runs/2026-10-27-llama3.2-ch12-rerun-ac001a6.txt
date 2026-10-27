@@ -1,0 +1,11 @@
+Part 1 (MM-085): question to query
+  check  spec refused (filter not allowed: final_sale=1); not repaired
+  refused specs: 1
+
+Part 2 (MM-169): scope before you query
+  break  read-only guard passed=True rows=7 of 7, asha's in tenant a: 4
+  adversarial  union across customers -> refused (metric not allowed)
+  adversarial  join to another table -> refused (field not allowed)
+  adversarial  nested query in a filter -> refused (filter not allowed)
+  adversarial  aggregate across tenants -> refused (field not allowed)
+  adversarial  scope asked for in the spec -> refused (field not allowed)

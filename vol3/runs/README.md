@@ -1,7 +1,8 @@
 # Real-model runs (Vol 3)
 
-No real-model runs have been recorded yet. Every model output in the Vol 3 manuscript
-that would come from a real model is marked `[TO MEASURE]` until a run is logged here.
+Every model output in the Vol 3 manuscript that would come from a real model is marked
+`[TO MEASURE]` until a run is logged here. Recorded so far (Oct 27, 2026): Ch 1, 2, 3, 6,
+9, 11 (citations), 12. Ollama ids are in `2026-10-27-models.txt`.
 
 Runs are made on a Mac with Ollama and `llama3.2` (3B), from the repo root, with the
 same pinned settings as Vol 2 (`SEED 7`, `TEMPERATURE 0.0` in `vol2/llm.py`). Save each
@@ -36,18 +37,21 @@ for embeddings, so Ollama must be running for the whole script.
 Tests always run on the stub; `--real` sends only the solutions to the model.
 
 ## Chapter 3: documents with layout
-- Parser: `python3 -m venv .venv-parse && .venv-parse/bin/pip install pdfplumber==0.11.10`, then `AIEV_PARSER=pdfplumber .venv-parse/bin/python vol3/ch03.py`.
-- Vision: `ollama pull qwen2.5vl:3b`, then `AIEV_VISION=qwen2.5vl:3b python3 vol3/ch03.py`. Record the answer in place of [TO MEASURE] in Ch 3.
+Confirmed choices (decision D3-11, confirmed by the owner Oct 27, 2026): pdfplumber
+0.11.10 for the parser and `qwen2.5vl:3b` for the vision path. Venvs use uv with Python
+3.12 (Homebrew's Python 3.14 venv failed at ensurepip).
+- Parser: `uv venv --python 3.12 .venv-parse && uv pip install --python .venv-parse pdfplumber==0.11.10`, then `AIEV_PARSER=pdfplumber .venv-parse/bin/python vol3/ch03.py 2>&1 | tee vol3/runs/$(date +%F)-ch03-pdfplumber.txt`.
+- Vision: `ollama pull qwen2.5vl:3b`, then `AIEV_VISION=qwen2.5vl:3b .venv-parse/bin/python vol3/ch03.py 2>&1 | tee vol3/runs/$(date +%F)-ch03-qwen2.5vl.txt`.
 
 ## Chapters 4 and 5
 No model needed; the stub output in the chapter is the real output.
 
 ## Chapter 6: embedding models
 `ollama pull nomic-embed-text && ollama pull mxbai-embed-large`, then
-`AIEV_EMBED=nomic-embed-text,mxbai-embed-large python3 vol3/ch06.py`. Record recall@1 per model in place of [TO MEASURE] in Ch 6.
+`AIEV_EMBED=nomic-embed-text,mxbai-embed-large python3 vol3/ch06.py 2>&1 | tee vol3/runs/$(date +%F)-ch06-embed.txt`. Record recall@1 per model in place of [TO MEASURE] in Ch 6.
 
 ## Chapter 8: a real reranker
-`python3 -m venv .venv-rerank && .venv-rerank/bin/pip install sentence-transformers`, then
+`uv venv --python 3.12 .venv-rerank && uv pip install --python .venv-rerank sentence-transformers`, then
 `AIEV_RERANKER=cross-encoder/ms-marco-MiniLM-L6-v2 .venv-rerank/bin/python vol3/ch08.py`.
 Record reranked recall@5 per net size in place of [TO MEASURE] in Ch 8.
 

@@ -1,7 +1,7 @@
 """Chapter 3: Parsing Real Documents: Layout, Tables and Scans.
 
 Run from the repo root:  python3 vol3/ch03.py
-Optional real parser:    AIEV_PARSER=pdfplumber python3 vol3/ch03.py  (pip install pdfplumber)
+Optional real parser:    AIEV_PARSER=pdfplumber python3 vol3/ch03.py  (uv pip install pdfplumber==0.11.10)
 Optional vision model:   AIEV_VISION=qwen2.5vl:3b python3 vol3/ch03.py (Ollama, page 2 image)
 The warranty sheet is a fictional fixture (vol3/knowledge/layout/). Parts 1-3 use no
 model. Part 1 is the naive cut, Part 2 the layout-aware parse, Part 3 the warranty

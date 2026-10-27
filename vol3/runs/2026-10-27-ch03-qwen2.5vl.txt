@@ -1,0 +1,20 @@
+Part 1 (MM-071 Break): a plain extractor, then a 10-word cut
+  chunks=11  the EU row lands in: 'months email EU 24 months email or store UK 12'
+
+Part 2 (MM-149 Fix): read the page
+  parse    pages=5 elements=10 table_rows=3 footers_dropped=4
+  check    parse spotcheck=3/3
+  ocr      page=5 conf=0.62 flagged (floor 0.80)
+  p2.e2  Region: India | Warranty: 12 months | Claim by: email
+  p2.e3  Region: EU | Warranty: 24 months | Claim by: email or store
+  p2.e4  Region: UK | Warranty: 12 months | Claim by: email
+
+Part 3: top passage for 'How long is the NW-500 warranty in the EU?'
+  naive:  'NW-500 Warranty Card Keep your receipt. The warranty starts on'
+  layout: 'Region: EU | Warranty: 24 months | Claim by: email or store'
+
+Vision model on page 2:
+  qwen2.5vl:3b: Region,Warranty,Claim by
+India,12 months,email
+EU,24 months,email or store
+UK,12 months,email

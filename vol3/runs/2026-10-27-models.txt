@@ -1,0 +1,10 @@
+NAME                        ID              SIZE      MODIFIED      
+qwen2.5vl:3b                fb90415cde1e    3.2 GB    3 seconds ago    
+mxbai-embed-large:latest    468836162de7    669 MB    2 minutes ago    
+nomic-embed-text:latest     0a109f422b47    274 MB    6 days ago       
+gpt-oss:20b                 17052f91a42e    13 GB     5 weeks ago      
+qwen3-coder:latest          06c1097efce0    18 GB     9 months ago     
+qwen3-coder:480b-cloud      e30e45586389    -         9 months ago     
+deepseek-r1:32b             edba8017331d    19 GB     13 months ago    
+gemma3:270m                 b16d6d39dfbd    241 MB    14 months ago    
+llama3.2:latest             a80c4f17acd5    2.0 GB    19 months ago    

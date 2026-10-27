@@ -1,0 +1,13 @@
+Part 1 (MM-075): two embedders on your own questions (recall@1)
+  lexi-v1: 3/6
+  gram-v1: 4/6
+  ollama:nomic-embed-text: 6/6
+  ollama:mxbai-embed-large: 5/6
+
+Part 2 (MM-076): clustered index vs exact search, k=1, probe=1
+  groups=4 ann_recall@1 vs exact=5/6
+  vectors_compared exact=72 ann=20
+  missed neighbour: 'pair my NW-550' -> nw550-pair
+
+Part 3: the contract
+  contract embedder=v2 index=v1 -> refused (contract mismatch: version)

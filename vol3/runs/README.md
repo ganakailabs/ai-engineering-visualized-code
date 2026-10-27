@@ -86,3 +86,16 @@ and `mxbai-embed-large` from Ch 6) by passing `model="ollama:nomic-embed-text"` 
 `build(src, name, model)`, then run
 `check()` and `switch()`. Record held-out recall for each and whether the switch happened,
 in place of [TO MEASURE] in Ch 14.
+
+## Chapter 15: a real judge
+Write a judge function `judge(question, first, second)` that asks
+`ollama:llama3.2` (via `llm.ask_json`) which reply is better supported and returns
+`"first"` or `"second"`. Then run `metrics.agreement(judge)`, `metrics.flips(judge)` and
+`metrics.trusted(judge)` on the ten `metrics.PAIRS`. Record agreement, flips and the
+labelled-set size (10) in place of [TO MEASURE] in Ch 15.
+
+## Chapter 16: the held-out suite on a real model
+Answer each `gate.BENCH` case with the full pipeline on `AIEV_MODEL=ollama:llama3.2`,
+grade it by hand as correct, wrong or abstained, and replace the scripted results with
+yours. Record model, settings, the per-case sheet and the `gate()` verdict in place of
+[TO MEASURE] in Ch 16.

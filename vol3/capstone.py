@@ -3,9 +3,9 @@
 Asha (tenant a, customer, IN) writes about her orders, a broken mug, the NW-550
 and a clearance jacket. Each stage runs on ITS OWN chapter's fixture, with the
 part of her ticket that stage handles, and the run stops if any stage fails.
-This is not one connected pipeline: no stage's output feeds the next, and the
-gate in step 10 runs on scripted results. It shows that every stage still runs
-from one place; joining them into a single request path is left as an exercise.
+This file is not one connected pipeline: no stage's output feeds the next, and
+the gate in step 10 runs on scripted results. It shows that every stage still
+runs from one place. pipeline.py joins the stages into one request path.
   1. contract and route (Ch 1)       6. hybrid search, exact lane (Ch 7)
   2. ingest with stable ids (Ch 2)   7. rerank (Ch 8)
   3. table rows kept (Ch 3)          8. precedence (Ch 10)

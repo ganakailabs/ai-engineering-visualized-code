@@ -59,6 +59,7 @@ retrieval still answers the mug ticket from `vol3/`.
 | `metrics.py`, `ch15.py` | Ch 15: retrieval and answer metrics, a pairwise judge check |
 | `gate.py`, `ch16.py` | Ch 16: synthetic test sets, held-out split, regression gate |
 | `capstone.py` | Capstone: a tour of the implemented stages (each on its own fixture) |
+| `pipeline.py` | Connected capstone: one request path through Ch 1–16 over one corpus, with a work-count budget and a gate over its own output |
 | `solutions/` | exercise solutions, `ch01_solution.py` ... `ch16_solution.py` |
 | `tests/` | implementation tests (stub only), including the edge cases from the external review |
 | `runs/` | real-model run logs and how to reproduce them; see [`runs/README.md`](runs/README.md) |

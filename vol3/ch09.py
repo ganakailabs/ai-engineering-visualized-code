@@ -2,8 +2,8 @@
 
 Run from the repo root:  python3 vol3/ch09.py
 Real model (optional):  AIEV_MODEL=ollama:llama3.2 python3 vol3/ch09.py
-The default rewriter is a scripted stub. The meaning-kept check and the router are
-plain code and run the same on either.
+The default rewriter is a scripted stub. The meaning-kept check (a surface-fact heuristic,
+not a proof) and the router are plain code and run the same on either.
 """
 import _root  # noqa: F401
 
@@ -30,6 +30,10 @@ if __name__ == "__main__":
     bad = ["can I return the NW-500 charger and case?"]
     kept = Q.meaning_kept("can I return the charger too, but not the case?", bad)
     print(f"    {bad} -> " + " ".join(f"{k}={'yes' if v else 'NO'}" for k, v in kept.items()))
+    print("\n  a rewrite that swapped the actions (every word survives):")
+    swap = ["Can I keep the mug and return the lamp?"]
+    kept = Q.meaning_kept("Can I return the mug and keep the lamp?", swap)
+    print(f"    {swap} -> " + " ".join(f"{k}={'yes' if v else 'NO'}" for k, v in kept.items()))
 
     print("\nPart 2 (MM-082): pass through, route, or ask")
     show("how do I reset the NW-550", {})

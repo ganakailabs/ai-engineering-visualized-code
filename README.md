@@ -10,7 +10,7 @@ stub model is the default, so no API key, network or cost is needed. Run every c
 |---|---|---|
 | [`vol1/`](vol1/) | Vol 1: A Visual Guide to Building LLM Apps, RAG and Agents (Ch 1-24) | `python3 vol1/run_all.py` |
 | [`vol2/`](vol2/) | Vol 2: Agents in production (Ch 1-17) | `pip install -r requirements.txt`, then `python3 vol2/run_solutions.py` |
-| [`vol3/`](vol3/) | Vol 3: RAG & Knowledge Systems (in progress: Ch 1-2) | `python3 vol3/run_solutions.py` |
+| [`vol3/`](vol3/) | Vol 3: RAG & Knowledge Systems (Ch 1-16 and capstone) | `python3 vol3/run_solutions.py` |
 
 Get the book: https://leanpub.com/ai-engineering-visualized
 
@@ -33,13 +33,19 @@ Chapters `vol2/ch01.py` ... `vol2/ch17.py`, solutions in `vol2/solutions/`, test
     python3 vol2/run_solutions.py   # every Vol 2 exercise solution and test
     python3 vol2/ch01.py            # one chapter
 
-## vol3/ (in progress)
+## vol3/
 
-Chapters `vol3/ch01.py` and `vol3/ch02.py`, fixture sources in `vol3/knowledge/`, solutions in
-`vol3/solutions/`, tests in `vol3/tests/`. Vol 3 reuses `vol2/` and `vol1/` (via `vol3/_root.py`).
+Chapters `vol3/ch01.py` ... `vol3/ch16.py` and `vol3/capstone.py`, fixture sources in
+`vol3/knowledge/`, solutions in `vol3/solutions/`, tests in `vol3/tests/`, real-model run
+logs in `vol3/runs/`. Vol 3 reuses `vol2/` and `vol1/` (via `vol3/_root.py`).
 See [`vol3/README.md`](vol3/README.md).
 
     python3 vol3/run_solutions.py   # every Vol 3 exercise solution and test
+
+## Reporting a problem
+
+Errata and code problems: https://github.com/ganakailabs/ai-engineering-visualized-code/issues
+(include the volume, chapter, command, Python version and the output you got).
 
 ## License
 

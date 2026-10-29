@@ -109,6 +109,10 @@ class ClusteredIndex:
         return sorted(self.vecs, key=lambda d: (-dot(qv, self.vecs[d]), d))[:k], len(self.vecs)
 
     def search(self, qv, k=3, probe=1):
+        """Returns (ids, candidates scored). The count is the candidate vectors scored
+        in the opened groups only. Choosing the groups costs one comparison per
+        centroid as well (routing_cost); report the two separately, and never read
+        either count as latency."""
         pool = [d for g in self._nearest(qv, probe) for d in self.groups[g]]
         return sorted(pool, key=lambda d: (-dot(qv, self.vecs[d]), d))[:k], len(pool)
 
@@ -119,8 +123,16 @@ class ClusteredIndex:
         return self.search(embed(text, query_contract["model"]), k, probe)
 
 
+    def routing_cost(self):
+        """Centroid comparisons per query (the group-choosing step)."""
+        return len(self.centroids)
+
+
 def ann_recall(ix, questions, k=3, probe=1):
-    found = total = compared = 0
+    """Returns (found, total, candidates_scored, routing, missed), summed over the
+    questions. candidates_scored counts query-vector comparisons inside opened
+    groups; routing counts query-centroid comparisons."""
+    found = total = compared = routing = 0
     missed = []
     for q in questions:
         qv = embed(q, ix.contract["model"])
@@ -129,5 +141,6 @@ def ann_recall(ix, questions, k=3, probe=1):
         found += len(set(ex) & set(ann))
         total += len(ex)
         compared += n
+        routing += ix.routing_cost()
         missed += [(q, d) for d in ex if d not in ann]
-    return found, total, compared, missed
+    return found, total, compared, routing, missed

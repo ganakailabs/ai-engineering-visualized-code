@@ -1,8 +1,27 @@
 # Real-model runs (Vol 3)
 
 Every model output in the Vol 3 manuscript that would come from a real model is marked
-`[TO MEASURE]` until a run is logged here. Recorded so far (Oct 27, 2026): Ch 1, 2, 3, 6,
-9, 11 (citations), 12. Ollama ids are in `2026-10-27-models.txt`.
+`[TO MEASURE]` until a run is logged here AND, where grading is needed, graded.
+Ollama ids are in `2026-10-27-models.txt` and `llama3.2-digest.txt`.
+
+## What is in this folder (all logged Oct 27, 2026)
+
+| Log | What it holds | Status |
+|---|---|---|
+| `…-llama3.2-ch01.txt`, `…-ch02.txt` | Ch 1 routing, Ch 2 duplicates in context | recorded |
+| `…-ch03-pdfplumber.txt`, `…-ch03-qwen2.5vl.txt` | Ch 3 parser and vision paths | recorded |
+| `…-ch06-embed.txt` | Ch 6 recall per embedding model | recorded |
+| `…-ch08-rerank.txt`, `…-rerank-versions.txt` | Ch 8 cross-encoder reranker, package versions | recorded |
+| `…-llama3.2-ch09.txt`, `…-ch09-rerun-ac001a6.txt` | Ch 9 real rewriter (first run and rerun at commit ac001a6) | recorded |
+| `…-llama3.2-ch11.txt` | Ch 11 citations on one pack | recorded |
+| `…-llama3.2-ch12.txt`, `…-ch12-rerun-ac001a6.txt` | Ch 12 QuerySpecs | recorded |
+| `…-llama3.2-ch10/11/13/14/15/16-real.txt`, `real_runs.out` | output of `real_runs.py` | raw replies logged |
+| `…-llama3.2-grading-sheet.csv` | Ch 11 per-k and Ch 16 replies for hand grading | **not graded**: the `grade` column is empty, so the Ch 11 accuracy-per-k and Ch 16 figures stay `[TO MEASURE]` |
+| `…-llama3.2-solutions.txt`, `…-solutions-rerun-ac001a6.txt` | exercise solutions on the real model | recorded |
+
+The logs were made before the external-review fixes (Oct 29, 2026: the Ch 9 bindings
+check, the Ch 11 near-duplicate rule, the Ch 16 new-failure gate, the Ch 6 routing
+count). Re-run a chapter if you compare its printed lines with the current code.
 
 Runs are made on a Mac with Ollama and `llama3.2` (3B), from the repo root, with the
 same pinned settings as Vol 2 (`SEED 7`, `TEMPERATURE 0.0` in `vol2/llm.py`). Save each

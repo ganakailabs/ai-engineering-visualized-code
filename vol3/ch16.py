@@ -4,7 +4,8 @@ Run from the repo root:  python3 vol3/ch16.py
 A scripted generator proposes questions; code review rejects bad ones; a hash
 holds part back. Then the regression gate on the held-out benchmark: a chunking
 change that lifts the mean but breaks the EU withdrawal case is blocked, an
-abstain-everything system fails, and the fixed change passes. Systems are
+abstain-everything system fails, and the fixed change passes with no regression
+found (not a demonstrated win). Systems are
 scripted results (a demonstration). No model is used.
 """
 import _root  # noqa: F401
@@ -25,5 +26,5 @@ for name in ("chunking_change", "abstain_all", "chunking_fixed"):
           f"interval=[{lo:+.3f}, {hi:+.3f}] win={g['win']}")
     print(f"     answered={g['answered']}/{g['answerable']} "
           f"abstained={g['abstained']}/{g['expected_abstain']} "
-          f"critical={g['critical'] or 'none'} -> {g['verdict']}"
+          f"critical={g['critical'] or 'none'} -> {g['label']}"
           + (f" ({'; '.join(g['reasons'])})" if g["reasons"] else ""))

@@ -50,6 +50,21 @@ def test_quarantine_is_a_signal_with_a_miss():
     assert "sup-2" not in ix.search(BEN_B, "NW-500 refund")     # boundary still holds
 
 
+def test_cache_key_separates_regions():
+    # Review probe: same customer, different region, must not share a cached answer.
+    ix = A.Index()
+    A.retrieve(ix, ASHA, Q)
+    asha_eu = A.Session("a", "asha", "customer", "EU")
+    assert ix.cache_key(ASHA, Q) != ix.cache_key(asha_eu, Q)
+    assert ix.cached_answer(asha_eu, Q) is None
+
+
+def test_cached_ids_refiltered_on_read():
+    ix = A.Index()
+    ix.cache[ix.cache_key(ASHA, Q)] = ["a-ret.1", "b-note.1"]   # a poisoned entry
+    assert ix.cached_answer(ASHA, Q) == ["a-ret.1"]
+
+
 if __name__ == "__main__":
     from _run import run_all
     run_all("test_access")

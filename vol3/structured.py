@@ -61,15 +61,23 @@ class Refused(ValueError):
 
 
 def validate(spec):
+    """Malformed specs (not an object, filters not an object, a bool for a year) are
+    refused, never coerced and never allowed to crash the caller."""
+    if not isinstance(spec, dict):
+        raise Refused(f"spec must be an object, not {type(spec).__name__}")
     extra = set(spec) - SPEC_KEYS
     if extra:
         raise Refused(f"field not allowed: {sorted(extra)}")
     if spec.get("metric") not in METRICS:
         raise Refused(f"metric not allowed: {spec.get('metric')!r}")
     year = spec.get("year")
-    if year is not None and not (isinstance(year, int) and 2000 <= year <= 2100):
+    if year is not None and not (isinstance(year, int) and not isinstance(year, bool)
+                                 and 2000 <= year <= 2100):
         raise Refused(f"year not allowed: {year!r}")
-    for f, v in (spec.get("filters") or {}).items():
+    filters = spec.get("filters")
+    if filters is not None and not isinstance(filters, dict):
+        raise Refused(f"filters must be an object, not {type(filters).__name__}")
+    for f, v in (filters or {}).items():
         if f not in FILTERS or FILTERS[f][0] != METRICS[spec["metric"]][0] or v not in (0, 1, True, False):
             raise Refused(f"filter not allowed: {f}={v!r}")
 
@@ -130,5 +138,8 @@ def try_ask(question, s: Session, conn=None):
 
 
 def readonly_guard(sql):
-    """The BREAK: 'read-only' is necessary, not sufficient. This guard passes UNIONs."""
+    """The BREAK: a SELECT-prefix check is a toy filter, not a write-protection or
+    scope boundary. It passes UNIONs across customers. Use constrained queries (the
+    QuerySpec) AND database-enforced permissions (a read-only role, row-level
+    security or per-tenant views)."""
     return sql.lstrip().upper().startswith("SELECT") and ";" not in sql

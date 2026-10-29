@@ -53,6 +53,19 @@ def test_try_ask_passes_valid_spec():
     result, reason = S.try_ask("How many refunds did I get this year?", ASHA)
     assert reason is None and result[3] == [(1,)]
 
+def test_malformed_specs_refused_not_crashed():
+    for bad in (["refund_count"], "refund_count", None,
+                {"metric": "order_list", "filters": ["final_sale"]},
+                {"metric": "order_list", "filters": "final_sale=1"},
+                {"metric": "refund_count", "year": True},
+                {"metric": "refund_count", "year": "2026"}):
+        try:
+            S.compile_spec(bad, ASHA)
+        except S.Refused:
+            continue
+        raise AssertionError(f"accepted malformed spec {bad!r}")
+
+
 if __name__ == "__main__":
     from _run import run_all
     run_all("test_structured")

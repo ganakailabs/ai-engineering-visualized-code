@@ -69,6 +69,44 @@ def test_non_string_parts_fail_check_and_ask():
     assert check["parts_are_text"] is False and not all(check.values())
     assert kinds[-1] == "clarify" and "route" not in kinds
 
+
+
+def test_action_swap_fails_bindings():
+    # External review probe: every word survives, but the actions swap products.
+    kept = Q.meaning_kept("Can I return the mug and keep the lamp?",
+                          ["Can I keep the mug and return the lamp?"])
+    assert kept["entities"] and kept["negation"] and kept["dates"] and kept["constraints"]
+    assert kept["bindings"] is False
+
+
+def test_action_swap_asks_instead_of_routing():
+    orig = Q.rewrite
+    Q.rewrite = lambda m, h: ["Can I keep the mug?", "Can I return the lamp?"]
+    try:  # two parts, so the message is rewritten rather than passed through
+        steps = Q.understand("Can I return the mug and can I keep the lamp?", {})
+    finally:
+        Q.rewrite = orig
+    assert steps[-1][0] == "clarify" and not any(k == "route" for k, _ in steps)
+
+
+def test_split_parts_keep_bindings():
+    kept = Q.meaning_kept("Can I return the mug and keep the lamp?",
+                          ["Can I return the mug?", "Can I keep the lamp?"])
+    assert all(kept.values()), kept
+
+
+def test_action_does_not_leak_across_sentences():
+    assert Q.bindings("Can I return the mug? Is the lamp covered?") == {("return", "mug")}
+
+
+def test_known_limit_added_fact_not_detected():
+    # Documented limit: the heuristic cannot tell that a rewrite added a fact the
+    # customer never stated. A second check (or keeping the original) is needed.
+    kept = Q.meaning_kept("can I return the mug",
+                          ["can I return the mug, which arrived broken?"])
+    assert all(kept.values())
+
+
 if __name__ == "__main__":
     from _run import run_all
     run_all("test_query")

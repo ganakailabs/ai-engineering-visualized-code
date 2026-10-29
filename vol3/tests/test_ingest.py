@@ -75,4 +75,59 @@ assert len(store.chunks) == 12 and I.orphans(store) == []
 import ch02  # noqa: E402
 assert ch02.top3(ch02.CHARGE, naive.rows)[:2] == ["nw-500-headphones:p1.b2"] * 2
 assert len(set(ch02.top3(ch02.CHARGE, list(store.chunks.values())))) == 3
+
+# Review probe: crash in the middle of staging a file's chunks. Nothing of that file
+# is published; the index is exactly what it was before the run.
+store = I.Store()
+I.ingest(MANUALS[:1], store, echo=False)
+before = dict(store.chunks)
+try:
+    I.ingest(MANUALS, store, crash_in_commit=2, echo=False)
+    raise AssertionError("expected a crash")
+except I.Crash:
+    pass
+assert store.chunks == before, "a mid-commit crash published a partial file"
+assert store.manifest["files"][MANUALS[1].name]["status"] == "failed"
+again = I.ingest(MANUALS, store, echo=False)
+assert sorted(store.chunks) == ids and I.orphans(store) == []
+
+# A changed pipeline (new chunker settings) rebuilds every file, even unchanged bytes.
+store = I.Store()
+I.ingest(MANUALS, store, echo=False)
+same = I.ingest(MANUALS, store, echo=False)
+assert same["skipped"] == 3
+newer = dict(I.PIPELINE, chunker="one-block-per-chunk/2")
+rebuilt = I.ingest(MANUALS, store, echo=False, pipeline=newer)
+assert rebuilt["skipped"] == 0 and rebuilt["changed"] == 3
+assert I.ingest(MANUALS, store, echo=False, pipeline=newer)["skipped"] == 3
+
+# Restart in a fresh process: save (temp file + rename), crash, load, rerun.
+import json  # noqa: E402
+import subprocess  # noqa: E402
+import sys  # noqa: E402
+work = Path(tempfile.mkdtemp())
+store = I.Store()
+try:
+    I.ingest(MANUALS, store, crash_on=3, echo=False)
+except I.Crash:
+    pass
+store.save(work / "store.json")
+assert not (work / "store.json.tmp").exists()
+code = ("import sys; sys.path.insert(0, %r); import ingest as I, json; from pathlib import Path; "
+        "s = I.Store.load(%r); r = I.ingest(sorted(I.MANUALS.glob('*.txt')), s, echo=False); "
+        "print(json.dumps([r['skipped'], r['retried'], sorted(s.chunks), I.orphans(s)]))"
+        % (str(Path(I.__file__).parent), str(work / "store.json")))
+out = json.loads(subprocess.run([sys.executable, "-c", code], capture_output=True, text=True,
+                                check=True).stdout.strip().splitlines()[-1])
+assert out[0] == 2 and out[1] == 1 and out[2] == ids and out[3] == [], out
+
+# The manifest is keyed by file name: a renamed file is ingested again, but stable
+# ids mean it replaces its chunks instead of duplicating them.
+d = fresh()
+store = I.Store()
+I.ingest(sorted(d.glob("*.txt")), store, echo=False)
+(d / "desk-lamp-dl1.txt").rename(d / "lamp-renamed.txt")
+r = I.ingest(sorted(d.glob("*.txt")), store, echo=False)
+assert r["new"] == 1 and len(store.chunks) == 12
+assert I.duplicates(list(store.chunks.values())) == 0
 print("test_ingest: OK")

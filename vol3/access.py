@@ -5,6 +5,12 @@ share one index in the same region. Identity comes from the session, never from 
 model. The same filter runs at SEARCH, EXPAND, RERANK, CACHE and CITE. Poisoning
 detection at ingestion is a signal (a regex here) with a scripted miss; the boundary
 does not depend on it.
+
+Limits of the fixture: chunks are owned by a tenant and an audience, not by a
+customer, so this filter cannot express "only Asha's documents"; per-customer
+ownership needs its own field and check. customer_id and region are part of the
+cache key to keep entries apart; they are not authorization. The filter re-runs on
+every cache read.
 """
 import re
 from dataclasses import dataclass
@@ -93,7 +99,8 @@ class Index:
         return [c for c in ids if self.may_see(s, c)]
 
     def cache_key(self, s, q):
-        return (s.tenant_id, s.customer_id, s.audience, q.strip().lower())
+        # region is in the key because applicability (Ch 4) can change the answer
+        return (s.tenant_id, s.customer_id, s.audience, s.region, q.strip().lower())
 
     def cached_answer(self, s, q):
         hit = self.cache.get(self.cache_key(s, q))

@@ -5,6 +5,10 @@ clause and a tags line under each heading. section_chunks() cuts at headings and
 the tags; small_chunks() cuts each section into sentences with a parent link;
 applies() is the gate: a chunk is used only if every required tag is present and
 matches the question's product, region and date. A missing tag means "not applicable".
+A malformed date excludes the chunk; an optional effective_to tag ends a clause.
+Supersession (a newer clause replacing an older one) is Chapter 10's precedence, not
+this filter. A heading-based chunk is a better unit than a fixed cut; it is not a
+guarantee that the chunk holds the clause's complete meaning.
 """
 import re
 from datetime import date
@@ -67,9 +71,19 @@ def applies(tags, product, region, today=TODAY):
         return False, f"product={tags['product']}"
     if tags["region"] not in ("ALL", region):
         return False, f"region={tags['region']}"
-    start = date.fromisoformat(tags["effective_from"])
+    try:
+        start = date.fromisoformat(tags["effective_from"])
+    except ValueError:
+        return False, f"effective_from={tags['effective_from']!r} is not a date"
     if start > today:
         return False, f"effective_from={start} today={today}"
+    if "effective_to" in tags:                 # optional: a clause that has ended
+        try:
+            end = date.fromisoformat(tags["effective_to"])
+        except ValueError:
+            return False, f"effective_to={tags['effective_to']!r} is not a date"
+        if end < today:
+            return False, f"effective_to={end} today={today}"
     return True, ""
 
 

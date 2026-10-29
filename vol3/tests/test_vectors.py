@@ -19,8 +19,10 @@ def test_contract_mismatch_refused():
 
 
 def test_ann_recall_counts():
-    found, total, compared, missed = V.ann_recall(IX, QS, k=1, probe=1)
+    found, total, compared, routing, missed = V.ann_recall(IX, QS, k=1, probe=1)
     assert (found, total, compared) == (5, 6, 20)
+    # Review probe: candidates scored leave out the centroid comparisons.
+    assert routing == len(QS) * len(IX.centroids) == 24
     assert missed == [("pair my NW-550", "nw550-pair")]
     assert V.ann_recall(IX, QS, k=1, probe=len(IX.groups))[0] == 6
 

@@ -32,26 +32,40 @@ def resolve(name):
     return ALIASES.get(name.strip().lower(), name)
 
 
-def out(node, rel=None):
-    return [e for e in EDGES if e[0] == node and (rel is None or e[1] == rel)]
+def out(node, rel=None, edges=None):
+    return [e for e in (EDGES if edges is None else edges)
+            if e[0] == node and (rel is None or e[1] == rel)]
 
 
-def coverage(part, warranty="W2 bundle warranty"):
-    """Returns (verdict, hops). verdict in covered | excluded | unknown."""
+MAX_HOPS = 3
+
+
+def coverage(part, warranty="W2 bundle warranty", edges=None, max_hops=MAX_HOPS):
+    """Returns (verdict, hops). verdict in covered | excluded | unknown.
+
+    Breadth-first over PART_OF and COVERED_BY edges, at most max_hops deep, with a
+    visited set so a cycle cannot loop. Every branch is explored, so a dead-end edge
+    listed first cannot hide a covering path, and the answer does not depend on edge
+    order (neighbours are visited in sorted order; the shortest path wins).
+    An explicit EXCLUDES edge from the part wins over any covering path."""
     node = resolve(part)
-    for e in out(node, "EXCLUDES"):
+    for e in out(node, "EXCLUDES", edges):
         if e[2] == warranty:
             return "excluded", [e]
-    hops, frontier = [], node
-    for _ in range(3):
-        nxt = [e for e in out(frontier) if e[1] in ("PART_OF", "COVERED_BY")]
+    frontier, seen = [(node, [])], {node}
+    for _ in range(max_hops):
+        nxt = []
+        for here, path in frontier:
+            for e in sorted(x for x in out(here, edges=edges) if x[1] in ("PART_OF", "COVERED_BY")):
+                if e[2] == warranty:
+                    return "covered", path + [e]
+                if e[2] not in seen:
+                    seen.add(e[2])
+                    nxt.append((e[2], path + [e]))
         if not nxt:
-            return "unknown", hops
-        hops.append(nxt[0])
-        frontier = nxt[0][2]
-        if frontier == warranty:
-            return "covered", hops
-    return "unknown", hops
+            break
+        frontier = nxt
+    return "unknown", []
 
 
 def naive_coverage(part, warranty="W2 bundle warranty"):

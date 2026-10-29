@@ -46,6 +46,19 @@ def test_overlap_costs_words_and_still_cuts_by_count():
     assert not any("7 days" in c and "photo" in c for c in b)
 
 
+def test_malformed_and_ended_dates_excluded():
+    base = {"product": "ALL", "region": "ALL", "doc_type": "policy"}
+    ok, why = C.applies(dict(base, effective_from="2026-13-01"), "mug", "IN")
+    assert not ok and "not a date" in why
+    ok, why = C.applies(dict(base, effective_from="2026-01-01", effective_to="2026-06-30"),
+                        "mug", "IN")
+    assert not ok and why.startswith("effective_to=2026-06-30")
+    ok, why = C.applies(dict(base, effective_from="2026-01-01", effective_to="soon"), "mug", "IN")
+    assert not ok and "not a date" in why
+    assert C.applies(dict(base, effective_from="2026-01-01", effective_to="2099-12-31"),
+                     "mug", "IN")[0]
+
+
 if __name__ == "__main__":
     from _run import run_all
     run_all("test_chunking")

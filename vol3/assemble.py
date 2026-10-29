@@ -32,13 +32,32 @@ def _words(t):
     return set(re.findall(r"[a-z0-9]+", t.lower()))
 
 
+# Words two passages may differ by and still be the same statement. Anything else in
+# the difference (a negation, a number, a product, "only", "except", "cannot") can
+# change the meaning, so such passages are never merged, however similar they look.
+FILLER = {"a", "an", "the", "is", "are", "be", "been", "will", "please", "of", "your", "you"}
+
+
 def near_dupe(a, b, cut=0.8):
+    """Duplicate only if the word overlap is high AND the passages differ by filler
+    words alone. "can be returned" vs "cannot be returned" and "charger" vs "case"
+    are never duplicates. Conservative on purpose: a missed dedupe costs tokens; a
+    wrong one deletes evidence."""
     wa, wb = _words(a), _words(b)
+    if not (wa ^ wb) <= FILLER:
+        return False
     return len(wa & wb) / len(wa | wb) >= cut
 
 
-def assemble(passages, budget=60):
-    """Returns (pack, stats). pack = [(label, passage)], highest authority first."""
+def assemble(passages, budget=60, on_over="stop"):
+    """Returns (pack, stats). pack = [(label, passage)], highest authority first.
+
+    Budget policy is explicit. on_over="stop" (default) keeps a priority prefix: the
+    first passage that does not fit ends the pack, so a lower-priority passage never
+    displaces a higher one. on_over="skip" skips a passage that does not fit and
+    tries the next. stats["first_over"] names the first passage that did not fit."""
+    if on_over not in ("stop", "skip"):
+        raise ValueError(f"on_over must be 'stop' or 'skip', not {on_over!r}")
     order = sorted(passages, key=lambda p: (-AUTHORITY[p["source"]], -p["score"], p["id"]))
     unique, dupes = [], 0
     for p in order:                                  # 1 dedupe first
@@ -46,15 +65,19 @@ def assemble(passages, budget=60):
             dupes += 1
         else:
             unique.append(p)
-    kept, tokens = [], 0
+    kept, tokens, first_over = [], 0, None
     for p in unique:                                 # 2 then fill the budget
         cost = rough_token_count(p["text"]) + 4      # + label and id
         if tokens + cost > budget:
-            break
+            first_over = first_over or p["id"]
+            if on_over == "stop":
+                break
+            continue
         kept.append(p)
         tokens += cost
     pack = [(f"S{i}", p) for i, p in enumerate(kept, 1)]
-    return pack, dict(n_in=len(passages), dupes=dupes, kept=len(pack), over=len(unique) - len(pack), tokens=tokens, budget=budget)
+    return pack, dict(n_in=len(passages), dupes=dupes, kept=len(pack), over=len(unique) - len(pack),
+                      tokens=tokens, budget=budget, first_over=first_over)
 
 
 def render(pack):

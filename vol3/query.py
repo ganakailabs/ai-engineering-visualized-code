@@ -24,6 +24,7 @@ DATE = (r"\b\d{1,2}\s+(?:january|february|march|april|may|june|july|august|septe
         r"october|november|december)\b|\b\d{4}-\d{2}-\d{2}\b|\b(?:today|yesterday|tomorrow)\b")
 LIMIT = r"\b(?:within|under|over|before|after|pehle|baad)\b\s*(?:rs\s*)?\d*\s*\w*"
 SPLIT = r"\s*(?:\?\s+|,?\s+and\s+(?=can|is|do|what|how|where|when)|,?\s+aur\s+)\s*"
+ACTIONS = ["return", "keep", "exchange", "refund", "replace", "cancel", "repair"]
 ROUTES = [  # (source, words); first match wins
     ("orders", ["where is", "delivery", "dispatch", "order"]),
     ("policy", ["return", "refund", "warranty", "covered", "exchange"]),
@@ -45,15 +46,41 @@ def facts(text):
     }
 
 
+def bindings(text):
+    """(action, product) pairs: each product is bound to the last action word before
+    it in the same sentence. "return the mug and keep the lamp" gives
+    {("return", "mug"), ("keep", "lamp")}. A product with no action before it is
+    not bound. A heuristic over word order, not a parser."""
+    pairs = set()
+    for sentence in re.split(r"[?.!]+", _low(text)):
+        action = None
+        for m in re.finditer(r"[a-z0-9-]+", sentence):
+            w = m.group(0)
+            if w in ACTIONS:
+                action = w
+            elif w in PRODUCTS and action:
+                pairs.add((action, w))
+    return pairs
+
+
 def meaning_kept(original, parts):
-    """Every fact in the original must appear in some part. Parts may add entities
-    resolved from history (an 'it' made explicit) but may not drop any.
+    """Surface-fact retention check (a heuristic, see the module docstring).
+
+    Every selected fact in the original must appear in some part, and every
+    action-product binding must survive: "keep the mug and return the lamp" does
+    not keep "return the mug and keep the lamp", although every word does. Parts
+    may add entities resolved from history (an 'it' made explicit) but may not drop
+    any; this check cannot tell whether an added fact is justified.
     Parts that are not strings (a model may return objects) fail the check; they are
     never coerced into text."""
+    keys = list(facts(original)) + ["bindings"]
     if not all(isinstance(p, str) for p in parts):
-        return {"parts_are_text": False, **{k: False for k in facts(original)}}
+        return {"parts_are_text": False, **{k: False for k in keys}}
     want, got = facts(original), facts(" . ".join(parts))
-    return {k: want[k] <= got[k] for k in want}
+    kept = {k: want[k] <= got[k] for k in want}
+    got_pairs = set().union(*(bindings(p) for p in parts)) if parts else set()
+    kept["bindings"] = bindings(original) <= got_pairs
+    return kept
 
 
 def _stub_rewrite(payload):

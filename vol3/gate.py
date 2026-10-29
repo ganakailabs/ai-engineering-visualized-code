@@ -2,11 +2,18 @@
 
 A scripted generator (a stand-in for a model) proposes questions from the
 handbook; code review rejects ungrounded, leaking and duplicate ones; a hash
-splits the rest into dev and held-out. gate() compares a change with the
-baseline case by case: critical failures block, a paired difference inside its
-bootstrap interval is not a win, and a system that answers too few answerable
-cases fails even with zero wrong answers. Systems below are scripted results
-on the held-out benchmark (a demonstration).
+splits the rest into dev and held-out. gate_results() compares a change with
+the baseline case by case: critical failures block, any case the baseline got
+right and the change gets wrong blocks (MAX_NEW_FAILURES, a declared
+non-regression policy), missing case results block, a paired difference inside
+its bootstrap interval is not a win, and a system that answers too few
+answerable cases fails even with zero wrong answers.
+
+This gate demonstrates critical-case vetoes, a non-regression policy and minimum
+quality checks on SCRIPTED results. A release decision needs real case outputs,
+graded, and a regression policy the team has agreed on. The hash split keeps the
+same question text on the same side; it does not stop semantic leakage (a
+paraphrase of a held-out question can still land in dev).
 """
 import hashlib
 import random
@@ -83,6 +90,7 @@ BENCH = [
 ]
 CAT = {c: cat for c, cat, _, _ in BENCH}
 MIN_ANSWER_RATE = 0.8
+MAX_NEW_FAILURES = 0      # declared policy: no case the baseline passed may now fail
 
 # For each scripted system: the ids it gets wrong ("abstain_all" abstains everywhere).
 SYSTEMS = {
@@ -106,30 +114,54 @@ def results(system):
     return out
 
 
-def paired_interval(base, new, n_boot=2000, seed=7):
+def paired_interval(base, new, n_boot=2000, seed=7, bench=None):
     """Mean of per-case differences and a 95% percentile bootstrap interval."""
-    d = [int(new[c][0]) - int(base[c][0]) for c, *_ in BENCH]
+    d = [int(new[c][0]) - int(base[c][0]) for c, *_ in (bench or BENCH)]
     rng = random.Random(seed)
     means = sorted(sum(rng.choice(d) for _ in d) / len(d) for _ in range(n_boot))
     return sum(d) / len(d), (means[int(0.025 * n_boot)], means[int(0.975 * n_boot) - 1])
 
 
-def gate(base_name, new_name):
-    base, new = results(base_name), results(new_name)
-    crit = [c for c, _, _, critical in BENCH if critical and not new[c][0]]
-    ans = [c for c, _, a, _ in BENCH if a]
+def gate_results(base, new, bench=None, max_new_failures=MAX_NEW_FAILURES):
+    """Gate per-case records {case id: (correct, abstained)} for a baseline and a
+    change. A case missing from either side blocks; it is never counted as a pass.
+    Returns verdict ("pass" | "blocked") and a label that never calls a pass with an
+    interval touching zero an improvement."""
+    bench = bench or BENCH
+    ids = [c for c, *_ in bench]
+    missing = sorted(c for c in ids if c not in new or c not in base)
+    if missing:
+        return dict(verdict="blocked", label="blocked",
+                    reasons=[f"missing results for {len(missing)} cases: {', '.join(missing)}"],
+                    missing=missing, critical=[], new_failures=[])
+    crit = [c for c, _, _, critical in bench if critical and not new[c][0]]
+    new_fail = [c for c in ids if base[c][0] and not new[c][0]]
+    ans = [c for c, _, a, _ in bench if a]
     answered = sum(new[c][0] for c in ans)
-    abst = [c for c, _, a, _ in BENCH if not a]
+    abst = [c for c, _, a, _ in bench if not a]
     abstained = sum(new[c][1] for c in abst)
-    diff, (lo, hi) = paired_interval(base, new)
+    diff, (lo, hi) = paired_interval(base, new, bench=bench)
     reasons = []
     if crit:
         reasons.append(f"critical failures={len(crit)}")
+    if len(new_fail) > max_new_failures:
+        reasons.append(f"new failures={len(new_fail)} > {max_new_failures} allowed")
     if answered / len(ans) < MIN_ANSWER_RATE:
         reasons.append(f"answered {answered}/{len(ans)} < {MIN_ANSWER_RATE:.0%}")
     if abstained < len(abst):
         reasons.append(f"abstained {abstained}/{len(abst)} expected")
-    return dict(verdict="blocked" if reasons else "pass", reasons=reasons, critical=crit, answered=answered, answerable=len(ans),
+    verdict = "blocked" if reasons else "pass"
+    label = ("blocked" if reasons else
+             f"pass within tolerance ({len(new_fail)} new failures allowed by policy)" if new_fail else
+             "pass, improvement demonstrated" if lo > 0 else
+             "pass, no regression found (improvement not demonstrated)")
+    return dict(verdict=verdict, label=label, reasons=reasons, missing=[], critical=crit,
+                new_failures=new_fail, answered=answered, answerable=len(ans),
                 abstained=abstained, expected_abstain=len(abst), diff=diff,
                 interval=(lo, hi), win=lo > 0,
-                mean=sum(v[0] for v in new.values()) / len(BENCH))
+                mean=sum(new[c][0] for c in ids) / len(ids))
+
+
+def gate(base_name, new_name):
+    """The scripted systems above, through gate_results()."""
+    return gate_results(results(base_name), results(new_name))

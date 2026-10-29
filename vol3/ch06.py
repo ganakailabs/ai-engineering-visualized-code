@@ -21,9 +21,10 @@ if __name__ == "__main__":
     print("\nPart 2 (MM-076): clustered index vs exact search, k=1, probe=1")
     ix = V.ClusteredIndex()
     qs = [q for q, _ in V.GOLDEN]
-    found, total, compared, missed = V.ann_recall(ix, qs, k=1, probe=1)
+    found, total, compared, routing, missed = V.ann_recall(ix, qs, k=1, probe=1)
     print(f"  groups={len(ix.groups)} ann_recall@1 vs exact={found}/{total}")
-    print(f"  vectors_compared exact={len(qs) * len(ix.vecs)} ann={compared}")
+    print(f"  candidates_scored exact={len(qs) * len(ix.vecs)} ann={compared}")
+    print(f"  routing (centroid comparisons) exact=0 ann={routing}")
     for q, d in missed:
         print(f"  missed neighbour: {q!r} -> {d}")
 

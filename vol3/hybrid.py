@@ -86,6 +86,8 @@ def score_fusion(query, w):
 
 
 def exact_lane(query):
+    """A PRIORITY lane, not a hard filter: search() moves exact-id hits to the front
+    and still returns every other result after them."""
     ids = normalize_id(query)
     return [d for d in sorted(DOCS) if ids and set(ids) <= DOC_IDS[d]], ids
 

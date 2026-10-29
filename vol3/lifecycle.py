@@ -5,6 +5,13 @@ content (text hash), access (a separate hash of the audience metadata) and delet
 (tombstoned). A new embedder means a migration: build a new index version beside the
 old one, check it on the held-out retrieval set, and switch only if it passes. A
 half-built index, or one that mixes embedders, is refused. Embedders are Ch 6's toys.
+
+A version-only change (same text, same audience, new version number) is synced on
+its own count, so answers cite the current version. A listing that is not known to
+be complete (a source API that paged, timed out or filtered) never tombstones:
+absence from a partial listing is not evidence of deletion.
+The switch here returns a different Python object; a real store needs an atomic
+alias or pointer swap, and a rollback path, to do the same thing safely.
 """
 import hashlib
 
@@ -45,9 +52,11 @@ def build(src, name, model):
     return ix
 
 
-def sync(src, ix):
-    """Returns counts. Content and access are compared separately."""
-    changed = access_changed = added = removed = 0
+def sync(src, ix, complete=True):
+    """Returns counts. Content, access and version are compared separately.
+    complete=False means src may be a partial listing: nothing is tombstoned and the
+    ids it did not list are counted as unlisted, for a later full sync."""
+    changed = access_changed = version_changed = added = removed = unlisted = 0
     for i, d in src.items():
         r = ix.rows.get(i)
         if r is None:
@@ -59,11 +68,18 @@ def sync(src, ix):
         elif r["access"] != h(d["audience"]):
             r.update(access=h(d["audience"]), audience=d["audience"], version=d["version"])
             access_changed += 1
+        elif r["version"] != d["version"]:
+            r.update(version=d["version"])
+            version_changed += 1
     for i in [i for i in ix.rows if i not in src]:
+        if not complete:
+            unlisted += 1
+            continue
         del ix.rows[i]
         ix.tombstones.add(i)
         removed += 1
-    return dict(changed=changed, access_changed=access_changed, added=added, removed=removed)
+    return dict(changed=changed, access_changed=access_changed, version_changed=version_changed,
+                added=added, removed=removed, unlisted=unlisted)
 
 
 def content_only_sync(src, ix):
@@ -74,7 +90,8 @@ def content_only_sync(src, ix):
 def check(src, ix):
     orphans = [i for i in ix.rows if i not in src]
     stale = [i for i, d in src.items() if i in ix.rows and
-             (ix.rows[i]["content"] != h(d["text"]) or ix.rows[i]["access"] != h(d["audience"]))]
+             (ix.rows[i]["content"] != h(d["text"]) or ix.rows[i]["access"] != h(d["audience"])
+              or ix.rows[i]["version"] != d["version"])]
     missing = [i for i in src if i not in ix.rows]
     mixed = len({r["model"] for r in ix.rows.values()}) > 1
     return dict(orphans=len(orphans), stale=len(stale), missing=len(missing), mixed=mixed)

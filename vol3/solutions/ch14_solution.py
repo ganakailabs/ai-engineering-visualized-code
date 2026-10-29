@@ -12,7 +12,7 @@ ix = L.build(src, "INDEX v1", "gram-v1")
 src["nw500-pair"].update(audience="internal", version=2)
 assert L.content_only_sync(src, ix) == 0
 s = L.sync(src, ix)
-assert s == dict(changed=0, access_changed=1, added=0, removed=0)
+assert s == dict(changed=0, access_changed=1, version_changed=0, added=0, removed=0, unlisted=0)
 hits = ix.search("NW-500 headphones bluetooth pairing steps", audience="customer", k=3)
 assert "nw500-pair" not in hits
 assert "nw500-pair" in ix.search("NW-500 headphones bluetooth pairing steps", audience="internal")

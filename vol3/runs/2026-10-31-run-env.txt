@@ -1,0 +1,5 @@
+python: Python 3.14.7
+ollama: ollama version is 0.40.12
+NAME                        ID              SIZE      MODIFIED      
+llama3.2:latest             a80c4f17acd5    2.0 GB    19 months ago    
+code: aev-code 7dfb63f + real_runs.py chapter filter (uncommitted at run time)

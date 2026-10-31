@@ -4,7 +4,7 @@ Every model output in the Vol 3 manuscript that would come from a real model is 
 `[TO MEASURE]` until a run is logged here AND, where grading is needed, graded.
 Ollama ids are in `2026-10-27-models.txt` and `llama3.2-digest.txt`.
 
-## What is in this folder (all logged Oct 27, 2026)
+## What is in this folder (logged Oct 27 and Oct 31, 2026)
 
 | Log | What it holds | Status |
 |---|---|---|
@@ -16,12 +16,18 @@ Ollama ids are in `2026-10-27-models.txt` and `llama3.2-digest.txt`.
 | `…-llama3.2-ch11.txt` | Ch 11 citations on one pack | recorded |
 | `…-llama3.2-ch12.txt`, `…-ch12-rerun-ac001a6.txt` | Ch 12 QuerySpecs | recorded |
 | `…-llama3.2-ch10/11/13/14/15/16-real.txt`, `real_runs.out` | output of `real_runs.py` | raw replies logged |
-| `…-llama3.2-grading-sheet.csv` | Ch 11 per-k and Ch 16 replies for hand grading | **not graded**: the `grade` column is empty, so the Ch 11 accuracy-per-k and Ch 16 figures stay `[TO MEASURE]` |
+| `…-llama3.2-grading-sheet.csv` | Ch 11 per-k and Ch 16 replies for hand grading | graded strictly in `grading/strict-grading.csv` (Oct 28); superseded for the book by the Oct 31 re-runs |
 | `…-llama3.2-solutions.txt`, `…-solutions-rerun-ac001a6.txt` | exercise solutions on the real model | recorded |
+| `2026-10-31-llama3.2-ch11-ksweep.txt`, `…-ch11-ksweep-sheet.csv` | Ch 11 k = 2..10 sweep at code 7dfb63f (`grading/ch11_k_sweep.py`), 108 replies | graded: `grading/2026-10-31-llama3.2-ch11-ksweep-graded.csv` |
+| `2026-10-31-llama3.2-ch16-real.txt`, `…-grading-sheet-ch16.csv` | Ch 16 re-run at code 7dfb63f (`real_runs.py ch16`), 7 of 16 cases | graded: `grading/2026-10-31-llama3.2-ch16-graded.csv` |
+| `2026-10-31-run-env.txt` | Mac, Python, Ollama and model ids for the Oct 31 runs | recorded |
 
 The logs were made before the external-review fixes (Oct 29, 2026: the Ch 9 bindings
 check, the Ch 11 near-duplicate rule, the Ch 16 new-failure gate, the Ch 6 routing
-count). Re-run a chapter if you compare its printed lines with the current code.
+count). Re-run a chapter if you compare its printed lines with the current code. The Ch 11
+sweep and Ch 16 were re-run on Oct 31 at 7dfb63f; the Ch 11 replies at k = 2, 3, 5, 10
+were byte-identical to Oct 27. Grades are strict (full answer, no false or unsupported
+claim); replies marked `borderline` in the graded sheets are judgement calls.
 
 Runs are made on a Mac with Ollama and `llama3.2` (3B), from the repo root, with the
 same pinned settings as Vol 2 (`SEED 7`, `TEMPERATURE 0.0` in `vol2/llm.py`). Save each

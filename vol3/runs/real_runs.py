@@ -1,6 +1,7 @@
 """Remaining Vol 3 real-model measurements, one log per chapter (see README.md).
 
-    AIEV_MODEL=ollama:llama3.2 python3 vol3/runs/real_runs.py
+    AIEV_MODEL=ollama:llama3.2 python3 vol3/runs/real_runs.py          # all six chapters
+    AIEV_MODEL=ollama:llama3.2 python3 vol3/runs/real_runs.py ch16     # one chapter
 
 Writes vol3/runs/<date>-<model>-chNN-real.txt for Ch 10, 11, 13, 14, 15 and 16, and
 <date>-<model>-grading-sheet.csv for the Ch 11 and Ch 16 replies. Nothing that the
@@ -291,15 +292,23 @@ FIELDS = ["chapter", "case", "k", "distractor", "question", "needed_passages", "
 
 
 def main():
+    # Optional chapter filter: python3 vol3/runs/real_runs.py ch16  (default: all six).
+    only = set(sys.argv[1:])
+    unknown = only - {c for c, _ in CHAPTERS}
+    if unknown:
+        sys.exit(f"unknown chapter(s): {', '.join(sorted(unknown))}")
     sheet = []
     for ch, fn in CHAPTERS:
+        if only and ch not in only:
+            continue
         buf = io.StringIO()
         with contextlib.redirect_stdout(buf):
             fn(sheet) if ch in ("ch11", "ch16") else fn()
         path = OUT / f"{DATE}-{TAG}-{ch}-real.txt"
         path.write_text(buf.getvalue())
         print(f"wrote {path}", flush=True)
-    path = OUT / f"{DATE}-{TAG}-grading-sheet.csv"
+    suffix = "-" + "-".join(sorted(only)) if only else ""
+    path = OUT / f"{DATE}-{TAG}-grading-sheet{suffix}.csv"
     with path.open("w", newline="") as f:
         w = csv.DictWriter(f, FIELDS)
         w.writeheader()

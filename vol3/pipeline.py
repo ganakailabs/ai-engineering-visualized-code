@@ -384,6 +384,9 @@ def main():
     print(f"index   chunks={p.built['chunks']} ocr_held={p.built['ocr_held']} "
           f"check={p.check}")
     out = p.answer(DEMO, ASHA)
+    if out["action"] == "clarify":      # the Ch 9 step asked a question instead of splitting
+        print(f"action  clarify: {out['reply']}")
+        print("budget  " + " ".join(f"{k}={v}" for k, v in sorted(out["budget"].counts.items())))
     for n, r in enumerate(out["parts"], 1):
         ids = [e["id"] for e in r["evidence"]]
         print(f"part {n}  {r['path']:<9} {r['part']}")
@@ -393,11 +396,12 @@ def main():
                   f"not_applicable={t.get('not_applicable')}")
             print(f"        precedence_dropped={t.get('precedence_dropped')} reranked={t['reranked']}")
         print(f"        evidence={ids}" + (f" escalate={r['escalate']}" if r.get("escalate") else ""))
-    s = out["stats"]
-    print(f"pack    in={s['n_in']} dupes={s['dupes']} kept={s['kept']} tokens={s['tokens']}/{s['budget']}")
-    print(f"reply   {out['reply']}")
-    print(f"action  {out['action']} cited={out['cited']} {out['why'] or ''}")
-    print("budget  " + " ".join(f"{k}={v}" for k, v in sorted(out["budget"].counts.items())))
+    if out["action"] != "clarify":
+        s = out["stats"]
+        print(f"pack    in={s['n_in']} dupes={s['dupes']} kept={s['kept']} tokens={s['tokens']}/{s['budget']}")
+        print(f"reply   {out['reply']}")
+        print(f"action  {out['action']} cited={out['cited']} {out['why'] or ''}")
+        print("budget  " + " ".join(f"{k}={v}" for k, v in sorted(out["budget"].counts.items())))
     p = Pipeline()
     for case in TICKETS:
         (ok, _), o = grade(p, case)

@@ -19,7 +19,8 @@ Ollama ids are in `2026-10-27-models.txt` and `llama3.2-digest.txt`.
 | `…-llama3.2-grading-sheet.csv` | Ch 11 per-k and Ch 16 replies for hand grading | graded strictly in `grading/strict-grading.csv` (Oct 28); superseded for the book by the Oct 31 re-runs |
 | `…-llama3.2-solutions.txt`, `…-solutions-rerun-ac001a6.txt` | exercise solutions on the real model | recorded |
 | `2026-10-31-llama3.2-ch11-ksweep.txt`, `…-ch11-ksweep-sheet.csv` | Ch 11 k = 2..10 sweep at code 7dfb63f (`grading/ch11_k_sweep.py`), 108 replies | graded: `grading/2026-10-31-llama3.2-ch11-ksweep-graded.csv` |
-| `2026-10-31-llama3.2-ch16-real.txt`, `…-grading-sheet-ch16.csv` | Ch 16 re-run at code 7dfb63f (`real_runs.py ch16`), 7 of 16 cases | graded: `grading/2026-10-31-llama3.2-ch16-graded.csv` |
+| `2026-10-31-llama3.2-ch16-real.txt`, `…-grading-sheet-ch16.csv` | Ch 16 run, 15 of 16 BENCH cases (`real_runs.py ch16`; 8 new cases built from existing fixtures; bundle-stand not grounded, not run). Replaces the morning's 7-case files; those 7 replies are byte-identical | graded: `grading/2026-10-31-llama3.2-ch16-graded.csv`; gate: `2026-10-31-llama3.2-ch16-gate.txt` (`grading/gate_from_sheet.py`) |
+| `2026-10-31-llama3.2-capstone-real.txt`, `…-capstone-replies.json` | Capstone pipeline, one real-model run (`pipeline_real.py`), 10 labelled tickets + demo, 191 model calls | graded by code against `pipeline.TICKETS` (reply text not graded) |
 | `2026-10-31-run-env.txt` | Mac, Python, Ollama and model ids for the Oct 31 runs | recorded |
 
 The logs were made before the external-review fixes (Oct 29, 2026: the Ch 9 bindings

@@ -1,0 +1,17 @@
+Capstone pipeline real run  model=ollama:llama3.2  seed=7 temperature=0.0  date=2026-10-31
+index   chunks=37 ocr_held=1 check={'orphans': 0, 'stale': 0, 'missing': 0, 'mixed': False}
+action  clarify: could you say that another way?
+budget  model_calls=1
+ticket  mug-photo       escalate  correct=False pack_cover=1/1 model_calls=3 reranker_pairs=9
+ticket  return-window   escalate  correct=False pack_cover=1/1 model_calls=4 reranker_pairs=16
+ticket  agent-7-days    escalate  correct=False pack_cover=1/1 model_calls=8 reranker_pairs=43
+ticket  refund-count    escalate  correct=False pack_cover=0/1 model_calls=4 reranker_pairs=0
+ticket  pair-nw500      escalate  correct=False pack_cover=1/1 model_calls=3 reranker_pairs=10
+ticket  eu-withdrawal   clarify   correct=False pack_cover=0/1 model_calls=1 reranker_pairs=0
+ticket  vip-photo       escalate  correct=False pack_cover=1/1 model_calls=11 reranker_pairs=54
+ticket  charger-cover   escalate  correct=False pack_cover=1/1 model_calls=3 reranker_pairs=0
+ticket  battery-cycles  escalate  correct=True  pack_cover=0/0 model_calls=3 reranker_pairs=10
+ticket  cable-cover     escalate  correct=True  pack_cover=0/0 model_calls=3 reranker_pairs=0
+gate    full -> no_precedence: answered=0/8 critical=['agent-7-days', 'eu-withdrawal', 'vip-photo', 'battery-cycles'] -> blocked
+gate    full -> no_access_filter: answered=0/8 critical=['agent-7-days', 'eu-withdrawal', 'vip-photo'] -> blocked
+model calls=191 prompt_tokens=23000 output_tokens=4414

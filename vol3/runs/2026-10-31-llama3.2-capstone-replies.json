@@ -1,0 +1,1066 @@
+[
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "My mug arrived broken, do I need to send a photo for a refund? How many refunds did I get in 2026? Is my NW-500 charger covered by the bundle warranty?",
+  "region": "IN",
+  "action": "clarify",
+  "reply": "could you say that another way?",
+  "cited": [],
+  "why": [],
+  "pack": []
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "My mug arrived broken, do I need to send a photo for a refund?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "Yes, according to R2 and a-ret.2, you need to send a photo of the damage with your refund request.",
+  "cited": [],
+  "why": [
+   "citations not in pack: none cited"
+  ],
+  "pack": [
+   "handbook-returns@2026-09-15:R2",
+   "a-ret.2"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "How many days do I have to return unused items?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "You have 30 days to return unused items. For damaged items, the return window is 7 days.",
+  "cited": [],
+  "why": [
+   "citations not in pack: none cited"
+  ],
+  "pack": [
+   "handbook-returns@2026-09-15:R1",
+   "a-ret.1"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "Are returns 7 days only now?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "Based on the provided evidence, the following claims can be made:\n\n- Returns are accepted within 30 days of delivery (S1).\n- Damaged items can be refunded or replaced within 7 days of delivery (S2).\n- Damaged items can be refunded within 7 days (S3).\n- Clean the lamp with a dry cloth only (S4).\n- Returns are 7 days only now (S5).\n\nHowever, there is no direct evidence to support the claim that returns are only now 7 days (S5) as it is mentioned in S4 that clean the lamp with a dry cloth only, but there is no direct relation with returns. The claim in S5 seems to be a repetition of S3. ",
+  "cited": [],
+  "why": [
+   "part 1: no passage left after the filters",
+   "citations not in pack: none cited"
+  ],
+  "pack": [
+   "R1@2026-09-15",
+   "handbook-returns@2026-09-15:R2",
+   "a-ret.1",
+   "man-dl1@2026-05-10:p2.b1",
+   "ticket-8812"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "How many refunds did I get in 2026?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "No information available.",
+  "cited": [],
+  "why": [
+   "part 1: query refused: filter not allowed: final_sale=0",
+   "citations not in pack: none cited"
+  ],
+  "pack": []
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "How do I pair my NW-500 headphones?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "To pair your NW-500 headphones, hold the power button for 3 seconds until the light flashes blue, then choose NW-500 on your phone.",
+  "cited": [],
+  "why": [
+   "citations not in pack: none cited"
+  ],
+  "pack": [
+   "man-nw500@2026-07-01:p3.b1",
+   "man-nw500@2026-07-01:p2.b1"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "Can I withdraw from my online purchase in the EU?",
+  "region": "EU",
+  "action": "clarify",
+  "reply": "could you say that another way?",
+  "cited": [],
+  "why": [],
+  "pack": []
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "Do damaged refunds need a photo for VIP accounts?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "No, according to [S1], damaged items can be refunded or replaced within 7 days of delivery, and a photo of the damage must be sent with the request. According to [S2], only damaged items can be refunded within 7 days, without specifying the need for a photo.",
+  "cited": [
+   "handbook-returns@2026-09-15:R2",
+   "a-ret.1"
+  ],
+  "why": [
+   "part 1: no passage left after the filters",
+   "part 3: no passage left after the filters",
+   "part 4: no passage left after the filters",
+   "part 5: no passage left after the filters",
+   "part 6: no source answers this part",
+   "part 7: no passage left after the filters",
+   "part 8: no passage left after the filters",
+   "part 9: no passage left after the filters",
+   "over budget: model_calls"
+  ],
+  "pack": [
+   "handbook-returns@2026-09-15:R2",
+   "a-ret.1"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "Is my NW-500 charger covered by the bundle warranty?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "Yes, the NW-500 charger is covered by the bundle warranty.",
+  "cited": [],
+  "why": [
+   "citations not in pack: none cited"
+  ],
+  "pack": [
+   "graph:NW-500 charger"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "When should I replace the NW-500 battery?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "There is no clear consensus on when to replace the NW-500 battery. According to [S1], it should be replaced after 500 cycles, while [S2] suggests replacing it after 300 cycles.",
+  "cited": [
+   "M7@2026-08-01b",
+   "M7@2026-08-01a"
+  ],
+  "why": [
+   "part 1: sources disagree at the same authority and date"
+  ],
+  "pack": [
+   "M7@2026-08-01b",
+   "M7@2026-08-01a"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "Is my NW-500 cable covered by the bundle warranty?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "No information available for this claim.",
+  "cited": [],
+  "why": [
+   "part 1: NW-500 cable: no edge to the warranty (unknown, not no)",
+   "citations not in pack: none cited"
+  ],
+  "pack": []
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "My mug arrived broken, do I need to send a photo for a refund?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "Yes, according to R2 and a-ret.2, you need to send a photo of the damage with your refund request.",
+  "cited": [],
+  "why": [
+   "citations not in pack: none cited"
+  ],
+  "pack": [
+   "handbook-returns@2026-09-15:R2",
+   "a-ret.2"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "How many days do I have to return unused items?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "You have 30 days to return unused items. For damaged items, the return window is 7 days.",
+  "cited": [],
+  "why": [
+   "citations not in pack: none cited"
+  ],
+  "pack": [
+   "handbook-returns@2026-09-15:R1",
+   "a-ret.1"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "Are returns 7 days only now?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "Based on the provided evidence, the following claims can be made:\n\n- Returns are accepted within 30 days of delivery (S1).\n- Damaged items can be refunded or replaced within 7 days of delivery (S2).\n- Damaged items can be refunded within 7 days (S3).\n- Clean the lamp with a dry cloth only (S4).\n- Returns are 7 days only now (S5).\n\nHowever, there is no direct evidence to support the claim that returns are only now 7 days (S5) as it is mentioned in S4 that clean the lamp with a dry cloth only, but there is no direct relation with returns. The claim in S5 seems to be a repetition of S3. ",
+  "cited": [],
+  "why": [
+   "part 1: no passage left after the filters",
+   "citations not in pack: none cited"
+  ],
+  "pack": [
+   "R1@2026-09-15",
+   "handbook-returns@2026-09-15:R2",
+   "a-ret.1",
+   "man-dl1@2026-05-10:p2.b1",
+   "ticket-8812"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "How many refunds did I get in 2026?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "No information available.",
+  "cited": [],
+  "why": [
+   "part 1: query refused: filter not allowed: final_sale=0",
+   "citations not in pack: none cited"
+  ],
+  "pack": []
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "How do I pair my NW-500 headphones?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "To pair your NW-500 headphones, hold the power button for 3 seconds until the light flashes blue, then choose NW-500 on your phone.",
+  "cited": [],
+  "why": [
+   "citations not in pack: none cited"
+  ],
+  "pack": [
+   "man-nw500@2026-07-01:p3.b1",
+   "man-nw500@2026-07-01:p2.b1"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "Can I withdraw from my online purchase in the EU?",
+  "region": "EU",
+  "action": "clarify",
+  "reply": "could you say that another way?",
+  "cited": [],
+  "why": [],
+  "pack": []
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "Do damaged refunds need a photo for VIP accounts?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "No, according to [S1], damaged items can be refunded or replaced within 7 days of delivery, and a photo of the damage must be sent with the request. According to [S2], only damaged items can be refunded within 7 days, without specifying the need for a photo.",
+  "cited": [
+   "handbook-returns@2026-09-15:R2",
+   "a-ret.1"
+  ],
+  "why": [
+   "part 1: no passage left after the filters",
+   "part 3: no passage left after the filters",
+   "part 4: no passage left after the filters",
+   "part 5: no passage left after the filters",
+   "part 6: no source answers this part",
+   "part 7: no passage left after the filters",
+   "part 8: no passage left after the filters",
+   "part 9: no passage left after the filters",
+   "over budget: model_calls"
+  ],
+  "pack": [
+   "handbook-returns@2026-09-15:R2",
+   "a-ret.1"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "Is my NW-500 charger covered by the bundle warranty?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "Yes, the NW-500 charger is covered by the bundle warranty.",
+  "cited": [],
+  "why": [
+   "citations not in pack: none cited"
+  ],
+  "pack": [
+   "graph:NW-500 charger"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "When should I replace the NW-500 battery?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "There is no clear consensus on when to replace the NW-500 battery. According to [S1], it should be replaced after 500 cycles, while [S2] suggests replacing it after 300 cycles.",
+  "cited": [
+   "M7@2026-08-01b",
+   "M7@2026-08-01a"
+  ],
+  "why": [
+   "part 1: sources disagree at the same authority and date"
+  ],
+  "pack": [
+   "M7@2026-08-01b",
+   "M7@2026-08-01a"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "Is my NW-500 cable covered by the bundle warranty?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "No information available for this claim.",
+  "cited": [],
+  "why": [
+   "part 1: NW-500 cable: no edge to the warranty (unknown, not no)",
+   "citations not in pack: none cited"
+  ],
+  "pack": []
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": false,
+   "lane": true
+  },
+  "message": "My mug arrived broken, do I need to send a photo for a refund?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "Yes, according to R2 and a-ret.2, you need to send a photo of the damage with your refund request.",
+  "cited": [],
+  "why": [
+   "citations not in pack: none cited"
+  ],
+  "pack": [
+   "handbook-returns@2026-09-15:R2",
+   "a-ret.2"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": false,
+   "lane": true
+  },
+  "message": "How many days do I have to return unused items?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "You have 30 days to return unused items. For damaged items, the return window is 7 days.",
+  "cited": [],
+  "why": [
+   "citations not in pack: none cited"
+  ],
+  "pack": [
+   "handbook-returns@2026-09-15:R1",
+   "a-ret.1"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": false,
+   "lane": true
+  },
+  "message": "Are returns 7 days only now?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "No, [S2] and [S3] contradict [S1] and [S5].",
+  "cited": [
+   "R1@2026-11-01",
+   "R1@2026-06-01",
+   "a-ret.1",
+   "ticket-8812"
+  ],
+  "why": [
+   "part 1: no passage left after the filters"
+  ],
+  "pack": [
+   "R1@2026-11-01",
+   "R1@2026-06-01",
+   "a-ret.1",
+   "man-dl1@2026-05-10:p2.b1",
+   "ticket-8812"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": false,
+   "lane": true
+  },
+  "message": "How many refunds did I get in 2026?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "No information available.",
+  "cited": [],
+  "why": [
+   "part 1: query refused: filter not allowed: final_sale=0",
+   "citations not in pack: none cited"
+  ],
+  "pack": []
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": false,
+   "lane": true
+  },
+  "message": "How do I pair my NW-500 headphones?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "To pair your NW-500 headphones, hold the power button for 3 seconds until the light flashes blue, then choose NW-500 on your phone.",
+  "cited": [],
+  "why": [
+   "citations not in pack: none cited"
+  ],
+  "pack": [
+   "man-nw500@2026-07-01:p3.b1",
+   "man-nw500@2026-07-01:p2.b1"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": false,
+   "lane": true
+  },
+  "message": "Can I withdraw from my online purchase in the EU?",
+  "region": "EU",
+  "action": "clarify",
+  "reply": "could you say that another way?",
+  "cited": [],
+  "why": [],
+  "pack": []
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": false,
+   "lane": true
+  },
+  "message": "Do damaged refunds need a photo for VIP accounts?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "No, according to [S1], damaged items can be refunded or replaced within 7 days of delivery, and a photo of the damage must be sent with the request. According to [S2], only damaged items can be refunded within 7 days, without specifying the need for a photo.",
+  "cited": [
+   "handbook-returns@2026-09-15:R2",
+   "a-ret.1"
+  ],
+  "why": [
+   "part 1: no passage left after the filters",
+   "part 3: no passage left after the filters",
+   "part 4: no passage left after the filters",
+   "part 5: no passage left after the filters",
+   "part 6: no source answers this part",
+   "part 7: no passage left after the filters",
+   "part 8: no passage left after the filters",
+   "part 9: no passage left after the filters",
+   "over budget: model_calls"
+  ],
+  "pack": [
+   "handbook-returns@2026-09-15:R2",
+   "a-ret.1"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": false,
+   "lane": true
+  },
+  "message": "Is my NW-500 charger covered by the bundle warranty?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "Yes, the NW-500 charger is covered by the bundle warranty.",
+  "cited": [],
+  "why": [
+   "citations not in pack: none cited"
+  ],
+  "pack": [
+   "graph:NW-500 charger"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": false,
+   "lane": true
+  },
+  "message": "When should I replace the NW-500 battery?",
+  "region": "IN",
+  "action": "send",
+  "reply": "There is no clear consensus on when to replace the NW-500 battery. According to [S1], it should be replaced after 500 cycles, while [S2] suggests replacing it after 300 cycles.",
+  "cited": [
+   "M7@2026-08-01b",
+   "M7@2026-08-01a"
+  ],
+  "why": [],
+  "pack": [
+   "M7@2026-08-01b",
+   "M7@2026-08-01a"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": false,
+   "lane": true
+  },
+  "message": "Is my NW-500 cable covered by the bundle warranty?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "No information available for this claim.",
+  "cited": [],
+  "why": [
+   "part 1: NW-500 cable: no edge to the warranty (unknown, not no)",
+   "citations not in pack: none cited"
+  ],
+  "pack": []
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "My mug arrived broken, do I need to send a photo for a refund?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "Yes, according to R2 and a-ret.2, you need to send a photo of the damage with your refund request.",
+  "cited": [],
+  "why": [
+   "citations not in pack: none cited"
+  ],
+  "pack": [
+   "handbook-returns@2026-09-15:R2",
+   "a-ret.2"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "How many days do I have to return unused items?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "You have 30 days to return unused items. For damaged items, the return window is 7 days.",
+  "cited": [],
+  "why": [
+   "citations not in pack: none cited"
+  ],
+  "pack": [
+   "handbook-returns@2026-09-15:R1",
+   "a-ret.1"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "Are returns 7 days only now?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "Based on the provided evidence, the following claims can be made:\n\n- Returns are accepted within 30 days of delivery (S1).\n- Damaged items can be refunded or replaced within 7 days of delivery (S2).\n- Damaged items can be refunded within 7 days (S3).\n- Clean the lamp with a dry cloth only (S4).\n- Returns are 7 days only now (S5).\n\nHowever, there is no direct evidence to support the claim that returns are only now 7 days (S5) as it is mentioned in S4 that clean the lamp with a dry cloth only, but there is no direct relation with returns. The claim in S5 seems to be a repetition of S3. ",
+  "cited": [],
+  "why": [
+   "part 1: no passage left after the filters",
+   "citations not in pack: none cited"
+  ],
+  "pack": [
+   "R1@2026-09-15",
+   "handbook-returns@2026-09-15:R2",
+   "a-ret.1",
+   "man-dl1@2026-05-10:p2.b1",
+   "ticket-8812"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "How many refunds did I get in 2026?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "No information available.",
+  "cited": [],
+  "why": [
+   "part 1: query refused: filter not allowed: final_sale=0",
+   "citations not in pack: none cited"
+  ],
+  "pack": []
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "How do I pair my NW-500 headphones?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "To pair your NW-500 headphones, hold the power button for 3 seconds until the light flashes blue, then choose NW-500 on your phone.",
+  "cited": [],
+  "why": [
+   "citations not in pack: none cited"
+  ],
+  "pack": [
+   "man-nw500@2026-07-01:p3.b1",
+   "man-nw500@2026-07-01:p2.b1"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "Can I withdraw from my online purchase in the EU?",
+  "region": "EU",
+  "action": "clarify",
+  "reply": "could you say that another way?",
+  "cited": [],
+  "why": [],
+  "pack": []
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "Do damaged refunds need a photo for VIP accounts?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "No, according to [S1], damaged items can be refunded or replaced within 7 days of delivery, and a photo of the damage must be sent with the request. According to [S2], only damaged items can be refunded within 7 days, without specifying the need for a photo.",
+  "cited": [
+   "handbook-returns@2026-09-15:R2",
+   "a-ret.1"
+  ],
+  "why": [
+   "part 1: no passage left after the filters",
+   "part 3: no passage left after the filters",
+   "part 4: no passage left after the filters",
+   "part 5: no passage left after the filters",
+   "part 6: no source answers this part",
+   "part 7: no passage left after the filters",
+   "part 8: no passage left after the filters",
+   "part 9: no passage left after the filters",
+   "over budget: model_calls"
+  ],
+  "pack": [
+   "handbook-returns@2026-09-15:R2",
+   "a-ret.1"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "Is my NW-500 charger covered by the bundle warranty?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "Yes, the NW-500 charger is covered by the bundle warranty.",
+  "cited": [],
+  "why": [
+   "citations not in pack: none cited"
+  ],
+  "pack": [
+   "graph:NW-500 charger"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "When should I replace the NW-500 battery?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "There is no clear consensus on when to replace the NW-500 battery. According to [S1], it should be replaced after 500 cycles, while [S2] suggests replacing it after 300 cycles.",
+  "cited": [
+   "M7@2026-08-01b",
+   "M7@2026-08-01a"
+  ],
+  "why": [
+   "part 1: sources disagree at the same authority and date"
+  ],
+  "pack": [
+   "M7@2026-08-01b",
+   "M7@2026-08-01a"
+  ]
+ },
+ {
+  "config": {
+   "access": true,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "Is my NW-500 cable covered by the bundle warranty?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "No information available for this claim.",
+  "cited": [],
+  "why": [
+   "part 1: NW-500 cable: no edge to the warranty (unknown, not no)",
+   "citations not in pack: none cited"
+  ],
+  "pack": []
+ },
+ {
+  "config": {
+   "access": false,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "My mug arrived broken, do I need to send a photo for a refund?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "Yes, according to R2 and a-ret.2, you need to send a photo of the damage with your refund request.",
+  "cited": [],
+  "why": [
+   "citations not in pack: none cited"
+  ],
+  "pack": [
+   "handbook-returns@2026-09-15:R2",
+   "a-ret.2"
+  ]
+ },
+ {
+  "config": {
+   "access": false,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "How many days do I have to return unused items?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "You have 30 days to return unused items. For damaged items, the return window is 7 days.",
+  "cited": [],
+  "why": [
+   "citations not in pack: none cited"
+  ],
+  "pack": [
+   "handbook-returns@2026-09-15:R1",
+   "a-ret.1"
+  ]
+ },
+ {
+  "config": {
+   "access": false,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "Are returns 7 days only now?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "No, [S6] (ticket-8812) Agent: returns are 7 days only now. is not true. [S1] (R1@2026-09-15) Returns accepted within 30 days of delivery. and [S2] (handbook-returns@2026-09-15:R2) R2 Damaged items. Damaged items can be refunded or replaced within 7 days of delivery. The customer must send a photo of the damage with the request. are true. [S3] (a-ret.1) Damaged items can be refunded within 7 days. is true, but [S4] (b-ret.1) Damaged items can be refunded within 10 days. is false. [S5] (man-dl1@2026-05-10:p2.b1) Clean the lamp with a dry cloth only. Do not use water or sprays on the base. is true, but it is not related to returns. [S6] (ticket-8812) Agent: returns are 7 days only now. is false, because [S1] (R1@2026-09-15) and [S2] (handbook-returns@2026-09-15:R2) say 7 days, but [S1] (R1@2026-09-15) say 30 days.",
+  "cited": [
+   "R1@2026-09-15",
+   "handbook-returns@2026-09-15:R2",
+   "a-ret.1",
+   "b-ret.1",
+   "man-dl1@2026-05-10:p2.b1",
+   "ticket-8812"
+  ],
+  "why": [
+   "part 1: no passage left after the filters"
+  ],
+  "pack": [
+   "R1@2026-09-15",
+   "handbook-returns@2026-09-15:R2",
+   "a-ret.1",
+   "b-ret.1",
+   "man-dl1@2026-05-10:p2.b1",
+   "ticket-8812"
+  ]
+ },
+ {
+  "config": {
+   "access": false,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "How many refunds did I get in 2026?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "No information available.",
+  "cited": [],
+  "why": [
+   "part 1: query refused: filter not allowed: final_sale=0",
+   "citations not in pack: none cited"
+  ],
+  "pack": []
+ },
+ {
+  "config": {
+   "access": false,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "How do I pair my NW-500 headphones?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "To pair your NW-500 headphones, hold the power button for 3 seconds until the light flashes blue, then choose NW-500 on your phone.",
+  "cited": [],
+  "why": [
+   "citations not in pack: none cited"
+  ],
+  "pack": [
+   "man-nw500@2026-07-01:p3.b1",
+   "man-nw500@2026-07-01:p2.b1"
+  ]
+ },
+ {
+  "config": {
+   "access": false,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "Can I withdraw from my online purchase in the EU?",
+  "region": "EU",
+  "action": "clarify",
+  "reply": "could you say that another way?",
+  "cited": [],
+  "why": [],
+  "pack": []
+ },
+ {
+  "config": {
+   "access": false,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "Do damaged refunds need a photo for VIP accounts?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "No, according to [S1], damaged items can be refunded or replaced within 7 days of delivery, and a photo is required for non-VIP accounts. For VIP accounts, [S3] states that damaged refunds can be approved without a photo. However, [S4] mentions that refunds above Rs 20,000 need to be escalated, which does not directly answer the question. Therefore, the correct answer is that VIP accounts do not need a photo for refunds, but this is not explicitly stated in the provided claims. The most accurate answer is that [S3] states that damaged refunds can be approved without a photo for VIP accounts, but this does not directly answer the question about needing a photo.",
+  "cited": [
+   "handbook-returns@2026-09-15:R2",
+   "b-note.1",
+   "a-note.1"
+  ],
+  "why": [
+   "part 1: no passage left after the filters",
+   "part 4: no passage left after the filters",
+   "part 5: no passage left after the filters",
+   "part 6: no source answers this part",
+   "part 7: no passage left after the filters",
+   "over budget: reranker_pairs, model_calls"
+  ],
+  "pack": [
+   "handbook-returns@2026-09-15:R2",
+   "a-ret.1",
+   "b-note.1",
+   "a-note.1"
+  ]
+ },
+ {
+  "config": {
+   "access": false,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "Is my NW-500 charger covered by the bundle warranty?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "Yes, the NW-500 charger is covered by the bundle warranty.",
+  "cited": [],
+  "why": [
+   "citations not in pack: none cited"
+  ],
+  "pack": [
+   "graph:NW-500 charger"
+  ]
+ },
+ {
+  "config": {
+   "access": false,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "When should I replace the NW-500 battery?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "There is no clear consensus on when to replace the NW-500 battery. According to [S1], it should be replaced after 500 cycles, while [S2] suggests replacing it after 300 cycles.",
+  "cited": [
+   "M7@2026-08-01b",
+   "M7@2026-08-01a"
+  ],
+  "why": [
+   "part 1: sources disagree at the same authority and date"
+  ],
+  "pack": [
+   "M7@2026-08-01b",
+   "M7@2026-08-01a"
+  ]
+ },
+ {
+  "config": {
+   "access": false,
+   "applies": true,
+   "precedence": true,
+   "lane": true
+  },
+  "message": "Is my NW-500 cable covered by the bundle warranty?",
+  "region": "IN",
+  "action": "escalate",
+  "reply": "No information available for this claim.",
+  "cited": [],
+  "why": [
+   "part 1: NW-500 cable: no edge to the warranty (unknown, not no)",
+   "citations not in pack: none cited"
+  ],
+  "pack": []
+ }
+]

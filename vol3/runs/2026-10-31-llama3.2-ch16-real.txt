@@ -1,18 +1,36 @@
 Ch 16 real run  model=ollama:llama3.2  seed=7 temperature=0.0  date=2026-10-31
 Each case: fixture passages -> assemble -> answer -> citation check. Graded BY HAND
-(correct / wrong / abstained) in the grading sheet; gate() is not run here.
+(correct / wrong / abstained) in the grading sheet; the gate runs on the graded sheet
+(vol3/runs/grading/gate_from_sheet.py), never on ungraded replies.
   eu-withdrawal: answerable=True critical=True citations_in_pack=False -> escalate
      reply: In the EU, you have 14 days from the date of delivery to withdraw from an online order without giving a reason.
+  in-battery-row: answerable=True critical=False citations_in_pack=False -> escalate
+     reply: The NW-500 battery is covered under warranty for 12 months in India. To claim, send an email to the support team with the order number and a short description of the issue, along with the receipt. Note that damage from drops or water is not covered under the warranty.
   old-vs-new-window: answerable=True critical=True citations_in_pack=False -> escalate
      reply: You have 30 days to return an item in India.
   refund-vs-ticket: answerable=True critical=True citations_in_pack=True -> send
      reply: No, that is not right. According to [S1], returns are accepted within 30 days of delivery, not 7 days.
+  supplier-vs-policy: answerable=True critical=False citations_in_pack=True -> send
+     reply: No, the NW-500 headphones do not qualify for a 90-day refund. According to [S1], returns are accepted within 30 days of delivery, which is less than 90 days. [S2] is not a valid source to support the claim of a 90-day refund, as it is not a direct statement from the seller or manufacturer.
+  other-tenant-note: answerable=True critical=True citations_in_pack=True -> send
+     reply: No, according to [S1], damaged items can be refunded within 7 days, but [S2] states that a photo of the damage is required with the request.
+  internal-only-page: answerable=True critical=True citations_in_pack=True -> send
+     reply: To request a refund for damaged items, you should send a request with a photo of the damage, as stated in [S1]. Additionally, according to [S2], damaged items can be refunded within 7 days.
+  revoked-page: answerable=True critical=False citations_in_pack=True -> send
+     reply: NW-500 battery replacement is free under warranty, as stated in [S1].
+  retired-clause: answerable=True critical=True citations_in_pack=True -> send
+     reply: No, the 14-day return window is not in force in India. The return window is 30 days in India, as stated in [S1].
+  stale-order-total: answerable=True critical=False citations_in_pack=False -> escalate
+     reply: You paid INR 950 for order #2001, and according to the live record, it has been delivered on 2026-10-01.
   bundle-charger: answerable=True critical=False citations_in_pack=False -> escalate
      reply: Yes, the NW charger is covered by the bundle warranty.
   final-sale-refund: answerable=True critical=False citations_in_pack=True -> send
      reply: No, according to [S2], the clearance jacket is final sale, which means you cannot get a refund.
+  gift-card-cash: answerable=False critical=False citations_in_pack=False -> escalate
+     reply: No, you cannot exchange a gift card for cash. The handbook does not provide information on exchanging gift cards, but it does mention that final-sale items cannot be refunded (S3).
   lifetime-warranty: answerable=False critical=False citations_in_pack=False -> escalate
      reply: No direct information about the NW-500 lifetime warranty is provided. However, it is mentioned that the NW-500 battery replacement is free within the 12-month warranty (S1).
   unknown-part: answerable=False critical=True citations_in_pack=False -> escalate
      reply: Yes, the NW-500 cable is covered by the W2 bundle warranty, as it is part of the NW-500 Travel Bundle, which is explicitly stated to be covered by the W2 bundle warranty.
-run=7/16; no fixture question/evidence, not run: in-battery-row, supplier-vs-policy, other-tenant-note, internal-only-page, revoked-page, retired-clause, stale-order-total, bundle-stand, gift-card-cash
+run=15/16; not run: bundle-stand
+  bundle-stand: BENCH marks it answerable, but no fixture puts a stand in the bundle; the Ch 13 exercise says the stand's coverage is unknown and escalates

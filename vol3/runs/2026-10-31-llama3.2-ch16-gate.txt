@@ -1,0 +1,17 @@
+wrote /workspace/aev-code/vol3/runs/grading/2026-10-31-llama3.2-ch16-graded.csv (15 rows)
+end-to-end:
+  16-case BENCH: blocked
+      - missing results for 1 cases: bundle-stand
+  15-case BENCH (bundle-stand not grounded): blocked
+      - critical failures=2
+      - new failures=3 > 0 allowed
+      - answered 7/12 < 80%
+      answered 7/12  abstained 3/3  critical failures: eu-withdrawal, old-vs-new-window  new failures vs baseline: eu-withdrawal, old-vs-new-window, bundle-charger
+content:
+  16-case BENCH: blocked
+      - missing results for 1 cases: bundle-stand
+  15-case BENCH (bundle-stand not grounded): blocked
+      - critical failures=1
+      - new failures=2 > 0 allowed
+      - abstained 1/3 expected
+      answered 11/12  abstained 1/3  critical failures: unknown-part  new failures vs baseline: gift-card-cash, unknown-part

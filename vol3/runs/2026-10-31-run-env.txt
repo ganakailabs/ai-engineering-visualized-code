@@ -3,3 +3,12 @@ ollama: ollama version is 0.40.12
 NAME                        ID              SIZE      MODIFIED      
 llama3.2:latest             a80c4f17acd5    2.0 GB    19 months ago    
 code: aev-code 7dfb63f + real_runs.py chapter filter (uncommitted at run time)
+
+Second batch (Oct 31, 2026, ~09:06-09:09 IST), same Mac, Python, Ollama and llama3.2 a80c4f17acd5:
+code: aev-code 5fdce24 + real_runs.py 15-case Ch 16 bench, runs/pipeline_real.py,
+      pipeline.main() clarify fix (all committed after the run)
+  AIEV_MODEL=ollama:llama3.2 python3 vol3/runs/real_runs.py ch16
+  AIEV_MODEL=ollama:llama3.2 python3 vol3/runs/pipeline_real.py
+First pipeline_real.py attempt crashed: KeyError 'stats' in pipeline.main(), because the
+real Ch 9 step answered the 3-part demo with clarify ("could you say that another way?")
+and main() assumed a pack. main() now prints the clarify; the run was repeated once.

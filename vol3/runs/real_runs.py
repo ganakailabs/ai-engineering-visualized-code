@@ -14,6 +14,7 @@ import contextlib
 import csv
 import datetime
 import io
+import json
 import os
 import sys
 from pathlib import Path
@@ -234,34 +235,104 @@ def _edges(part):
 
 def bench_cases():
     """(case, question, passages, needed ids). Questions are written for this script;
-    every passage is an existing fixture. Cases with no fixture evidence are skipped."""
+    every passage is an existing fixture, run through the chapter code that would
+    select it (precedence, access filter, applicability gate, parser, lifecycle sync).
+    Cases with no grounding in the fixtures are listed in NOT_GROUNDED and skipped."""
+    import access as AC
+    import chunking as C
+    import layout as LY
+    import store
     eu = [_p("S5", HANDBOOK["S5"]), _p("S3", HANDBOOK["S3"], score=0.6)]
     old_new, _ = _clauses(["R1@2026-06-01", "R1@2026-09-15"])
     tick, _ = _clauses(["R1@2026-09-15", "ticket-8812"])
     q_life = "Does the NW-500 have a lifetime warranty?"
     q_fs = "Can I get a refund on the clearance jacket?"
+
+    # tables (Ch 3): the parsed NW-500 warranty sheet, rows kept, OCR-flagged text held back
+    doc = LY.load()
+    sheet_rows = [_p(c["id"], c["text"], "manual", 0.8 - n / 100)
+                  for n, c in enumerate(LY.chunks(doc, LY.parse(doc))) if not c["flagged"]]
+    # conflicts (Ch 5 + Ch 10): the current IN return clause and the false supplier page
+    # (sup-2) that Ch 5's ingestion check lets through
+    sup2 = next(t for i, _, t in AC.SUPPLIER_PAGES if i == "sup-2")
+    supplier = _clauses(["R1@2026-09-15"])[0] + [_p("sup-2", sup2, "manual", 0.9)]
+    # permissions (Ch 5): Asha's session through the access filter
+    ix, asha = AC.Index(), AC.Session("a", "asha", "customer", "IN")
+    def visible(q):
+        return [_p(c, ix.rows[c]["text"], "faq", 0.8 - n / 100)
+                for n, c in enumerate(ix.search(asha, q, k=5))]
+    q_photo = "My order arrived damaged. Can I get a refund without sending a photo?"
+    q_how = "How do I request refunds for damaged items, and what do I send with the request?"
+    # revoked access (Ch 14): Tuesday's change restricts nw550-batt to agents
+    src = L.sources()
+    live = L.build(src, "INDEX v1", "gram-v1")
+    src["nw550-batt"].update(audience="internal", version=2)
+    L.sync(src, live)
+    q_batt = "Is NW-500 battery replacement free or a paid service?"
+    revoked = [_p(i, src[i]["text"], "manual", 0.8 - n / 100)
+               for n, i in enumerate(live.search(q_batt, audience="customer", k=3))]
+    # outdated (Ch 10): retired June clause, current September clause, future November clause
+    retired, _ = _clauses(["R1@2026-06-01", "R1@2026-09-15", "R1@2026-11-01"])
+    # outdated (Ch 1): the live order record for #2001 and the closed ticket's snapshot
+    o = store.ORDERS["2001"]
+    pt4 = next(t for t in json.loads((HERE.parent / "knowledge" / "past_tickets.json")
+                                     .read_text())["tickets"] if t["id"] == "PT-0004")
+    order = [_p("order #2001", f"order #2001 (live record): {o['item']}, amount INR "
+                f"{o['amount']}, delivered {o['delivered']}.", "orders", 0.9),
+             _p("PT-0004", f"Ticket closed {pt4['closed']}: {pt4['text']}", "past_tickets", 0.85)]
+    # abstain (Ch 4): the applicability gate for NW-500 / IN; G1 (gift cards) has no
+    # effective_from tag, so it is not applicable and no gift-card rule reaches the pack
+    meta, body = C.read()
+    applicable = [_p(c["id"], c["text"], "policy", 0.8 - n / 100)
+                  for n, c in enumerate(C.gate(C.section_chunks(meta, body), "NW-500", "IN"))]
     return [
         ("eu-withdrawal", "How long do I have to withdraw from an online order in the EU?",
          eu, {"S5"}),
+        ("in-battery-row", "My NW-500 battery stopped charging and I live in India. "
+         "Is it covered, for how long, and how do I claim?",
+         sheet_rows, {"warranty-nw500@2026-08-01:p2.e2", "warranty-nw500@2026-08-01:p3.e1"}),
         ("old-vs-new-window", "How many days do I have to return an item in India?",
          old_new, {"R1@2026-09-15"}),
         ("refund-vs-ticket", "An agent told me returns are 7 days only now. Is that right?",
          tick, {"R1@2026-09-15"}),
+        ("supplier-vs-policy", "Do my NW-500 headphones qualify for a 90-day refund?",
+         supplier, {"R1@2026-09-15"}),
+        ("other-tenant-note", q_photo, visible(q_photo), {"a-ret.2"}),
+        ("internal-only-page", q_how, visible(q_how), {"a-ret.1", "a-ret.2"}),
+        ("revoked-page", q_batt, revoked, {"nw500-batt"}),
+        ("retired-clause", "Is the 14-day return window still in force in India?",
+         retired, {"R1@2026-09-15"}),
+        ("stale-order-total", "What did I pay for order #2001, and has it been delivered?",
+         order, {"order #2001"}),
         ("bundle-charger", "Is the NW charger covered by the bundle warranty?",
          _edges("NW charger"), {"edge:NW-500 charger>NW-500 Travel Bundle",
                                 "edge:NW-500 Travel Bundle>W2 bundle warranty"}),
         ("final-sale-refund", q_fs,
          [p for _, p in A.pack_for(q_fs, 5)], {"jacket-sale", "ret-final"}),
+        ("gift-card-cash", "Can I exchange my gift card for cash?", applicable, set()),
         ("lifetime-warranty", q_life, [p for _, p in A.pack_for(q_life, 5)], set()),
         ("unknown-part", "Is the NW-500 cable covered by the bundle warranty?",
          _edges("NW-500 cable"), set()),
     ]
 
 
+# BENCH cases with no grounding in the book's fixtures: never invented, never run.
+NOT_GROUNDED = {
+    "bundle-stand": "BENCH marks it answerable, but no fixture puts a stand in the bundle; "
+                    "the Ch 13 exercise says the stand's coverage is unknown and escalates",
+}
+
+
+# The order record is an authoritative source (knowledge/sources.json); the Ch 11
+# ordering table has no entry for records, so it is added here at policy level.
+A.AUTHORITY.setdefault("orders", 3)
+
+
 def ch16(sheet):
     header("Ch 16")
     print("Each case: fixture passages -> assemble -> answer -> citation check. Graded BY HAND")
-    print("(correct / wrong / abstained) in the grading sheet; gate() is not run here.")
+    print("(correct / wrong / abstained) in the grading sheet; the gate runs on the graded sheet")
+    print("(vol3/runs/grading/gate_from_sheet.py), never on ungraded replies.")
     done = set()
     for case, q, passages, need in bench_cases():
         pack, _ = A.assemble(passages, budget=400)
@@ -279,7 +350,9 @@ def ch16(sheet):
             pack_ids=" ".join(texts), needed_in_pack="yes" if need <= set(texts) else "no",
             citations_in_pack="yes" if ok else "no", reply=reply))
     skipped = [c for c, *_ in G_BENCH if c not in done]
-    print(f"run={len(done)}/{len(G_BENCH)}; no fixture question/evidence, not run: {', '.join(skipped)}")
+    print(f"run={len(done)}/{len(G_BENCH)}; not run: {', '.join(skipped) or 'none'}")
+    for c in skipped:
+        print(f"  {c}: {NOT_GROUNDED.get(c, 'no fixture question/evidence')}")
 
 
 import gate as _gate  # noqa: E402

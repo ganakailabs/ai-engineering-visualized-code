@@ -5,6 +5,9 @@ are byte-identical to the 2026-10-27 run, so their Oct 28 grades are reused; the
 replies (k = 4, 6, 7, 8, 9) are graded below. Writes
 2026-10-31-llama3.2-ch11-ksweep-graded.csv and prints the per-k table.
     python3 vol3/runs/grading/grade_ksweep_2026_10_31.py
+
+Prateek reviewed every borderline grade on 2026-11-01; his final decisions (REVIEW below)
+override the draft grade, whether drafted here or reused from Oct 28.
 """
 import csv
 from pathlib import Path
@@ -68,6 +71,13 @@ NEW = {
  ("q6", 9, "yes"): ("correct", "correct", "no", "free within 12 months [S1]; order number + photo [S2]"),
 }
 
+# Prateek's review of the borderline grades (2026-11-01): (case, k, distractor) -> (strict, lenient, note)
+REVIEW = {
+ ("q2", 5, "yes"): ("correct", "correct", "Prateek review 2026-11-01: wrong -> correct (photo within 7 days [S2]; 'follow the return process and provide the required documentation' accepted as a hedge)"),
+ ("q2", 7, "yes"): ("correct", "correct", "Prateek review 2026-11-01: wrong -> correct (photo within 7 days [S2]; 'follow the return process and provide the necessary documentation' accepted as a hedge)"),
+ ("q3", 5, "yes"): ("correct", "correct", "Prateek review 2026-11-01: abstained -> correct (final sale [S2] read as a committed 'not returnable')"),
+}
+
 
 def main():
     old = {r["reply"]: r for r in csv.DictReader(OLD.open()) if r["chapter"] == "11"}
@@ -82,6 +92,10 @@ def main():
             o = old[r["reply"]]          # KeyError = an ungraded reply; fail loudly
             s, l, b, why = o["strict_grade"], o["lenient_grade"], o["borderline"], o["reason"]
             src = f"reused: identical reply, Oct 28 grade of {o['case']} k={o['k']} dist={o['distractor']}"
+        if key in REVIEW:
+            s, l, note = REVIEW[key]
+            why = f"{why} | {note}"
+            src = f"{src}; final grade from Prateek's review 2026-11-01"
         out.append({**r, "grade": s, "grader": "Grok Bot (strict rubric)", "notes": why,
                     "lenient": l, "borderline": b, "grade_source": src})
     with OUT.open("w", newline="") as f:

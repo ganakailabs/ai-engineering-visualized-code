@@ -29,6 +29,10 @@ count). Re-run a chapter if you compare its printed lines with the current code.
 sweep and Ch 16 were re-run on Oct 31 at 7dfb63f; the Ch 11 replies at k = 2, 3, 5, 10
 were byte-identical to Oct 27. Grades are strict (full answer, no false or unsupported
 claim); replies marked `borderline` in the graded sheets are judgement calls.
+Prateek reviewed all 49 borderline grades on Nov 1, 2026; four were changed (Ch 11
+q2 k=5 and q2 k=7 with the distractor: wrong to correct; q3 k=5 with the distractor:
+abstained to correct; Ch 16 revoked-page: correct to wrong). The Oct 31 graded sheets
+carry the final grades; the Oct 28 draft sheet is kept as drafted.
 
 Runs are made on a Mac with Ollama and `llama3.2` (3B), from the repo root, with the
 same pinned settings as Vol 2 (`SEED 7`, `TEMPERATURE 0.0` in `vol2/llm.py`). Save each

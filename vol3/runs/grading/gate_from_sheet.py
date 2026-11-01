@@ -3,8 +3,9 @@ the regression gate run on them.
 
     python3 vol3/runs/grading/gate_from_sheet.py
 
-Grades: same rubric as 2026-10-28-llama3.2-strict-grading.md (Grok Bot draft for
-Prateek's review; borderline calls flagged). The 7 replies also in the morning's
+Grades: same rubric as 2026-10-28-llama3.2-strict-grading.md (Grok Bot draft;
+borderline calls flagged and reviewed by Prateek on 2026-11-01: revoked-page flipped
+correct -> wrong, the other three borderline grades kept). The 7 replies also in the morning's
 7-case run are byte-identical and keep their grades. Writes
 2026-10-31-llama3.2-ch16-graded.csv and prints the gate.
 
@@ -40,7 +41,7 @@ GRADES = {
  "supplier-vs-policy": ("correct", "yes", "No, 30 days [S1]; rejects the 90-day supplier page [S2], but its reason ('not a direct statement from the seller or manufacturer') is the model's own; sent"),
  "other-tenant-note": ("correct", "no", "No: photo required [S2], within 7 days [S1]; Southpeak's VIP no-photo note was filtered out and not echoed; sent"),
  "internal-only-page": ("correct", "no", "photo of the damage [S1], within 7 days [S2]; nothing from the internal Rs 20,000 note; sent"),
- "revoked-page": ("correct", "yes", "'free under warranty' [S1]: the page says 'under warranty'; 'free' is the model's gloss; the restricted NW-550 'paid service' page was not in the pack; sent"),
+ "revoked-page": ("wrong", "yes", "'free under warranty' [S1]: the page says 'under warranty'; 'free' is the model's gloss, an unsupported claim; the restricted NW-550 'paid service' page was not in the pack; sent | Prateek review 2026-11-01: correct -> wrong"),
  "retired-clause": ("correct", "no", "No, 30 days now [S1]; retired June and future November clauses dropped by precedence; sent"),
  "stale-order-total": ("correct", "no", "INR 950, delivered 2026-10-01 from the live record; ignored the 'in transit' snapshot; no labels -> escalated"),
  "bundle-charger": ("correct", "no", "Yes, covered: both needed edges in the pack; no labels -> escalated"),
@@ -55,7 +56,7 @@ def load():
     rows = list(csv.DictReader(SHEET.open()))
     for r in rows:
         g, b, why = GRADES[r["case"]]
-        r.update(grade=g, grader="Grok Bot (strict, draft for Prateek's review)",
+        r.update(grade=g, grader="Grok Bot (strict), reviewed by Prateek 2026-11-01",
                  notes=f"{'BORDERLINE: ' if b == 'yes' else ''}{why}",
                  action="send" if r["citations_in_pack"] == "yes" else "escalate")
         r["borderline"] = b

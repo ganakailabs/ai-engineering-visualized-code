@@ -1,0 +1,47 @@
+start 2026-11-02 18:53:49 IST
+wrote /Users/prateek/aiev-vol3-runs/code-ed1/vol3/runs/2026-11-02-llama3.2-ch11-ksweep.txt
+wrote /Users/prateek/aiev-vol3-runs/code-ed1/vol3/runs/2026-11-02-llama3.2-ch11-ksweep-sheet.csv (108 rows; grade by hand)
+wrote /Users/prateek/aiev-vol3-runs/code-ed1/vol3/runs/2026-11-02-llama3.2-ch16-real.txt
+wrote /Users/prateek/aiev-vol3-runs/code-ed1/vol3/runs/2026-11-02-llama3.2-grading-sheet-ch16.csv (15 rows; grade: correct / wrong / abstained, by hand)
+Capstone pipeline real run  model=ollama:llama3.2  seed=7 temperature=0.0  date=2026-11-02
+index   chunks=37 ocr_held=1 check={'orphans': 0, 'stale': 0, 'missing': 0, 'mixed': False}
+action  clarify: could you say that another way?
+budget  model_calls=1
+ticket  mug-photo       escalate  checks_passed=False pack_cover=1/1 model_calls=3 reranker_pairs=9
+ticket  return-window   escalate  checks_passed=False pack_cover=1/1 model_calls=4 reranker_pairs=18
+ticket  agent-7-days    escalate  checks_passed=False pack_cover=1/1 model_calls=8 reranker_pairs=48
+ticket  refund-count    escalate  checks_passed=False pack_cover=0/1 model_calls=4 reranker_pairs=0
+ticket  pair-nw500      escalate  checks_passed=False pack_cover=1/1 model_calls=3 reranker_pairs=10
+ticket  eu-withdrawal   clarify   checks_passed=False pack_cover=0/1 model_calls=1 reranker_pairs=0
+ticket  vip-photo       escalate  checks_passed=False pack_cover=0/1 model_calls=8 reranker_pairs=48
+ticket  charger-cover   escalate  checks_passed=False pack_cover=1/1 model_calls=3 reranker_pairs=0
+ticket  battery-cycles  escalate  checks_passed=True  pack_cover=0/0 model_calls=3 reranker_pairs=10
+ticket  cable-cover     escalate  checks_passed=True  pack_cover=0/0 model_calls=3 reranker_pairs=0
+gate    full -> no_precedence: answered=0/8 critical=['agent-7-days', 'eu-withdrawal', 'vip-photo', 'battery-cycles'] -> blocked
+gate    full -> no_access_filter: answered=0/8 critical=['agent-7-days', 'eu-withdrawal', 'vip-photo'] -> blocked
+-- capstone repair: the ten tickets under full, n3, n3_scoped --
+ticket          full   n3     n3_scoped
+mug-photo       False  False  False 
+return-window   False  False  False 
+agent-7-days    False  False  False 
+refund-count    False  False  False 
+pair-nw500      False  False  False 
+eu-withdrawal   False  False  False 
+vip-photo       False  False  False 
+charger-cover   False  False  False 
+battery-cycles  True   True   True  
+cable-cover     True   True   True  
+passed          2/10  2/10  2/10 
+gate    full -> n3: answered=0/8 critical=['agent-7-days', 'eu-withdrawal', 'vip-photo'] -> blocked
+gate    full -> n3_scoped: answered=0/8 critical=['agent-7-days', 'eu-withdrawal', 'vip-photo'] -> blocked
+model calls=421 prompt_tokens=50562 output_tokens=9106
+wrote /Users/prateek/aiev-vol3-runs/code-ed1/vol3/runs/2026-11-02-llama3.2-capstone-real.txt
+wrote /Users/prateek/aiev-vol3-runs/code-ed1/vol3/runs/2026-11-02-llama3.2-capstone-replies.json
+done: logs in vol3/runs dated 2026-11-02
+
+real	8m27.315s
+user	0m3.446s
+sys	0m1.025s
+exit=0
+end 2026-11-02 19:02:17 IST
+secs=508

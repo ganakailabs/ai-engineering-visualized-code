@@ -1,0 +1,7 @@
+date=2026-11-02 commit=0bec076 branch=HEAD
+ProductName:		macOS
+ProductVersion:		26.2
+BuildVersion:		25C56
+Python 3.14.7
+ollama version is 0.40.13
+llama3.2:latest             a80c4f17acd5    2.0 GB    19 months ago    

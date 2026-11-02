@@ -2,6 +2,7 @@
 the regression gate run on them.
 
     python3 vol3/runs/grading/gate_from_sheet.py
+    python3 vol3/runs/grading/gate_from_sheet.py GRADED.csv   # gate an already graded sheet
 
 Grades: same rubric as 2026-10-28-llama3.2-strict-grading.md (Grok Bot draft;
 borderline calls flagged and reviewed by Prateek on 2026-11-01: revoked-page flipped
@@ -87,12 +88,16 @@ def show(name, g):
 
 
 def main():
-    rows = load()
-    with OUT.open("w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-        w.writeheader()
-        w.writerows(rows)
-    print(f"wrote {OUT} ({len(rows)} rows)")
+    if len(sys.argv) > 1:                        # an already graded sheet (e.g. the Nov 2 re-run)
+        rows = list(csv.DictReader(open(sys.argv[1], newline="")))
+        print(f"read {Path(sys.argv[1]).name} ({len(rows)} rows)")
+    else:
+        rows = load()
+        with OUT.open("w", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+            w.writeheader()
+            w.writerows(rows)
+        print(f"wrote {OUT} ({len(rows)} rows)")
     run = {r["case"] for r in rows}
     bench15 = [b for b in G.BENCH if b[0] in run]
     base = G.results("baseline")

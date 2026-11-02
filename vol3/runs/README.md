@@ -4,7 +4,7 @@ Every model output in the Vol 3 manuscript that would come from a real model is 
 `[TO MEASURE]` until a run is logged here AND, where grading is needed, graded.
 Ollama ids are in `2026-10-27-models.txt` and `llama3.2-digest.txt`.
 
-## What is in this folder (logged Oct 27 and Oct 31, 2026)
+## What is in this folder (logged Oct 27, Oct 31 and Nov 2, 2026)
 
 | Log | What it holds | Status |
 |---|---|---|
@@ -22,7 +22,12 @@ Ollama ids are in `2026-10-27-models.txt` and `llama3.2-digest.txt`.
 | `2026-10-31-llama3.2-ch16-real.txt`, `…-grading-sheet-ch16.csv` | Ch 16 run, 15 of 16 BENCH cases (`real_runs.py ch16`; 8 new cases built from existing fixtures; bundle-stand not grounded, not run). Replaces the morning's 7-case files; those 7 replies are byte-identical | graded: `grading/2026-10-31-llama3.2-ch16-graded.csv`; gate: `2026-10-31-llama3.2-ch16-gate.txt` (`grading/gate_from_sheet.py`) |
 | `2026-10-31-llama3.2-capstone-real.txt`, `…-capstone-replies.json` | Capstone pipeline, one real-model run (`pipeline_real.py`), 10 labelled tickets + demo, 191 model calls | graded by code against `pipeline.TICKETS` (reply text not graded) |
 | `2026-10-31-run-env.txt` | Mac, Python, Ollama and model ids for the Oct 31 runs | recorded |
-| `mac_rerun.sh` | the Nov 2026 re-run of Ch 11, Ch 16 and the capstone (section below) | to run |
+| `mac_rerun.sh` | the Nov 2026 re-run of Ch 11, Ch 16 and the capstone (section below) | run Nov 2, 2026 at tag `vol3-ed1` |
+| `2026-11-02-run-env.txt`, `2026-11-02-stub-suite.txt`, `2026-11-02-rerun.log` | Nov 2 re-run: Mac, Python, Ollama and model ids (llama3.2 digest a80c4f17acd5, Ollama 0.40.13); stub suite (all passed); the script's console log | recorded |
+| `2026-11-02-llama3.2-ch11-ksweep.txt`, `…-ch11-ksweep-sheet.csv` | Ch 11 k = 2..10 sweep at `vol3-ed1`, 108 replies, all byte-identical to Oct 31 | graded: `grading/2026-11-02-llama3.2-ch11-ksweep-graded.csv` (Oct 31 final grades carried over by `grading/carry_grades_2026_11_02.py`, which checks every row is identical first) |
+| `2026-11-02-llama3.2-ch16-real.txt`, `…-grading-sheet-ch16.csv` | Ch 16 run at `vol3-ed1`, 15 of 16 BENCH cases, all 15 replies byte-identical to Oct 31 | graded: `grading/2026-11-02-llama3.2-ch16-graded.csv` (carried over the same way); gate: `2026-11-02-llama3.2-ch16-gate.txt` |
+| `2026-11-02-llama3.2-capstone-real.txt`, `…-capstone-replies.json` | Capstone at `vol3-ed1` (`pipeline_real.py`): the main run, the two gate variants and the repair's full / n3 / n3_scoped tables (121 recorded answers). The 421 model calls in the last line cover all of these and are not comparable with Oct 31's 191 (51 answers, no repair tables); the main run was not metered separately | graded by code against `pipeline.TICKETS` (reply text not graded) |
+| `2026-11-02-comparison.md` | the Nov 2 run compared with Oct 31, copied from the run folder | notes |
 
 The logs were made before the external-review fixes (Oct 29, 2026: the Ch 9 bindings
 check, the Ch 11 near-duplicate rule (itself replaced by exact dedupe in Nov 2026), the Ch 16 new-failure gate, the Ch 6 routing
@@ -44,8 +49,13 @@ the Oct 28 draft sheet is kept as drafted.
 The Nov 2026 fixes changed code these runs depend on: exact dedupe in `assemble.py` (the
 Ch 11 sweep and Ch 16 packs were checked and are unchanged by it), the pre-call budget,
 access filtering before the lanes are cut, and the scoped-precedence repair in
-`pipeline.py` (the capstone numbers are for the old code). The book marks the affected
-numbers `[PENDING MAC RE-RUN]`. To re-run on the Mac, from the repo root:
+`pipeline.py` (the capstone numbers are for the old code). The book printed the affected
+numbers as `[PENDING MAC RE-RUN]` until the re-run below. **Done Nov 2, 2026** on Prateek's
+Mac at tag `vol3-ed1` (commit 0bec076), 18:53-19:02 IST: Ch 11 and Ch 16 replies are
+byte-identical to Oct 31 (same grades, same numbers); the capstone still passes 2 of 10
+and both gates block, and `vip-photo` is now stopped by the pre-call cap at 8 model calls
+(empty reply, escalated) instead of running 11 calls. The book cites these logs. To re-run
+on the Mac, from the repo root:
 
     bash vol3/runs/mac_rerun.sh
 

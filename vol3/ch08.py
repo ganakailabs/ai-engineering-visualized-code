@@ -23,5 +23,5 @@ if __name__ == "__main__":
     for k in (5, 10, 20, 30, 40):
         fk, rk = R.recall(k, reranked=False), R.recall(k, score=score)
         print(f"  net={k:2}  first-stage recall@{k}={fk[0]}/{fk[1]}"
-              f"  reranked recall@5={rk[0]}/{rk[1]}  reranker calls={k * len(R.GOLDEN)}")
+              f"  reranked recall@5={rk[0]}/{rk[1]}  pairs scored={k * len(R.GOLDEN)}")
         assert rk[0] <= fk[0]          # reranking cannot find what the net missed

@@ -56,7 +56,7 @@ try:
     raise AssertionError("expected a crash")
 except I.Crash:
     pass
-assert store.manifest["files"][sorted(f.name for f in MANUALS)[1]]["status"] == "failed"
+assert I.status(store, sorted(f.name for f in MANUALS)[1]) == "failed"
 assert len({c["file"] for c in store.chunks.values()}) == 1, "file 2 left no partial chunks"
 again = I.ingest(sorted(d.glob("*.txt")), store, echo=False)
 assert again["skipped"] == 1 and again["retried"] == 1 and again["new"] == 1
@@ -87,7 +87,7 @@ try:
 except I.Crash:
     pass
 assert store.chunks == before, "a mid-commit crash published a partial file"
-assert store.manifest["files"][MANUALS[1].name]["status"] == "failed"
+assert I.status(store, MANUALS[1].name) == "failed"
 again = I.ingest(MANUALS, store, echo=False)
 assert sorted(store.chunks) == ids and I.orphans(store) == []
 
@@ -130,4 +130,61 @@ I.ingest(sorted(d.glob("*.txt")), store, echo=False)
 r = I.ingest(sorted(d.glob("*.txt")), store, echo=False)
 assert r["new"] == 1 and len(store.chunks) == 12
 assert I.duplicates(list(store.chunks.values())) == 0
+
+# Review probe (A10): a FAILED REPLACEMENT must not orphan the version still served.
+# v1 ok -> v2 fails mid-commit -> v1 still consistent, 0 orphans -> retry v2 -> published.
+d = fresh()
+files = sorted(d.glob("*.txt"))
+store = I.Store()
+I.ingest(files, store, echo=False)
+v1 = dict(store.chunks)
+lamp = d / "desk-lamp-dl1.txt"
+lamp.write_text(lamp.read_text().replace("version: 2026-05-10", "version: 2026-10-01"))
+try:
+    I.ingest(files, store, crash_in_commit=1, echo=False)      # the lamp is file 1
+    raise AssertionError("expected a crash")
+except I.Crash:
+    pass
+rec = store.manifest["files"]["desk-lamp-dl1.txt"]
+assert rec["last_attempt"]["status"] == "failed"
+assert rec["active"]["version"] == "2026-05-10"                 # v1 is still the active version
+assert store.chunks == v1 and I.orphans(store) == [], I.orphans(store)
+retry = I.ingest(files, store, echo=False)
+assert (retry["retried"], retry["skipped"]) == (1, 2), retry
+rec = store.manifest["files"]["desk-lamp-dl1.txt"]
+assert rec["active"]["version"] == "2026-10-01" and rec["last_attempt"]["status"] == "ok"
+assert any(k.startswith("man-dl1@2026-10-01") for k in store.chunks)
+assert not any(k.startswith("man-dl1@2026-05-10") for k in store.chunks)
+assert len(store.chunks) == 12 and I.orphans(store) == []
+# the same with a crash after build (crash_on)
+store = I.Store()
+lamp.write_text(lamp.read_text().replace("version: 2026-10-01", "version: 2026-05-10"))
+I.ingest(files, store, echo=False)
+lamp.write_text(lamp.read_text().replace("version: 2026-05-10", "version: 2026-10-01"))
+try:
+    I.ingest(files, store, crash_on=1, echo=False)
+except I.Crash:
+    pass
+assert I.status(store, "desk-lamp-dl1.txt") == "failed" and I.orphans(store) == []
+
+# A11: publication is ONE reference store of one immutable State object.
+store = I.Store()
+I.ingest(MANUALS, store, echo=False)
+before = store.state
+assert isinstance(before, I.State)
+try:
+    before.chunks = {}
+    raise AssertionError("State fields must not be reassignable")
+except AttributeError:
+    pass
+try:
+    store.chunks = {}
+    raise AssertionError("Store.chunks is read-only; publish a State instead")
+except AttributeError:
+    pass
+try:
+    store.publish({}, {})
+    raise AssertionError("publish takes one State")
+except TypeError:
+    pass
 print("test_ingest: OK")

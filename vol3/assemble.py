@@ -2,6 +2,7 @@
 
 The pack is what the model sees. Ordering is authority first, then retrieval score.
 Citations in a reply are validated against the pack ids; anything else escalates.
+Dedupe is exact: the same id or the same normalised text (see same_passage).
 Coverage per k is measured on held-out labelled questions over the Ch 8 chunks.
 Token counts use Vol 1's PLACEHOLDER counter (one token per word or mark).
 """
@@ -18,7 +19,7 @@ AUTHORITY = {"policy": 3, "manual": 2, "past_tickets": 1, "faq": 2}
 # Eight precedence-checked passages for "can I return my jacket, and do I need a photo?"
 EIGHT = [
     dict(id="R1@2026-09-15", source="policy", score=.81, text="Returns accepted within 30 days of delivery."),
-    dict(id="faq-12", source="faq", score=.79, text="Returns are accepted within 30 days of delivery."),
+    dict(id="faq-12", source="faq", score=.79, text="Returns accepted within 30 days of delivery."),
     dict(id="email-tpl-3", source="faq", score=.77, text="Returns accepted within 30 days of delivery!"),
     dict(id="R2@2026-09-15", source="policy", score=.64, text="Damaged items need a photo sent within 7 days."),
     dict(id="R5@2026-01-01", source="policy", score=.58, text="Final sale items cannot be returned."),
@@ -28,25 +29,19 @@ EIGHT = [
 ]
 
 
-def _words(t):
-    return set(re.findall(r"[a-z0-9]+", t.lower()))
+def _norm(t):
+    """Lowercase, punctuation dropped, whitespace collapsed. Word order is kept."""
+    return " ".join(re.findall(r"[a-z0-9]+", t.lower()))
 
 
-# Words two passages may differ by and still be the same statement. Anything else in
-# the difference (a negation, a number, a product, "only", "except", "cannot") can
-# change the meaning, so such passages are never merged, however similar they look.
-FILLER = {"a", "an", "the", "is", "are", "be", "been", "will", "please", "of", "your", "you"}
-
-
-def near_dupe(a, b, cut=0.8):
-    """Duplicate only if the word overlap is high AND the passages differ by filler
-    words alone. "can be returned" vs "cannot be returned" and "charger" vs "case"
-    are never duplicates. Conservative on purpose: a missed dedupe costs tokens; a
-    wrong one deletes evidence."""
-    wa, wb = _words(a), _words(b)
-    if not (wa ^ wb) <= FILLER:
-        return False
-    return len(wa & wb) / len(wa | wb) >= cut
+def same_passage(a, b):
+    """Duplicate only when it is the same passage: the same id (one source, version and
+    place), or the same text after case, punctuation and spacing are normalised.
+    Nothing looser. "Refund window 30 days; warranty window 90 days" and the same
+    sentence with 30 and 90 swapped are NOT duplicates, and neither is a reworded copy
+    ("Returns are accepted ..." vs "Returns accepted ..."). Conservative on purpose: a
+    missed dedupe costs tokens; a wrong one deletes evidence."""
+    return a["id"] == b["id"] or _norm(a["text"]) == _norm(b["text"])
 
 
 def assemble(passages, budget=60, on_over="stop"):
@@ -61,7 +56,7 @@ def assemble(passages, budget=60, on_over="stop"):
     order = sorted(passages, key=lambda p: (-AUTHORITY[p["source"]], -p["score"], p["id"]))
     unique, dupes = [], 0
     for p in order:                                  # 1 dedupe first
-        if any(near_dupe(p["text"], u["text"]) for u in unique):
+        if any(same_passage(p, u) for u in unique):
             dupes += 1
         else:
             unique.append(p)
@@ -128,6 +123,16 @@ def answer(question, pack):
     """Ask the model (stub by default), then validate citations. Returns (action, reply)."""
 
     reply, _ = llm.ask_json(SYSTEM, f"Question: {question}\n\n{render(pack)}", _stub_answer)
-    text = (reply or {}).get("reply", "")
+    text = reply_text(reply)
+    if text is None:
+        return "escalate", ""            # reply is not text: never parsed, never sent
     ok, _, _ = validate_citations(text, pack)
     return ("send" if ok else "escalate"), text
+
+
+def reply_text(reply):
+    """The "reply" field if the model returned a JSON object whose reply is a non-empty
+    string; otherwise None (the caller escalates with "reply is not text"). A reply of
+    42, [], None or {} never reaches the citation regex."""
+    text = reply.get("reply") if isinstance(reply, dict) else None
+    return text if isinstance(text, str) and text.strip() else None

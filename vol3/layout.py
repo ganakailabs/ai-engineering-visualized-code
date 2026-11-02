@@ -49,7 +49,12 @@ def parse(doc, floor=OCR_FLOOR):
             if b["type"] == "heading":
                 out.append({"page": p["page"], "kind": "heading", "text": b["text"]})
             elif b["type"] == "table":
-                for r in b["rows"]:
+                for i, r in enumerate(b["rows"], 1):
+                    if len(r) != len(b["header"]):        # zip() would drop a cell silently
+                        gap = ", ".join(b["header"][len(r):]) or "extra cells"
+                        out.append({"page": p["page"], "kind": "review", "flagged": True,
+                                    "text": f"manual review: row {i} missing {gap}"})
+                        continue
                     out.append({"page": p["page"], "kind": "row", "table": b["caption"],
                                 "text": row_text(b["header"], r)})
         for col in sorted({b["col"] for b in text}):          # column 1, then column 2
@@ -62,9 +67,12 @@ def parse(doc, floor=OCR_FLOOR):
 
 
 def chunks(doc, elements):
-    """One chunk per element; a row chunk carries its table caption."""
+    """One chunk per element; a row chunk carries its table caption. A row held for
+    manual review is never indexed."""
     rows, seen = [], {}
     for e in elements:
+        if e["kind"] == "review":
+            continue
         n = seen[e["page"]] = seen.get(e["page"], 0) + 1      # place on the page
         text = f"{e['table']}: {e['text']}" if e["kind"] == "row" else e["text"]
         rows.append({"id": f"{doc['source']}@{doc['version']}:p{e['page']}.e{n}",
@@ -92,7 +100,9 @@ def run(doc=None, echo=True, floor=OCR_FLOOR):
     ok, n = spotcheck(doc, els)
     t.emit("check", f"parse spotcheck={ok}/{n}", ok=ok, n=n)
     for e in els:
-        if e.get("flagged"):
+        if e["kind"] == "review":
+            t.emit("check", f"page={e['page']} {e['text']}", page=e["page"])
+        elif e.get("flagged"):
             t.emit("ocr", f"page={e['page']} conf={e['ocr_conf']:.2f} flagged "
                    f"(floor {floor:.2f})", page=e["page"])
     return {"trace": t, "elements": els, "chunks": chunks(doc, els), "spotcheck": (ok, n)}

@@ -22,17 +22,44 @@ Ollama ids are in `2026-10-27-models.txt` and `llama3.2-digest.txt`.
 | `2026-10-31-llama3.2-ch16-real.txt`, `…-grading-sheet-ch16.csv` | Ch 16 run, 15 of 16 BENCH cases (`real_runs.py ch16`; 8 new cases built from existing fixtures; bundle-stand not grounded, not run). Replaces the morning's 7-case files; those 7 replies are byte-identical | graded: `grading/2026-10-31-llama3.2-ch16-graded.csv`; gate: `2026-10-31-llama3.2-ch16-gate.txt` (`grading/gate_from_sheet.py`) |
 | `2026-10-31-llama3.2-capstone-real.txt`, `…-capstone-replies.json` | Capstone pipeline, one real-model run (`pipeline_real.py`), 10 labelled tickets + demo, 191 model calls | graded by code against `pipeline.TICKETS` (reply text not graded) |
 | `2026-10-31-run-env.txt` | Mac, Python, Ollama and model ids for the Oct 31 runs | recorded |
+| `mac_rerun.sh` | the Nov 2026 re-run of Ch 11, Ch 16 and the capstone (section below) | to run |
 
 The logs were made before the external-review fixes (Oct 29, 2026: the Ch 9 bindings
-check, the Ch 11 near-duplicate rule, the Ch 16 new-failure gate, the Ch 6 routing
+check, the Ch 11 near-duplicate rule (itself replaced by exact dedupe in Nov 2026), the Ch 16 new-failure gate, the Ch 6 routing
 count). Re-run a chapter if you compare its printed lines with the current code. The Ch 11
 sweep and Ch 16 were re-run on Oct 31 at 7dfb63f; the Ch 11 replies at k = 2, 3, 5, 10
 were byte-identical to Oct 27. Grades are strict (full answer, no false or unsupported
 claim); replies marked `borderline` in the graded sheets are judgement calls.
-Prateek reviewed all 49 borderline grades on Nov 1, 2026; four were changed (Ch 11
+Labels were drafted with AI assistance (Grok Bot) against a strict rubric; Prateek
+reviewed every label himself and re-checked the 49 borderline grades on Nov 1, 2026
+(Ch 11: 45 re-checked, 3 changed; Ch 16: 4 re-checked, 1 changed). Four were changed (Ch 11
 q2 k=5 and q2 k=7 with the distractor: wrong to correct; q3 k=5 with the distractor:
 abstained to correct; Ch 16 revoked-page: correct to wrong). The Oct 31 graded sheets
-carry the final grades; the Oct 28 draft sheet is kept as drafted.
+carry the final grades in `grade`, plus `labelled_by`, `reviewed_by`, `review_date` (the
+Nov 1 borderline re-check; the date of the full review was not recorded) and `changed`;
+the Oct 28 draft sheet is kept as drafted.
+
+## Re-run after the Nov 2026 audit fixes (Ch 11, Ch 16, capstone)
+
+The Nov 2026 fixes changed code these runs depend on: exact dedupe in `assemble.py` (the
+Ch 11 sweep and Ch 16 packs were checked and are unchanged by it), the pre-call budget,
+access filtering before the lanes are cut, and the scoped-precedence repair in
+`pipeline.py` (the capstone numbers are for the old code). The book marks the affected
+numbers `[PENDING MAC RE-RUN]`. To re-run on the Mac, from the repo root:
+
+    bash vol3/runs/mac_rerun.sh
+
+It writes `<date>-run-env.txt`, `<date>-stub-suite.txt`, the Ch 11 k = 2..10 sweep
+(`<date>-llama3.2-ch11-ksweep.txt` and its blank sheet), the Ch 16 run and sheet, and the
+capstone log and replies (the main run plus the repair's full / n3 / n3_scoped tables).
+Then:
+
+1. Grade the two sheets by hand with the same strict rubric (copy them into `grading/`
+   with the graded columns, including `labelled_by`, `reviewed_by`, `review_date`,
+   `changed`). Unchanged replies may reuse the Oct 31 grade; say so in `grade_source`.
+2. `python3 vol3/runs/grading/gate_from_sheet.py` for the Ch 16 gate.
+3. Add the logs to the table above and replace each `[PENDING MAC RE-RUN]` in the book with
+   the new numbers, naming the date and commit.
 
 Runs are made on a Mac with Ollama and `llama3.2` (3B), from the repo root, with the
 same pinned settings as Vol 2 (`SEED 7`, `TEMPERATURE 0.0` in `vol2/llm.py`). Save each

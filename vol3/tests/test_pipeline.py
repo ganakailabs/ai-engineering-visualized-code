@@ -65,6 +65,103 @@ def test_gate_over_pipeline_output():
     assert g["verdict"] == "blocked" and "battery-cycles" in g["new_failures"]
 
 
+def _count_calls(monkey_limits):
+    import llm
+    calls = []
+    real = llm.ask_json
+
+    def counting(*a, **k):
+        calls.append(a[0][:20])
+        return real(*a, **k)
+    llm.ask_json = counting
+    try:
+        out = PL.Pipeline(limits=dict(PL.LIMITS, **monkey_limits)).answer(PL.DEMO, PL.ASHA)
+    finally:
+        llm.ask_json = real
+    return out, calls
+
+
+def test_budget_refuses_before_the_call():
+    # D1 / A55: a model call is reserved before it runs; limit 1 means exactly 1 call
+    out, calls = _count_calls(dict(model_calls=1))
+    assert len(calls) == 1 and out["budget"].counts["model_calls"] == 1
+    assert out["action"] == "escalate" and "refused before it ran" in out["why"][0]
+    out, calls = _count_calls({})
+    assert len(calls) == out["budget"].counts["model_calls"] == 6      # counter == real calls
+
+
+def test_reranker_budget_refuses_before_scoring():
+    tight = PL.Pipeline(limits=dict(PL.LIMITS, reranker_pairs=3))
+    out = tight.answer(PL.DEMO, PL.ASHA)
+    assert out["budget"].counts.get("reranker_pairs", 0) == 0          # nothing was scored
+
+
+def test_non_text_reply_escalates():
+    # A38: a reply that is not a {"reply": str} object is never sent
+    import llm
+    real = llm.ask_json
+    for bad in (42, [], None, {}, {"reply": 7}):
+        def fake(system, user, stub, **k):
+            if system == PL.AS.SYSTEM:
+                return bad, repr(bad)
+            return real(system, user, stub, **k)
+        llm.ask_json = fake
+        try:
+            out = P.answer(PL.DEMO, PL.ASHA)
+        finally:
+            llm.ask_json = real
+        assert out["action"] == "escalate" and "reply is not text" in out["why"], bad
+
+
+def test_checks_passed_is_not_content_correctness():
+    # A47: a false sentence with an in-pack label still passes the action/evidence checks
+    real = PL._stub_reply
+    PL._stub_reply = lambda payload: {"reply": "Every product has a lifetime warranty [S1]."}
+    try:
+        case = next(c for c in PL.TICKETS if c[0] == "return-window")
+        (checks_passed, _), out = PL.grade(P, case)
+    finally:
+        PL._stub_reply = real
+    assert out["action"] == "send" and checks_passed
+
+
+def test_access_filter_runs_before_lanes_are_cut():
+    # D4 / A20: another tenant's internal copies cannot starve the visible passage
+    real = PL.corpus
+
+    def crowded():
+        rows, built = real()
+        for src_id in ("a-ret.2", "handbook-returns@2026-09-15:R2"):
+            for n in range(PL.K_LANE):
+                rows[f"b-copy.{src_id}.{n}"] = dict(rows[src_id], tenant="b", audience="internal")
+        return rows, dict(built, chunks=len(rows))
+    PL.corpus = crowded
+    try:
+        p = PL.Pipeline()
+    finally:
+        PL.corpus = real
+    q = "My mug arrived broken, do I need to send a photo for a refund?"
+    unfiltered, _ = p.vectors.query(q, PL.V.contract(PL.MODEL), PL.K_LANE, probe=2)
+    assert all(i.startswith("b-copy") for i in unfiltered)     # cut first: lane is all copies
+    out = p.answer(q, PL.ASHA)
+    packed = {x["id"] for _, x in out["pack"]}
+    assert not any(i.startswith("b-") for i in packed)
+    assert "handbook-returns@2026-09-15:R2" in packed and "a-ret.2" in packed
+
+
+def test_capstone_repair_on_all_ten():
+    # D7 / A56-A57: N_RERANK=3 alone swaps one failure for another; scoping the
+    # tie-escalation to the family the part asks about fixes both, with no regression
+    full = PL.results(PL.Pipeline(**PL.CONFIGS["full"]))
+    n3 = PL.results(PL.Pipeline(**PL.CONFIGS["n3"]))
+    fixed = PL.results(PL.Pipeline(**PL.CONFIGS["n3_scoped"]))
+    assert sum(v[0] for v in full.values()) == sum(v[0] for v in n3.values()) == 9
+    assert n3["agent-7-days"][0] and not n3["pair-nw500"][0]
+    assert all(v[0] for v in fixed.values())
+    # the battery question still escalates: there the tie IS the claim
+    assert fixed["battery-cycles"] == (True, True)
+
+
 if __name__ == "__main__":
     from _run import run_all
     run_all("test_pipeline")

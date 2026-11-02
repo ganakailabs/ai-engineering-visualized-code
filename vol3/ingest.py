@@ -7,8 +7,9 @@ The manuals in vol3/knowledge/manuals/ are fictional fixtures, already extracted
 
 What this toy does and does not guarantee:
 - Each file's changes are staged on copies of the index and manifest, then published
-  with one swap of two references. A crash before the swap leaves the published store
-  as it was. That is the in-memory version of the idea; a durable atomic commit needs
+  as one immutable State(chunks, manifest) object: Store.publish() stores ONE reference,
+  so a reader sees the whole old state or the whole new one. A crash before the publish
+  leaves the published store as it was. That is the in-memory version of the idea; a durable atomic commit needs
   transactional or equivalent publication semantics in the real store (a database
   transaction, an alias swap, a write-then-rename on one filesystem).
 - Store.save() writes a temporary file and renames it over the old one, so a restart
@@ -16,6 +17,10 @@ What this toy does and does not guarantee:
 - A file is skipped only when its bytes (sha256) AND the pipeline fingerprint (parser,
   chunker and embedder settings in PIPELINE) both match the last good run. Change the
   chunker and every file is rebuilt.
+- Each file's manifest record keeps the ACTIVE version (the last one committed: hash,
+  fingerprint, source, version and chunk ids) apart from the LAST ATTEMPT (status, hash,
+  error). A failed replacement records the failure in last_attempt and leaves active,
+  and the published chunks, untouched: orphans() and the skip check read only active.
 - The manifest is keyed by FILE NAME, not source identity. A renamed file is ingested
   again under its new name; stable ids keep that from duplicating chunks, but the old
   name's record stays until a lifecycle sync removes it (Chapter 14).
@@ -25,6 +30,7 @@ import json
 import os
 import re
 import uuid
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import _root  # noqa: F401
@@ -106,16 +112,35 @@ def build(path):
     return meta, sha, chunks
 
 
+@dataclass(frozen=True)
+class State:
+    """One published state: the index (chunks by id) and the run manifest together.
+    Frozen: nothing reassigns its fields; ingest() stages on copies and publishes a new
+    State. (The inner dicts are not deep-frozen; by convention no one edits them after
+    publication.)"""
+    chunks: dict = field(default_factory=dict)
+    manifest: dict = field(default_factory=lambda: {"runs": [], "files": {}})
+
+
 class Store:
-    """The index (chunks by id) and the run manifest, committed one file at a time."""
+    """The published State, replaced one file at a time by a single reference store."""
 
     def __init__(self):
-        self.chunks = {}
-        self.manifest = {"runs": [], "files": {}}
+        self.state = State()
 
-    def publish(self, chunks, manifest):
-        """The single swap: readers see the old pair or the new pair."""
-        self.chunks, self.manifest = chunks, manifest
+    @property
+    def chunks(self):
+        return self.state.chunks
+
+    @property
+    def manifest(self):
+        return self.state.manifest
+
+    def publish(self, state):
+        """One reference store: readers see the old State or the new one, never a mix."""
+        if not isinstance(state, State):
+            raise TypeError("publish() takes one State(chunks, manifest)")
+        self.state = state
 
     def save(self, path):
         """Write to a temporary file, then rename it over the old one (atomic on one
@@ -128,8 +153,14 @@ class Store:
     @classmethod
     def load(cls, path):
         s, data = cls(), json.loads(Path(path).read_text())
-        s.chunks, s.manifest = data["chunks"], data["manifest"]
+        s.publish(State(data["chunks"], data["manifest"]))
         return s
+
+
+def status(store, name):
+    """The last attempt's status for one file: "ok", "failed", or None if never tried."""
+    rec = store.manifest["files"].get(name)
+    return rec["last_attempt"]["status"] if rec else None
 
 
 def ingest(files, store, crash_on=None, echo=True, run_id=None, crash_in_commit=None, pipeline=None):
@@ -144,47 +175,57 @@ def ingest(files, store, crash_on=None, echo=True, run_id=None, crash_in_commit=
         f = Path(f)
         sha = hashlib.sha256(f.read_bytes()).hexdigest()
         rec = store.manifest["files"].get(f.name)
-        if rec and rec["status"] == "ok" and rec["sha256"] == sha and rec.get("fingerprint") == fp:
+        active = rec["active"] if rec else None
+        failed_before = bool(rec and rec["last_attempt"]["status"] == "failed")
+        if active and active["sha256"] == sha and active.get("fingerprint") == fp:
+            if failed_before:            # the bytes went back to the active version
+                _record(store, f.name, active, dict(status="ok", sha256=sha, error=None))
             skipped += 1
             continue
-        retried += bool(rec and rec["status"] == "failed")
+        retried += failed_before
         new += rec is None
-        changed += bool(rec and rec["status"] == "ok")
+        changed += bool(active) and not failed_before
         meta, sha, chunks = build(f)
         if crash_on == i:
-            _mark_failed(store, f.name, rec, sha)
+            _mark_failed(store, f.name, active, sha, "crash after build")
             t.emit("ingest", f"file={i} crash (nothing committed)", file=f.name)
             raise Crash(f.name)
         staged = dict(store.chunks)                      # stage on copies ...
-        files_rec = dict(store.manifest["files"])
-        old = set(rec["ids"]) if rec and "ids" in rec else set()
+        old = set(active["ids"]) if active else set()
         for cid in old - {c["id"] for c in chunks}:    # an old version's chunks go too
             staged.pop(cid, None)
         for n, c in enumerate(chunks):                  # upsert by stable id
             if crash_in_commit == i and n == len(chunks) // 2:
-                _mark_failed(store, f.name, rec, sha)
+                _mark_failed(store, f.name, active, sha, "crash mid-commit")
                 t.emit("ingest", f"file={i} crash mid-commit (nothing published)", file=f.name)
                 raise Crash(f.name)
             staged[c["id"]] = c
-        files_rec[f.name] = {"status": "ok", "sha256": sha, "fingerprint": fp, "source": meta["source"],
-                             "version": meta["version"], "ids": [c["id"] for c in chunks]}
-        store.publish(staged, dict(store.manifest, files=files_rec))   # ... then one swap
+        new_active = {"sha256": sha, "fingerprint": fp, "source": meta["source"],
+                      "version": meta["version"], "ids": [c["id"] for c in chunks]}
+        files_rec = dict(store.manifest["files"],
+                         **{f.name: {"active": new_active,
+                                     "last_attempt": dict(status="ok", sha256=sha, error=None)}})
+        store.publish(State(staged, dict(store.manifest, files=files_rec)))   # ... then one store
         t.emit("ingest", f"file={i} {meta['source']}@{meta['version']} chunks={len(chunks)}")
     if skipped or retried or changed:
         t.emit("rerun", f"skipped={skipped} retried={retried}"
                         + (f" changed={changed}" if changed else ""))
     t.emit("index", f"n={len(store.chunks)} duplicates={duplicates(list(store.chunks.values()))} "
                     f"orphans={len(orphans(store))}")
-    store.manifest = dict(store.manifest, runs=store.manifest["runs"] + [run_id])
-    return {"status": {Path(f).name: store.manifest["files"][Path(f).name]["status"] for f in files},
+    store.publish(State(store.chunks, dict(store.manifest, runs=store.manifest["runs"] + [run_id])))
+    return {"status": {Path(f).name: status(store, Path(f).name) for f in files},
             "ids": list(store.chunks), "skipped": skipped, "retried": retried, "new": new, "changed": changed,
             "trace": t}
 
 
-def _mark_failed(store, name, rec, sha):
-    """Record the failure (manifest only); the published chunks are untouched."""
-    store.manifest = dict(store.manifest, files=dict(store.manifest["files"],
-                          **{name: dict(rec or {}, status="failed", sha256=sha)}))
+def _record(store, name, active, attempt):
+    files = dict(store.manifest["files"], **{name: {"active": active, "last_attempt": attempt}})
+    store.publish(State(store.chunks, dict(store.manifest, files=files)))
+
+
+def _mark_failed(store, name, active, sha, error):
+    """Record the failed attempt; the active version and the published chunks stay."""
+    _record(store, name, active, dict(status="failed", sha256=sha, error=error))
 
 
 def duplicates(rows):
@@ -198,9 +239,10 @@ def duplicates(rows):
 
 
 def orphans(store):
-    """Indexed chunk ids that no finished file in the manifest claims."""
-    live = {cid for rec in store.manifest["files"].values() if rec["status"] == "ok"
-            for cid in rec.get("ids", [])}
+    """Indexed chunk ids that no file's ACTIVE (last committed) version claims. A failed
+    later attempt does not orphan the chunks of the version still being served."""
+    live = {cid for rec in store.manifest["files"].values() if rec["active"]
+            for cid in rec["active"]["ids"]}
     return sorted(set(store.chunks) - live)
 
 

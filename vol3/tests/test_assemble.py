@@ -33,29 +33,54 @@ def test_coverage_measured_not_assumed():
     assert A.coverage(2) == (3, 6) and A.coverage(10) == (4, 6)
 
 
+def _pair(a, b):
+    return [dict(id="a", source="policy", score=.9, text=a),
+            dict(id="b", source="policy", score=.8, text=b)]
+
+
 def test_contradictory_passages_never_merged():
-    # External review probe: Jaccard 0.8, opposite meaning.
     a = "Final sale items can be returned."
     b = "Final sale items cannot be returned."
-    assert not A.near_dupe(a, b)
-    ps = [dict(id="a", source="policy", score=.9, text=a),
-          dict(id="b", source="policy", score=.8, text=b)]
-    pack, s = A.assemble(ps, budget=100)
+    assert not A.same_passage(dict(id="a", text=a), dict(id="b", text=b))
+    pack, s = A.assemble(_pair(a, b), budget=100)
     assert s["dupes"] == 0 and [p["id"] for _, p in pack] == ["a", "b"]
 
 
-def test_numbers_and_products_block_merge():
-    assert not A.near_dupe("Returns accepted within 30 days of delivery.",
-                           "Returns accepted within 15 days of delivery.")
-    assert not A.near_dupe("The NW-500 charger is part of the NW-500 Travel Bundle.",
-                           "The NW-500 case is part of the NW-500 Travel Bundle.")
-    assert not A.near_dupe("Returns accepted within 30 days of delivery.",
-                           "Returns accepted only within 30 days of delivery.")
+def test_swapped_windows_never_merged():
+    # A36: the same words in a different order are a different rule
+    a = "Refund window 30 days; warranty window 90 days."
+    b = "Refund window 90 days; warranty window 30 days."
+    assert not A.same_passage(dict(id="a", text=a), dict(id="b", text=b))
+    assert A.assemble(_pair(a, b), budget=100)[1]["dupes"] == 0
 
 
-def test_filler_only_difference_still_merges():
-    assert A.near_dupe("Returns accepted within 30 days of delivery.",
-                       "Returns are accepted within 30 days of delivery.")
+def test_numbers_products_and_rewording_block_merge():
+    for a, b in [("Returns accepted within 30 days of delivery.",
+                  "Returns accepted within 15 days of delivery."),
+                 ("The NW-500 charger is part of the NW-500 Travel Bundle.",
+                  "The NW-500 case is part of the NW-500 Travel Bundle."),
+                 ("Returns accepted within 30 days of delivery.",
+                  "Returns are accepted within 30 days of delivery.")]:   # reworded: kept
+        assert not A.same_passage(dict(id="a", text=a), dict(id="b", text=b))
+
+
+def test_exact_copies_merge():
+    assert A.same_passage(dict(id="x", text="one"), dict(id="x", text="two"))      # same id
+    assert A.same_passage(dict(id="a", text="Returns accepted within 30 days of delivery."),
+                          dict(id="b", text="returns accepted within 30 days of delivery"))
+
+
+def test_non_text_reply_escalates():
+    # A38: only {"reply": non-empty str} is sent
+    import llm
+    pack, _ = A.assemble(A.EIGHT)
+    real = llm.ask_json
+    for bad in (42, [], None, {}, {"reply": 7}, {"reply": ""}):
+        llm.ask_json = lambda *a, _bad=bad, **k: (_bad, repr(_bad))
+        try:
+            assert A.answer("jacket?", pack) == ("escalate", ""), bad
+        finally:
+            llm.ask_json = real
 
 
 def test_budget_stop_keeps_priority_prefix():

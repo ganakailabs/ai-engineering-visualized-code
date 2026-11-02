@@ -14,11 +14,16 @@ stage below reads what the stage before it produced, for one ticket.
                Ch 1 name what each part needs; the router picks the path
                Ch 12 counted record questions: QuerySpec -> scoped, parameterized SQL
                Ch 13 coverage questions: bounded graph walk (unknown escalates)
+               Ch 5 access filter AT SEARCH (each lane sees only rows the session may
+                    see, before any lane is cut) and again at cite
                Ch 6 + Ch 7 document questions: vector lane, BM25 lane, exact-id lane, RRF
-               Ch 5 access filter at search and again at cite
                Ch 4 applicability gate on tagged clauses
-               Ch 10 precedence over clause versions (conflict escalates)
-               Ch 8 rerank the survivors
+               Ch 8 rerank the survivors (stub scorer), keep the top N_RERANK
+               Ch 10 precedence over the clause families in the top N, with all their
+                    retrieved versions; a dropped clause is refilled from the ranked list.
+                    A same-authority, same-date tie escalates. With the capstone repair
+                    (scoped_precedence=True) it escalates only in a family the part asks
+                    about (CLAIM_TOPICS); elsewhere both tied clauses are dropped
                Ch 11 one evidence pack: dedupe, order, budget; citations checked
   after        Ch 15 per-ticket retrieval, context and citation metrics
                Ch 16 the gate over a small labelled ticket set, two configurations
@@ -27,12 +32,17 @@ What is still scripted: the answer is a DEMONSTRATION reader (it quotes the top
 passage for each part, it is not a model), the Ch 9 rewriter, Ch 1 classifier and
 Ch 12 spec writer are the chapters' stubs unless AIEV_MODEL is set, the reranker is
 Ch 8's word-overlap stub, and every label in TICKETS was written by hand for this
-fixture. Grading is by code against those labels, not by people.
+fixture. Grading is by code against those labels, not by people: grade() reports
+whether the ACTION/EVIDENCE CHECKS passed (expected action, required pack groups, no
+forbidden id). It does not read the reply text, so it is not answer correctness.
 
 The Budget counts work, never time: embeddings, vectors scored, centroid
 comparisons, BM25 documents scored, reranker pairs, SQL queries, graph edges read,
-model calls and pack tokens (Vol 1's PLACEHOLDER counter). The limits in LIMITS are
-PLACEHOLDERS for this fixture, not recommendations. Run from the repo root:
+model calls and pack tokens (Vol 1's PLACEHOLDER counter). Capped work is RESERVED
+before it runs (model calls, reranker pairs, SQL queries, graph edges): a reservation
+that would pass its limit is refused, the work does not happen, and the ticket
+escalates at that point. The pack token cap is enforced by assemble() itself. The
+limits in LIMITS are PLACEHOLDERS for this fixture, not recommendations. Run from the repo root:
     python3 vol3/pipeline.py
 """
 import json
@@ -69,6 +79,19 @@ LIMITS = dict(reranker_pairs=60, pack_tokens=120, model_calls=8, sql_queries=2,
 K_LANE, K_FUSED, N_RERANK = 8, 10, 2      # PLACEHOLDERS for this fixture
 COUNT_RE = re.compile(r"\bhow many (?:refunds|orders)\b.*\b(?:i|my)\b|\bwhich of my orders\b", re.I)
 MAN_PRODUCT = {"man-nw500": "nw-500", "man-dl1": "lamp", "man-tf20": "fan"}
+# What each Ch 10 clause family is a rule ABOUT, written by hand for this fixture (like
+# the TICKETS labels). A part asks about a family when one of these words is in it.
+CLAIM_TOPICS = {"R1": {"return", "returns", "returned", "returning", "withdraw", "withdrawal"},
+                "M7": {"battery", "batteries", "cycles"}}
+
+
+def claim_families(part):
+    words = set(re.findall(r"[a-z0-9]+", part.lower()))
+    return {f for f, topic in CLAIM_TOPICS.items() if words & topic}
+
+
+class OverBudget(Exception):
+    """A reservation was refused: the work it asked for never ran."""
 
 
 @dataclass
@@ -79,6 +102,15 @@ class Budget:
 
     def add(self, what, n=1):
         self.counts[what] = self.counts.get(what, 0) + n
+
+    def reserve(self, what, n=1):
+        """Call BEFORE the work. Refuses (raises OverBudget, counts unchanged) if the
+        work would take `what` past its limit; otherwise counts it and returns."""
+        cap = self.limits.get(what)
+        if cap is not None and self.counts.get(what, 0) + n > cap:
+            self.refused = (what, self.counts.get(what, 0), n, cap)
+            raise OverBudget(what)
+        self.add(what, n)
 
     def over(self):
         return [k for k, cap in self.limits.items() if self.counts.get(k, 0) > cap]
@@ -116,10 +148,10 @@ def corpus():
 
 class Pipeline:
     def __init__(self, use_access=True, use_applies=True, use_precedence=True, lane=True,
-                 limits=None):
+                 limits=None, n_rerank=N_RERANK, scoped_precedence=False):
         self.limits = dict(limits or LIMITS)
         self.cfg = dict(access=use_access, applies=use_applies, precedence=use_precedence,
-                        lane=lane)
+                        lane=lane, n_rerank=n_rerank, scoped=scoped_precedence)
         self.rows, self.built = corpus()
         src = {i: dict(text=r["text"], audience=r["audience"], version=1)
                for i, r in self.rows.items()}
@@ -139,7 +171,7 @@ class Pipeline:
 
     def route(self, part, b):
         """Ch 1 names the needs; this router adds two paths the chapters built later."""
-        b.add("model_calls")
+        b.reserve("model_calls")
         need, _ = S.classify(part)
         if COUNT_RE.search(part):
             return "records", need
@@ -156,8 +188,8 @@ class Pipeline:
         return GR.resolve(max(hits, key=len)) if hits else None
 
     def records(self, part, session, b):                                      # Ch 12
-        b.add("model_calls")
-        b.add("sql_queries")
+        b.reserve("model_calls")
+        b.reserve("sql_queries")
         res, why = ST.try_ask(part, session)
         if res is None:
             return dict(escalate=f"query refused: {why}", evidence=[])
@@ -170,7 +202,7 @@ class Pipeline:
 
     def graph(self, part, b):                                                 # Ch 13
         node = self.entity(part)
-        b.add("graph_edges_max", len(GR.EDGES) * GR.MAX_HOPS)   # upper bound: a hop scans the edge list
+        b.reserve("graph_edges_max", len(GR.EDGES) * GR.MAX_HOPS)   # upper bound: a hop scans the edge list
         verdict, hops = GR.coverage(node)
         if verdict == "unknown":
             return dict(escalate=f"{node}: no edge to the warranty (unknown, not no)", evidence=[])
@@ -181,22 +213,27 @@ class Pipeline:
     def documents(self, part, session, b):
         cfg = self.cfg
         b.add("query_embeddings")
-        meaning, scored = self.vectors.query(part, V.contract(MODEL), K_LANE, probe=2)   # Ch 6
+        everyone = len(self.rows)
+        meaning, scored = self.vectors.query(part, V.contract(MODEL), everyone, probe=2)  # Ch 6
         b.add("vectors_scored", scored)
         b.add("centroid_comparisons", self.vectors.routing_cost())
         ws = self.words.scores(part)                                                     # Ch 7
         b.add("bm25_docs_scored", len(ws))
-        words = [d for d in H.ranked(ws) if ws[d] > 0][:K_LANE]
+        words = [d for d in H.ranked(ws) if ws[d] > 0]
+        trail = {}
+        if cfg["access"]:                     # Ch 5: filter AT SEARCH, before any lane is cut
+            seen = lambda d: self.access.may_see(session, d)
+            hidden = [d for d in dict.fromkeys(meaning[:K_LANE] + words[:K_LANE]) if not seen(d)]
+            trail["access_dropped"] = sorted(hidden)   # would have taken a lane slot without the filter
+            meaning, words = [d for d in meaning if seen(d)], [d for d in words if seen(d)]
+        meaning, words = meaning[:K_LANE], words[:K_LANE]
         fused = H.rrf([meaning, words])
         want = set(H.normalize_id(part))
         if cfg["lane"] and want:
             fused = [d for d in fused if want <= self.ids[d]] + \
                     [d for d in fused if not want <= self.ids[d]]
         fused = fused[:K_FUSED]
-        trail = {"fused": list(fused)}
-        if cfg["access"]:                                                                # Ch 5
-            trail["access_dropped"] = [d for d in fused if not self.access.may_see(session, d)]
-            fused = [d for d in fused if self.access.may_see(session, d)]
+        trail["fused"] = list(fused)
         if cfg["applies"]:                                                               # Ch 4
             product = next(iter(sorted(Q.facts(part)["entities"])), "unknown")
             keep, out = [], []
@@ -205,22 +242,28 @@ class Pipeline:
                 ok = tags is None or C.applies(tags, product, session.region)[0]
                 (keep if ok else out).append(d)
             fused, trail["not_applicable"] = keep, out
-        b.add("reranker_pairs", len(fused))                                               # Ch 8
+        b.reserve("reranker_pairs", len(fused))                                           # Ch 8
         score = {d: R.stub_score(part, self.rows[d]["text"]) for d in fused}
         ranked = [d for d in sorted(fused, key=lambda d: (-score[d], fused.index(d))) if score[d] > 0]
         escalate, gone = None, set()
-        top = ranked[:N_RERANK]
+        n_top = cfg["n_rerank"]
+        top = ranked[:n_top]
+        asked = claim_families(part)
         while cfg["precedence"]:                                                          # Ch 10
             # every clause family that reaches the pack is judged with all its
             # retrieved versions, not only the ones that ranked high
             fams = {P.CLAUSES[d]["family"] for d in top if d in P.CLAUSES}
-            group = [d for d in fused if d in P.CLAUSES and P.CLAUSES[d]["family"] in fams]
-            if not group:
-                break
-            _, dropped, esc = P.precedence(group, session.region)
-            escalate = escalate or ("sources disagree at the same authority and date" if esc else None)
-            new_gone = gone | {d for d, _ in dropped}
-            new_top = [d for d in ranked if d not in new_gone][:N_RERANK]
+            new_gone = set(gone)
+            for fam in sorted(fams):
+                group = [d for d in fused if d in P.CLAUSES and P.CLAUSES[d]["family"] == fam]
+                kept, dropped, esc = P.precedence(group, session.region)
+                new_gone |= {d for d, _ in dropped}
+                if esc and (fam in asked or not cfg["scoped"]):
+                    escalate = escalate or "sources disagree at the same authority and date"
+                elif esc:       # repair: a tie in a rule the part does not ask about; pack neither side
+                    new_gone |= {d for d in group if d not in kept} - {d for d, _ in dropped}
+                    trail.setdefault("off_claim_ties", []).append(fam)
+            new_top = [d for d in ranked if d not in new_gone][:n_top]
             if new_top == top and new_gone == gone:
                 break
             gone, top = new_gone, new_top
@@ -235,13 +278,24 @@ class Pipeline:
 
     def answer(self, message, session, history=None):
         b = Budget(dict(self.limits))
-        b.add("model_calls")                                                              # Ch 9
-        steps = Q.understand(message, history or {})
+        done, steps = [], []
+        try:
+            return self._answer(message, session, history, b, done, steps)
+        except OverBudget as e:
+            what, used, n, cap = b.refused
+            return dict(action="escalate", reply="", parts=done, pack=[], labels={}, stats=None,
+                        cited=[], budget=b, steps=steps,
+                        why=[f"over budget: {e} (limit {cap}; {used} used, {n} more refused "
+                             "before it ran)"])
+
+    def _answer(self, message, session, history, b, done, steps):
+        b.reserve("model_calls")                                                          # Ch 9
+        steps += Q.understand(message, history or {})
         kinds = dict((k, v) for k, v in steps if k != "route")
         if "clarify" in kinds:
             return dict(action="clarify", reply=kinds["clarify"], parts=[], budget=b, steps=steps)
         parts = kinds.get("rewrite") or [kinds["pass"]]
-        done, evidence = [], []
+        evidence = []
         for part in parts:
             path, need = self.route(part, b)                                              # Ch 1
             if path == "records":
@@ -258,21 +312,24 @@ class Pipeline:
         pack, stats = AS.assemble(evidence, budget=self.limits["pack_tokens"])                 # Ch 11
         b.add("pack_tokens", stats["tokens"])
         label = {p["id"]: lab for lab, p in pack}
-        b.add("model_calls")
+        b.reserve("model_calls")
         reply, _ = llm.ask_json(AS.SYSTEM, _payload(done, pack), _stub_reply)
-        text = (reply or {}).get("reply", "")
+        text = AS.reply_text(reply)
+        why = [f"part {n}: {r['escalate']}" for n, r in enumerate(done, 1) if r.get("escalate")]
+        if text is None:
+            why.append("reply is not text")
+            text = ""
         ok, cited, unknown = AS.validate_citations(text, pack)
         cited_ids = [p["id"] for lab, p in pack if lab in cited]
         docs = [i for i in cited_ids if i in self.rows]
         cite_ok = self.access.cite_ok(session, docs) if self.cfg["access"] else True       # Ch 5
-        why = [f"part {n}: {r['escalate']}" for n, r in enumerate(done, 1) if r.get("escalate")]
-        if not ok:
+        if text and not ok:
             why.append(f"citations not in pack: {unknown or 'none cited'}")
         if not cite_ok:
             why.append("a cited passage is not visible to this session")
         if stats["first_over"]:
             why.append(f"pack budget: {stats['first_over']} did not fit")
-        over = b.over()
+        over = b.over()                    # a safety net: reserve() should make this empty
         if over:
             why.append(f"over budget: {', '.join(over)}")
         return dict(action="escalate" if why else "send", reply=text, why=why, parts=done,
@@ -341,13 +398,18 @@ BENCH = [(c, cat, ans, crit) for c, cat, ans, crit, *_ in TICKETS]
 
 
 def grade(p, case):
-    """(correct, abstained) for one ticket, from the pipeline's own output."""
+    """(checks_passed, abstained) for one ticket, from the pipeline's own output.
+
+    checks_passed means the ACTION/EVIDENCE CHECKS passed: the expected action, every
+    required group in the pack, no forbidden id packed or cited. The reply text is not
+    read, so a false sentence with an in-pack citation still passes. Content
+    correctness needs a person (or a calibrated judge) reading the reply."""
     _, _, _, _, msg, session, expect, must, never = case
     out = p.answer(msg, session)
     in_pack = {x["id"] for _, x in out.get("pack", [])}
-    correct = (out["action"] == expect and all(g & in_pack for g in must)
-               and not (never & (in_pack | set(out.get("cited", [])))))
-    return (correct, out["action"] != "send"), out
+    checks_passed = (out["action"] == expect and all(g & in_pack for g in must)
+                     and not (never & (in_pack | set(out.get("cited", [])))))
+    return (checks_passed, out["action"] != "send"), out
 
 
 def results(p):
@@ -367,7 +429,10 @@ def ticket_metrics(out, case):
 
 
 CONFIGS = {"no_precedence": dict(use_precedence=False), "full": {},
-           "no_access_filter": dict(use_access=False)}
+           "no_access_filter": dict(use_access=False),
+           # the capstone's worked repair, one change at a time
+           "n3": dict(n_rerank=3),
+           "n3_scoped": dict(n_rerank=3, scoped_precedence=True)}
 
 
 def run_gate(base="no_precedence", new="full"):
@@ -392,11 +457,14 @@ def main():
         print(f"part {n}  {r['path']:<9} {r['part']}")
         t = r.get("trail")
         if t:
-            print(f"        fused={len(t['fused'])} access_dropped={t.get('access_dropped')} "
+            print(f"        access_dropped={t.get('access_dropped')} fused={len(t['fused'])} "
                   f"not_applicable={t.get('not_applicable')}")
             print(f"        precedence_dropped={t.get('precedence_dropped')} reranked={t['reranked']}")
         print(f"        evidence={ids}" + (f" escalate={r['escalate']}" if r.get("escalate") else ""))
-    if out["action"] != "clarify":
+    if out["action"] != "clarify" and out["stats"] is None:     # refused by the budget
+        print(f"action  {out['action']} {out['why']}")
+        print("budget  " + " ".join(f"{k}={v}" for k, v in sorted(out["budget"].counts.items())))
+    elif out["action"] != "clarify":
         s = out["stats"]
         print(f"pack    in={s['n_in']} dupes={s['dupes']} kept={s['kept']} tokens={s['tokens']}/{s['budget']}")
         print(f"reply   {out['reply']}")
@@ -406,7 +474,7 @@ def main():
     for case in TICKETS:
         (ok, _), o = grade(p, case)
         m = ticket_metrics(o, case)
-        print(f"ticket  {case[0]:<15} {o['action']:<9} correct={ok!s:<5} "
+        print(f"ticket  {case[0]:<15} {o['action']:<9} checks_passed={ok!s:<5} "
               f"pack_cover={m['pack_cover'][0]}/{m['pack_cover'][1]} "
               f"model_calls={o['budget'].counts.get('model_calls', 0)} "
               f"reranker_pairs={o['budget'].counts.get('reranker_pairs', 0)}")
@@ -416,5 +484,44 @@ def main():
               f"critical={g['critical'] or 'none'} -> {g['label']}")
 
 
+def trace(case_name, **cfg):
+    """The documents path for one ticket, in the order the code runs it."""
+    case = next(c for c in TICKETS if c[0] == case_name)
+    p = Pipeline(**cfg)
+    (ok, _), out = grade(p, case)
+    print(f"trace   {case_name} {cfg or 'full'}: {case[4]}")
+    for r in out["parts"]:
+        t = r.get("trail", {})
+        for k in ("access_dropped", "fused", "not_applicable", "precedence_dropped",
+                  "off_claim_ties", "reranked"):
+            if k in t:
+                print(f"        {k}={t[k]}")
+        if r.get("escalate"):
+            print(f"        escalate={r['escalate']}")
+    print(f"        pack={[x['id'] for _, x in out.get('pack', [])]}")
+    print(f"        action={out['action']} checks_passed={ok}")
+
+
+def repair():
+    """Ch 16 style: the same ten tickets under each step of the repair."""
+    rows = {name: results(Pipeline(**CONFIGS[name])) for name in ("full", "n3", "n3_scoped")}
+    print(f"{'ticket':<15} {'full':<6} {'n3':<6} {'n3_scoped':<6}")
+    for case in TICKETS:
+        print(f"{case[0]:<15} " + " ".join(f"{str(rows[n][case[0]][0]):<6}" for n in rows))
+    print("passed          " + " ".join(f"{sum(v[0] for v in rows[n].values())}/10 "
+                                        for n in rows))
+    for base, new in (("full", "n3"), ("full", "n3_scoped")):
+        g = run_gate(base, new)
+        print(f"gate    {base} -> {new}: answered={g.get('answered')}/{g.get('answerable')} "
+              f"critical={g['critical'] or 'none'} -> {g['label']}")
+
+
 if __name__ == "__main__":
-    main()
+    import sys
+    if sys.argv[1:] == ["repair"]:
+        for name in ("full", "n3", "n3_scoped"):
+            trace("agent-7-days", **CONFIGS[name])
+            trace("pair-nw500", **CONFIGS[name])
+        repair()
+    else:
+        main()

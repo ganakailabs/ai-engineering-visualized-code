@@ -37,6 +37,14 @@ def test_vectors_are_normalized():
     assert abs(V.dot(v, v) - 1.0) < 1e-9
 
 
+def test_cosine_toy_near_miss_is_the_wrong_product():
+    # A21: the hand-checked three-number example printed in Chapter 6
+    import cosine_toy as T
+    q = T.QUERY[1]
+    scores = {t: round(T.cosine(q, v), 3) for t, v in T.DOCS}
+    assert scores == {"NW-50 charger cable": 0.995, "NW-500 battery life": 0.829, "mug care": 0.0}
+
+
 if __name__ == "__main__":
     from _run import run_all
     run_all("test_vectors")

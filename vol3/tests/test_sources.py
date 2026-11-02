@@ -77,4 +77,8 @@ rep = ch01.refund_window_report(ASHA, World())
 assert rep["delivered"] == ["1234", "2001", "2077", "4410"]
 assert rep["refundable"] == {"2001": "R2", "2077": "R2"}
 assert rep["not_refundable"] == {"1234": "R1", "4410": "R3"}
+# A8/A9: a decision needs the order record AND the policy; a missing one escalates
+assert S.missing_sources([dict(source="orders"), dict(source="policy")]) == []
+assert S.missing_sources([dict(source="policy")]) == ["orders"]
+assert S.missing_sources([]) == ["orders", "policy"]
 print("test_sources: OK")

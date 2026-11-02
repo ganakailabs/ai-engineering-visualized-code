@@ -148,6 +148,13 @@ def naive_retrieve(question, k=3):
     return [_ev(cid, "retrieve", i, CONTRACTS[cid]["version"], t) for cid, i, t in ranked[:k]]
 
 
+def missing_sources(evidence, required=("orders", "policy")):
+    """A refund decision needs BOTH the customer's order record and the policy. Returns the
+    required sources with no evidence; a non-empty list means escalate, never guess."""
+    have = {e["source"] for e in evidence}
+    return [r for r in required if r not in have]
+
+
 def check_decision(evidence, world):
     """A decision may rest only on sources that decide, read by their contract path,
     at the version that is current now. Returns (ok, reasons)."""

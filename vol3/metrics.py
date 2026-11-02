@@ -180,25 +180,35 @@ def stub_judge(q, first, second):
 
 
 def judge_pairs(judge=stub_judge, swap=False):
+    """Verdicts as "A"/"B" in PAIRS order. A judge reply that is neither "first" nor
+    "second" (an unparsed reply) is None: its own bucket, never a verdict."""
     out = []
     for q, a, b, _ in PAIRS:
         x, y = (b, a) if swap else (a, b)
         v = judge(q, x, y)
-        out.append(("A" if (v == "first") != swap else "B"))
+        out.append(None if v not in ("first", "second") else ("A" if (v == "first") != swap else "B"))
     return out
 
 
 def agreement(judge=stub_judge):
+    """(agree, n) over the PARSED verdicts only; unparsed() counts the rest."""
     v = judge_pairs(judge)
-    return sum(p == h for p, (*_, h) in zip(v, PAIRS)), len(PAIRS)
+    rows = [(p, h) for p, (*_, h) in zip(v, PAIRS) if p is not None]
+    return sum(p == h for p, h in rows), len(rows)
+
+
+def unparsed(judge=stub_judge):
+    return sum(p is None for p in judge_pairs(judge))
 
 
 def flips(judge=stub_judge):
-    return sum(a != b for a, b in zip(judge_pairs(judge), judge_pairs(judge, swap=True)))
+    """Pairs whose verdict changes when the two replies swap, over pairs parsed both ways."""
+    return sum(a != b for a, b in zip(judge_pairs(judge), judge_pairs(judge, swap=True))
+               if a is not None and b is not None)
 
 
 def trusted(judge=stub_judge, bar=0.9):
     """Use a judge only if it agrees with human labels at least `bar` of the
     time and no verdict flips when the two replies swap places."""
     agree, n = agreement(judge)
-    return agree / n >= bar and flips(judge) == 0
+    return n > 0 and unparsed(judge) == 0 and agree / n >= bar and flips(judge) == 0

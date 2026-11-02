@@ -29,6 +29,23 @@ def test_weight_chosen_on_dev_reported_on_held_out():
     assert H.recall_by_type(H.HELD_OUT, w=w) == {"id": (2, 3), "meaning": (3, 3)}
 
 
+def test_two_product_ids_need_a_chunk_naming_both():
+    # A23: the lane asks for chunks that carry EVERY id in the query; none names both
+    # products here, so the lane is empty and the fused order alone decides
+    hits, ids = H.exact_lane("Is the NW-500 or the NW-550 battery better?")
+    assert ids == ["NW-500", "NW-550"] and hits == []
+    assert H.search("Is the NW-500 or the NW-550 battery better?")[:2] == ["nw500-batt", "nw550-batt"]
+
+
+def test_unknown_id_gets_no_lane_and_a_wrong_product_on_top():
+    # A23: NW-999 is in no chunk; the lane is empty and the top hit is another product,
+    # so the caller must check the id before answering ("unknown product"), not trust rank 1
+    hits, ids = H.exact_lane("How do I reset the NW-999?")
+    assert ids == ["NW-999"] and hits == []
+    top = H.search("How do I reset the NW-999?")[0]
+    assert top == "nw550-pair" and "NW-999" not in H.DOC_IDS[top]
+
+
 if __name__ == "__main__":
     from _run import run_all
     run_all("test_hybrid")

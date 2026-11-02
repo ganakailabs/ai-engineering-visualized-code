@@ -55,6 +55,15 @@ def test_judge_checked_before_trust():
     assert not M.trusted(always_first, bar=0.8)
 
 
+def test_unparsed_judge_reply_is_its_own_bucket():
+    # A48: an unparsed reply is never counted as a verdict
+    def flaky(q, a, b):
+        return "oops" if q == M.PAIRS[0][0] else M.stub_judge(q, a, b)
+    agree, n = M.agreement(flaky)
+    assert n == len(M.PAIRS) - 1 and M.unparsed(flaky) == 1
+    assert not M.trusted(flaky, bar=0.0)
+
+
 if __name__ == "__main__":
     from _run import run_all
     run_all("test_metrics")

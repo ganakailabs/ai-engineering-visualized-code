@@ -5,6 +5,8 @@
    needs a count from the order records (lookup) and the reason from the policy
    (whole_doc). The stub's keywords miss "my delivered orders"; widen the order_fact
    pattern so it matches.
+3. The decision needs two pieces of evidence, the order record and the policy. Remove
+   the order record and check that the decision escalates instead of guessing.
 """
 from _path import STUB
 
@@ -33,8 +35,14 @@ final = [oid for oid in rep["delivered"] if w.orders[oid]["final_sale"]]   # cou
 assert final == ["4410"] and rep["not_refundable"]["4410"] == "R3"
 reason = S.fetch("rule", MIXED_Q, ch01.ASHA, w)[0]
 assert "[R3] Final-sale items cannot be refunded." in reason["text"]
-ok, why = S.check_decision(S.fetch("order_fact", "#4410", ch01.ASHA, w) + [reason], w)
+order = S.fetch("order_fact", "#4410", ch01.ASHA, w)
+ok, why = S.check_decision(order + [reason], w)
 assert ok, why
+assert S.missing_sources(order + [reason]) == []
+gap = S.missing_sources([reason])                                   # order record removed
+assert gap == ["orders"]
 print(f"stock: lookup -> {ev[0]['fact']['count']} green mug sets")
 print(f"final sale: {len(final)} order (#{final[0]}), reason R3 from policy {reason['version']}")
+print("needs: orders + policy -> decision: R3, not refundable")
+print(f"without the order record: missing={gap} -> escalate")
 print("ch01 solution: OK")

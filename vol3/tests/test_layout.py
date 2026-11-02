@@ -56,6 +56,18 @@ def test_real_parser_rows_match_when_installed():
     assert rows[2] == ["EU", "24 months", "email or store"]
 
 
+def test_short_row_goes_to_manual_review_not_the_index():
+    # A14: zip() would silently drop the missing cell; the row is held instead
+    doc = copy.deepcopy(DOC)
+    table = next(b for b in doc["pages"][1]["blocks"] if b["type"] == "table")
+    table["rows"].append(["US", "12 months"])
+    r = L.run(doc, echo=False)
+    assert [e["text"] for e in r["elements"] if e["kind"] == "review"] == \
+        ["manual review: row 4 missing Claim by"]
+    assert not any("Region: US" in c["text"] for c in r["chunks"])
+    assert r["spotcheck"] == (3, 3)
+
+
 if __name__ == "__main__":
     from _run import run_all
     run_all("test_layout")

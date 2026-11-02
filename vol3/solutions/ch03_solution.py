@@ -3,6 +3,9 @@
 Add a Switzerland row (CH, 24 months, store) to the fixture's table, then check its cells
 on both parses: the layout-aware chunks and the naive 10-word cut. Compare cells with
 their column names, not whole strings.
+
+Then add a malformed row with a missing cell (US, 12 months, no "Claim by"). It must not
+be indexed as a short row; it must be held for manual review.
 """
 import copy
 
@@ -25,4 +28,11 @@ hit = next(c for c in r["chunks"] if "Region: CH" in c["text"])
 assert hit["page"] == 2 and hit["kind"] == "row"
 print(f"layout: {hit['id']} cells kept=yes")
 print("naive:  cells kept=no")
+
+table["rows"].append(["US", "12 months"])                       # row 5: a cell is missing
+r = L.run(doc, echo=False)
+review = [e["text"] for e in r["elements"] if e["kind"] == "review"]
+assert review == ["manual review: row 5 missing Claim by"], review
+assert not any("Region: US" in c["text"] for c in r["chunks"])
+print(review[0])
 print("ch03 solution: OK")

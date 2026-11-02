@@ -1,7 +1,7 @@
 """Chapter 8 exercise: find the smallest net.
 
 Predict the smallest first-stage net k whose reranked recall@5 is as good as any net.
-Then check: k=20 gives 7/8, the same as 30 and 40, at half the reranker calls of 40.
+Then check: k=20 gives 7/8, the same as 30 and 40, at half the pairs scored at 40.
 """
 import _path  # noqa: F401
 

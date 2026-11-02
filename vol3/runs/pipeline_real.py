@@ -2,7 +2,8 @@
 
     AIEV_MODEL=ollama:llama3.2 python3 vol3/runs/pipeline_real.py
 
-Runs pipeline.main() unchanged and records every answer() call it makes (message,
+Runs pipeline.main() unchanged, then pipeline.repair() (the worked repair's three
+configurations; set AIEV_CAPSTONE_REPAIR=0 to skip it), and records every answer() call it makes (message,
 config, action, reply, citations, escalation reasons) so the replies can be read and
 graded by hand. pipeline.main() grades each ticket by code against the hand labels in
 TICKETS (action, pack coverage, never-cite ids); that grade does not read the reply.
@@ -64,6 +65,9 @@ def main():
         print(f"Capstone pipeline real run  model={llm.name()}  seed={llm.SEED} "
               f"temperature={llm.TEMPERATURE}  date={DATE}")
         PL.main()
+        if os.environ.get("AIEV_CAPSTONE_REPAIR", "1") == "1":
+            print("-- capstone repair: the ten tickets under full, n3, n3_scoped --")
+            PL.repair()
         print(f"model calls={METER['calls']} prompt_tokens={METER['prompt']} "
               f"output_tokens={METER['output']}")
     text = buf.getvalue()

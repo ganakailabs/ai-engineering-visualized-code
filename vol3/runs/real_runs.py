@@ -200,7 +200,7 @@ def judge(q, first, second):
         v = (reply or {}).get("better")
         if v not in ("first", "second"):
             UNPARSED.append((q, raw))
-            v = "first"                     # counted below; a parse failure is never hidden
+            v = "unparsed"                  # its own bucket: excluded from agreement and flips
         _cache[key] = v
     return _cache[key]
 
@@ -213,7 +213,8 @@ def ch15():
     for (q, *_ , h), v, s in zip(M.PAIRS, M.judge_pairs(judge), M.judge_pairs(judge, swap=True)):
         print(f"  {q:18} human={h} judge={v} swapped={s}{'  FLIP' if v != s else ''}")
     print(f"judge agreement={agree}/{n} flips={fl}/{n} trusted={tr} labelled_set={n}")
-    print(f"unparsed replies (counted as 'first'): {len(UNPARSED)}")
+    print(f"unparsed={len(UNPARSED)} (excluded from agreement and flips; a judge with any "
+          "unparsed reply is not trusted)")
     for q, raw in UNPARSED:
         print(f"  unparsed {q}: {raw[:120]!r}")
 

@@ -10,5 +10,5 @@ import rerank as R
 best = max(R.recall(k)[0] for k in (5, 10, 20, 30, 40))
 smallest = min(k for k in (5, 10, 20, 30, 40) if R.recall(k)[0] == best)
 assert (smallest, best) == (20, 7), (smallest, best)
-print(f"smallest net={smallest} reranked recall@5={best}/8 calls={smallest * 8}")
+print(f"smallest net={smallest} reranked recall@5={best}/8 pairs scored={smallest * 8}")
 print("ch08 solution: OK")

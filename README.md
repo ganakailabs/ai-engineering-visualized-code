@@ -56,8 +56,8 @@ book edition prints tag `vol4-ed1`. See [`vol4/README.md`](vol4/README.md).
 
 Network is needed only for `git clone` and `pip install -r requirements.txt`; the Vol 4
 labs, solutions and tests then run with no network (Chapter 1's server binds
-`127.0.0.1` only). On Windows the supported shell is PowerShell
-(`.venv\Scripts\Activate.ps1`, `python` for `python3`); `vol4-ed1` was checked on Linux.
+`127.0.0.1` only). `vol4-ed1` was tested on Linux; macOS, and Windows in PowerShell
+(`.venv\Scripts\Activate.ps1`, `python` for `python3`), should work but are untested.
 
 ## Reporting a problem
 

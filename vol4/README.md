@@ -25,9 +25,9 @@ From the repo root:
 
 **Network.** Needed only for `git clone` and `pip install -r requirements.txt`. Every
 lab, solution and test then runs with no network: Chapter 1's server binds `127.0.0.1`
-only and the model is a stub. **Windows:** the supported shell is PowerShell (activate a
-venv with `.venv\Scripts\Activate.ps1`, use `python` for `python3`); the commands were
-checked on Linux for `vol4-ed1`.
+only and the model is a stub. **Tested on Linux** for `vol4-ed1`. macOS, and Windows in
+PowerShell (`.venv\Scripts\Activate.ps1`, `python` for `python3`), should work but
+have not been tested.
 
 Optional: `pip install opentelemetry-proto` (checked with 1.45.2) and
 `tests/test_otlp_proto.py` parses the Chapter 3 export with the official protobuf types;

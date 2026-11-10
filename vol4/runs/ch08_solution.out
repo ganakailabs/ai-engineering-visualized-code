@@ -1,0 +1,4 @@
+3x peak, simulated: arrived=900 admitted=432 refused=468
+refused with retry_after: 468; accepted lost: 0; duplicated: 0
+worst reply 59 s (deadline 60 s)
+ch08 solution: OK

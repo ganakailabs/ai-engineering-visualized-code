@@ -1,0 +1,3 @@
+rerank 120 -> 360 ms: total 2920 -> 3010 ms (+90, simulated)
+critical: triage > retrieve > rerank > ...
+ch07 solution: OK

@@ -1,0 +1,42 @@
+{
+  "note": "Vol 4 Ch 2. JSON, not YAML, so the stdlib can read it. Targets and thresholds are the lab's choices for the fictional Northwind Goods, not recommendations.",
+  "window_days": 7,
+  "slos": {
+    "latency": {
+      "owner": "platform",
+      "sli": "first checked reply within threshold_s of ticket creation",
+      "clock": "starts when the ticket is created (the 202); stops at the first substantive reply that passed its checks; the 202 and neutral status events do not stop it",
+      "threshold_s": 60,
+      "target_permille": 990,
+      "eligible": "tickets created in the window",
+      "exclusions": ["tenant probe (synthetic checks)", "cancelled before the first reply"]
+    },
+    "quality": {
+      "owner": "support-eng",
+      "sli": "sampled replies graded correct by the Vol 2 checks",
+      "target_permille": 950,
+      "eligible": "sampled live tickets",
+      "exclusions": [],
+      "status": "no events until Chapter 4 scores live traffic"
+    }
+  },
+  "admission": {
+    "owner": "platform",
+    "metric": "tickets created / valid POST /tickets attempts in the window",
+    "note": "reported beside the latency SLO, which counts admitted tickets only; a refusal before creation never reaches the latency count"
+  },
+  "cost_limit": {
+    "owner": "platform",
+    "max_tokens_per_ticket": 6000,
+    "note": "a constraint, not an SLO: no budget, a ceiling per ticket"
+  },
+  "invariants": {
+    "pii_in_reply": {"owner": "support-eng", "rule": "no email or phone number in a reply"},
+    "duplicate_refund": {"owner": "platform", "rule": "at most one payment per operation_id"}
+  },
+  "policy": {
+    "owner": "ops (Meera)",
+    "when_budget_spent": "freeze risky releases; rollbacks and reliability fixes still ship",
+    "when_invariant_broken": "incident (Chapter 15), whatever the budget"
+  }
+}

@@ -1,0 +1,28 @@
+== Part 1: request path, job path (MM-147) ==
+api POST /tickets tenant=a caller=asha -> 202 job=op-a-T-2001-a
+api POST /tickets (retry) -> 202 job=op-a-T-2001-a created=False
+api POST /tickets (no session) -> 401
+worker1 lease job=op-a-T-2001-a ok until=+3s (claim 1)
+worker2 lease job=op-a-T-2001-a -> refused
+kill worker1 (SIGKILL) -> payments=1 replies=0, job LEASED
+lease expired -> job free again
+worker2 lease job=op-a-T-2001-a -> ok
+worker2 ledger SUBMITTED -> reconcile by key -> CONFIRMED
+worker2 payment calls: 0
+worker2 resume -> DONE (R2)
+payments=1 replies=1 attempts=2
+
+pause, expire, resume (a reused worker name):
+worker1 lease job=op-a-T-1234-a claim=1 at t=100.0,
+  then paused past its 3s lease
+worker1 (restarted, same name) lease at t=103.5 -> claim=2
+old worker1 wakes, complete claim=1 -> refused (current claim 2)
+new worker1 complete claim=2 -> DONE
+
+== Part 2: the readiness map (MM-119) ==
+readiness 12/12 ticked
+missing: none -> lab checklist complete (not deployment evidence)
+
+without data-map.md and the queue owner (the Break):
+readiness 10/12 ticked
+missing: queue, data-map.md -> not ready

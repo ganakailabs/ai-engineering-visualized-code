@@ -11,6 +11,7 @@ stub model is the default, so no API key, network or cost is needed. Run every c
 | [`vol1/`](vol1/) | Vol 1: A Visual Guide to Building LLM Apps, RAG and Agents (Ch 1-24) | `python3 vol1/run_all.py` |
 | [`vol2/`](vol2/) | Vol 2: Agents in production (Ch 1-17) | `pip install -r requirements.txt`, then `python3 vol2/run_solutions.py` |
 | [`vol3/`](vol3/) | Vol 3: RAG & Knowledge Systems (Ch 1-16 and capstone) | `python3 vol3/run_solutions.py` |
+| [`vol4/`](vol4/) | Vol 4: Production AI (Ch 1-16, capstone, joined drill) | `python3 vol4/run_solutions.py` |
 
 Get the book: https://leanpub.com/ai-engineering-visualized
 
@@ -41,6 +42,22 @@ logs in `vol3/runs/`. Vol 3 reuses `vol2/` and `vol1/` (via `vol3/_root.py`).
 See [`vol3/README.md`](vol3/README.md).
 
     python3 vol3/run_solutions.py   # every Vol 3 exercise solution and test
+
+## vol4/
+
+Chapters `vol4/ch01.py` ... `vol4/ch16.py`, `vol4/capstone_alternatives.py` and
+`vol4/drill.py`, solutions in `vol4/solutions/`, tests in `vol4/tests/`, saved outputs in
+`vol4/runs/` and a local-model evidence pack in `vol4/runs/evidence/`. Vol 4 reuses
+`vol3/`, `vol2/` and `vol1/` (via `vol4/_root.py`), so keep the folders together. The
+book edition prints tag `vol4-ed1`. See [`vol4/README.md`](vol4/README.md).
+
+    git checkout vol4-ed1           # the code the Vol 4 book prints
+    python3 vol4/run_solutions.py   # every Vol 4 exercise solution and test
+
+Network is needed only for `git clone` and `pip install -r requirements.txt`; the Vol 4
+labs, solutions and tests then run with no network (Chapter 1's server binds
+`127.0.0.1` only). On Windows the supported shell is PowerShell
+(`.venv\Scripts\Activate.ps1`, `python` for `python3`); `vol4-ed1` was checked on Linux.
 
 ## Reporting a problem
 

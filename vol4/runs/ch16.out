@@ -1,0 +1,28 @@
+== Part 1: practice week (simulated), decision record ==
+decide provider_update fallback_except_policy
+decide stale_index     hold_returns
+decide restore         reconcile_and_replay
+decide cost            small_for_status
+== Part 2: watch one day (tue, simulated) ==
+alert  tue-08 policy answers wrong=2 since tue-00
+contain hold returns answers for review: held=5
+triage DATA stale_index (scripted world)
+fix    index rebuilt overnight; readiness checks index age
+rerun  tue tickets on the fixed system: wrong=0
+report three windows, below
+== Part 3: the report ==
+BREAK week from rerun only: wrong=0 resolve=1.00 -> 'green week'
+window     tickets  slow  wrong  resolve  cost/day
+incident       120    33      2     0.93      24.6
+rerun          120    28      0     1.00      23.1
+recovery        80     0      0     1.00      27.0
+status (a decision simulation; every count is simulated):
+Safety invariants: PASS (0 violations; 1 restore checked)
+Resolution and daily cost: PASS
+  resolved/solvable incident 88/95=0.93, recovery 60/60=1.00 (min 0.80)
+  max cost/day 27.0 (limit 30.0)
+Latency SLO: BREACHED - 33 slow / 2 allowed of 200 eligible
+Quality SLO: MET - 2 wrong / 7 allowed of 150 replies sent
+  allowed = floor(eligible x (1 - target)); used = incident + recovery
+Release policy: FREEZE RISKY CHANGES
+escalate-everything run: FAIL (incident resolve 0.00 < 0.80)

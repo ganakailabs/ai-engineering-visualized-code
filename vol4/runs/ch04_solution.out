@@ -1,0 +1,5 @@
+plan v1: unplanned slices=['gift_card'] (not scored)
+plan v2 strata=refund,delivery,final_sale,gift_card: unplanned=[]
+drift policy_cited slice=gift_card baseline=none (new slice)
+  days 10-14=0.70 [0.55,0.82] n=40 -> alert: review
+ch04 solution: OK

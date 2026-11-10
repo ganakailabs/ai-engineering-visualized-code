@@ -1,0 +1,23 @@
+== Part 1: shadow scoring (MM-122) ==
+plan v1 strata=refund,delivery,final_sale rate=0.25 min=8 seed=4 grader=v1
+14 days: replies=1680 sampled=476 grading failed=7 (counted)
+replies changed=0 (hash of sent replies before == after)
+grading coverage refund=1.00 delivery=0.97 final_sale=1.00
+  floor=0.95 -> publish
+grader version changed v1 -> v2 (day 9) -> recheck vs human labels
+  agree=33/40 (0.82) floor=0.9 -> keep v1 pinned
+critical rule on every reply: refund cited on final sale=1 ['T-406111-a'] -> alert at once
+
+== Part 2: the silent drop (naive dashboard) ==
+overall week 1=0.92 week 2=0.90 floor=0.85 -> no alert
+
+== Part 3: drift watch per slice (MM-123) ==
+baseline days 1-7; 3-day window from day 8;
+  alert when the intervals do not touch
+drift policy_cited slice=refund base=0.96 [0.88,0.99] n=56
+  days 11-13=0.62 [0.43,0.79] n=24 trend=down alert
+drift policy_cited slice=delivery base=0.96 [0.91,0.98] n=123
+  days 12-14=0.96 [0.87,0.99] n=51 ok
+drift policy_cited slice=final_sale base=0.93 [0.83,0.97] n=56
+  days 12-14=0.92 [0.74,0.98] n=24 ok
+change log: day 1 model snapshot 2026-10, day 8 model snapshot 2026-11

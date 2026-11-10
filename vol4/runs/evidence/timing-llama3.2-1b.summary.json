@@ -1,0 +1,91 @@
+{
+  "kind": "timing",
+  "date": "2026-11-10T13:45:47+05:30",
+  "ollama_version": "0.40.16",
+  "model": "llama3.2:1b",
+  "model_digest": "baf6a787fdffd633537aa2eb51cfd54cb93ff08e28040095462bb63daf552878",
+  "model_details": {
+    "parent_model": "",
+    "format": "gguf",
+    "family": "llama",
+    "families": [
+      "llama"
+    ],
+    "parameter_size": "1.2B",
+    "quantization_level": "Q8_0",
+    "context_length": 131072,
+    "embedding_length": 2048,
+    "runner": "ggml"
+  },
+  "settings": {
+    "temperature": 0,
+    "seed": 7,
+    "num_predict": 120,
+    "stream": true,
+    "repeats": 5,
+    "warmup": 1,
+    "cold": "each request starts with a unique first line, so the runtime cannot reuse a cached prefix from an earlier request",
+    "repeat": "the identical prompt each time: the runtime may reuse its prefix"
+  },
+  "hardware": {
+    "machine": "x86_64",
+    "python": "3.13.5",
+    "os": "Linux-6.12.113+-x86_64-with-glibc2.41",
+    "cpus": 8,
+    "gpu": "none detected",
+    "cpu": "Intel(R) Xeon(R) Processor",
+    "ram_gib": 15.6
+  },
+  "n": 2,
+  "dataset_sha256": "623db9ff5a311904ee085fb9ea66fb4ec71a260ae264f4dc44c2ac23c7c3a62f",
+  "summary": {
+    "short-cold": {
+      "n": 5,
+      "prompt_tokens": 66,
+      "ttft_s_median": 0.178,
+      "total_s_median": 1.887,
+      "prefill_tok_s_median": 384.3,
+      "decode_tok_s_median": 38.6,
+      "ttft_s_min": 0.133,
+      "decode_tok_s_min": 36.3,
+      "ttft_s_max": 0.29,
+      "decode_tok_s_max": 41.8
+    },
+    "short-repeat": {
+      "n": 5,
+      "prompt_tokens": 51,
+      "ttft_s_median": 0.025,
+      "total_s_median": 2.097,
+      "prefill_tok_s_median": 2660.7,
+      "decode_tok_s_median": 42.5,
+      "ttft_s_min": 0.016,
+      "decode_tok_s_min": 38.7,
+      "ttft_s_max": 0.032,
+      "decode_tok_s_max": 70.8
+    },
+    "long-cold": {
+      "n": 5,
+      "prompt_tokens": 1192,
+      "ttft_s_median": 3.066,
+      "total_s_median": 4.904,
+      "prefill_tok_s_median": 397.1,
+      "decode_tok_s_median": 34.1,
+      "ttft_s_min": 1.878,
+      "decode_tok_s_min": 33.4,
+      "ttft_s_max": 3.152,
+      "decode_tok_s_max": 50.9
+    },
+    "long-repeat": {
+      "n": 5,
+      "prompt_tokens": 1177,
+      "ttft_s_median": 0.041,
+      "total_s_median": 2.362,
+      "prefill_tok_s_median": 37189.2,
+      "decode_tok_s_median": 33.6,
+      "ttft_s_min": 0.031,
+      "decode_tok_s_min": 31.7,
+      "ttft_s_max": 0.204,
+      "decode_tok_s_max": 39.4
+    }
+  }
+}

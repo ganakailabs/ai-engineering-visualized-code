@@ -1,0 +1,10 @@
+sealed week opened (hash ok)
+incident  slow=24 wrong=1 resolve=0.98 cost/day=27.0
+rerun     slow=20 wrong=0 resolve=1.00 cost/day=27.0
+recovery  slow=0 wrong=0 resolve=1.00 cost/day=27.0
+budget latency used=24/2 quality used=1/7
+budget reported per window: latency, quality
+invariants critical=0
+resolve incident>=min: yes recovery>=min: yes
+escalate-everything run fails: yes
+ch16 solution: OK

@@ -1,0 +1,10 @@
+  POST /tickets                               12.0 ms
+    process tickets                         1934.0 ms
+      invoke_agent northwind-assistant      1932.0 ms
+        retrieval                             35.0 ms
+        chat stub                           1693.0 ms
+        execute_tool issue_refund            120.0 ms
+        tools/call book_pickup                84.0 ms
+          tools/call book_pickup              80.0 ms
+courier span: child of the tools/call client span, under the agent step
+ch03 solution: OK

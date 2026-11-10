@@ -1,0 +1,25 @@
+== Part 1: BREAK, split first, grade against the teacher ==
+split before dedup: test=240 also in train=55
+student vs TEACHER labels: acc=0.946  (looks fine)
+damaged-on-arrival vs HUMAN labels: 6/19 right
+
+== Part 2: FIX, clean data, two gates ==
+data tickets=1200 dedup removed=203
+split train/val/test by ticket = 648/149/200
+gate try plateau=yes labelled=648 -> open
+review sample=60 disagree=8 damaged-on-arrival=6
+slice sent for human labels: 79 train tickets
+validation (while building): student acc=1.000
+held-out test, HUMAN labels, n=200 (simulated):
+  teacher  acc=0.940 critical=1
+  student  acc=1.000 critical=0
+gate ship gain=+0.060 critical=0 -> open
+  student per class: delivery=54/54 faq=41/41 refund=42/42 warranty=63/63
+  critical=0 in 105 money questions: 95% bound about 2.9%, not zero
+
+== Part 3: related tickets, and the policy ==
+held out by template family (one per type), n=201:
+  teacher  acc=0.965 critical=0
+  student  acc=0.781 critical=0
+gate ship gain=-0.184 -> closed gain=-0.184
+policy noninferior margin=0.02, cheaper, example gain=-0.010 -> open

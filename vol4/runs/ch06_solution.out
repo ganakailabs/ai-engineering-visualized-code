@@ -1,0 +1,12 @@
+manifest rel-16a check:
+  index 2026-10-12 built with gram-v1, embedder is gram-v2:
+    build a new index
+build INDEX 2026-11-04 with gram-v2: check
+  orphans=0, stale=0, missing=0, mixed=False
+  switched: held-out recall 4/6 >= live 4/6
+manifest rel-16 check: complete (index 2026-11-04 + embedder gram-v2)
+job=op-a-T-2001-a pinned release=14
+  -> index 2026-10-12 (gram-v1) top hit=mug-dmg
+rollback target=rel-14 -> index 2026-10-12 kept
+  (indexes held: 2026-10-12, 2026-11-04)
+ch06 solution: OK

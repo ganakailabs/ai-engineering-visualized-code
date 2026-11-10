@@ -1,0 +1,15 @@
+{
+  "release_id": "rel-v4-ch01",
+  "note": "Starter manifest (Vol 4 Ch 1). Ch 6 adds versions, eval results and the rollback target. Owners are fixture roles at fictional Northwind Goods.",
+  "components": {
+    "api":       {"owner": "platform",    "boundary": "identity from the session; 202 + job id"},
+    "queue":     {"owner": "platform",    "boundary": "SQLite jobs table; leases"},
+    "workers":   {"owner": "support-eng", "boundary": "run one leased job; resume from state"},
+    "state":     {"owner": "platform",    "boundary": "jobs, ledger, payments, replies"},
+    "providers": {"owner": "support-eng", "boundary": "model calls (stub in the lab)"},
+    "knowledge": {"owner": "content",     "boundary": "Vol 3 sources and their contracts"},
+    "tools":     {"owner": "support-eng", "boundary": "Vol 2 tools and MCP servers"},
+    "secrets":   {"owner": "platform",    "boundary": "none in the lab; see adr-001.md"}
+  },
+  "documents": ["adr-001.md", "threat-model.md", "data-map.md"]
+}

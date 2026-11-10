@@ -1,0 +1,4 @@
+labelled kept=129 of 648
+gate try plateau=yes labelled=129 -> closed labelled=129<500
+trained: no
+ch12 solution: OK

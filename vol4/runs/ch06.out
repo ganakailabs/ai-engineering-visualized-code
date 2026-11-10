@@ -1,0 +1,30 @@
+== Part 1: the manifest and CI ==
+release rel-14: code=v4-ch06 workflow=v5 checkpoint=v2 prompt=v7 model=v3
+  embedder=gram-v1 index=2026-10-12 tools=v2 evals=v4 data=v3
+manifest rel-15 check: ['missing eval_report']
+ci prompt v8: critical cases failed=1 (SC-002) -> merge blocked
+ci prompt v8.1: critical cases failed=0
+  -> pass, no regression found (improvement not demonstrated)
+manifest rel-15 check: complete
+
+== Part 2: an in-flight job across the release (MM-140) ==
+naive  job=op-a-T-2001-a unversioned checkpoint read by rel-15 (v3):
+  done=[] -> payments=2
+job=op-a-T-2001-a pinned release=14 -> finished on 14 payments=1
+or: migrate checkpoint v2 -> v3, resume on 15 -> payments=1
+release matrix (rel-15 live; issue_refund revoked on Monday):
+  new                       -> run on rel-15
+  old, no effects           -> restart on rel-15
+  old, effects, next=notify -> finish on rel-14, next action rechecked
+  old, effects, next=refund -> pause: next op revoked, keep state
+
+== Part 3: canary and rollback (MM-141) ==
+canary release=15 share=10% (sticky by customer), 3 days, refund slice
+  policy_cited rel-14=278/294 rel-15=16/28
+  diff=-0.374 [-0.559,-0.189] -> rollback
+naive  restore rel-14 snapshot -> deleted ids back=2
+rollback release=15 -> 14 deleted_ids kept deleted=2 live=rel-14
+refunds sent on 15=16 cannot be unsent -> listed for review
+  (compensation is a new action)
+in flight on 15: 12 jobs: 4 no action yet -> restart on 14;
+  8 acted -> finish on 15, flagged for review

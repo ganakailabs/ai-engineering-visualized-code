@@ -1,0 +1,26 @@
+== Part 1: rent or own (MM-131), example inputs ==
+tickets/mo       api self naive  self full gpus
+    10,000     5,000        800     34,600    1
+    50,000    25,000      4,000     34,600    1
+   100,000    50,000      8,000     34,600    1
+ 1,000,000   500,000     80,000    209,800    7
+break-even (one GPU, fully costed): 69,200 tickets/mo
+  naive leaves out idle hours, ops and on-call (simulated units)
+== Part 2: KV cache at scale (MM-132), example model shape ==
+kv assume=full_attention layers=32 kv_heads=8 head_dim=128
+  -> bytes=131,072 per token (128 KiB)
+kv context= 8192 batch= 1 ->   1.0 GiB
+kv context= 8192 batch=16 ->  16.0 GiB
+kv context=16384 batch=16 ->  32.0 GiB
+kv assume=half layers sliding window=128, 8192x16 -> 8.1 GiB
+gpu memory example=80 GiB = weights + kv + runtime overhead
+  weights 16-bit=14.9 GiB -> max seqs at 8192: 65
+  weights  8-bit= 7.5 GiB -> max seqs at 8192: 72
+  weights  4-bit= 3.7 GiB -> max seqs at 8192: 76
+  (idealized ceilings: no runtime memory, every slot full)
+  16-bit, 10% kept for the runtime (example) -> max seqs at 8192: 57
+  plan with 25% spare for peaks and failover (example) -> 42
+  runtime memory on your server: unmeasured (read it from your runtime)
+== Part 3: your own prefill and decode (optional) ==
+ollama: off (set AIEV_MODEL=ollama:<model> to time yours)
+prefill tok/s and decode tok/s: unmeasured (no model set)

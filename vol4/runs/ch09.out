@@ -1,0 +1,33 @@
+== Part 1: cost per resolved ticket (MM-127) ==
+cost ticket=T-ref-011 total=83.5 resolved=yes (simulated units)
+  model=1.6 retries=1.6 retrieve=0.2 tools=0.1 human=80.0
+release big   per call=4.00  per resolved=8.88  escalated=14/300
+release small per call=1.60  per resolved=18.21  escalated=57/300
+  delivery  per resolved: big=5.79 small=3.45
+  refund    per resolved: big=10.67 small=27.24
+  warranty  per resolved: big=10.10 small=23.58
+== Part 2: the application caches (MM-128) ==
+naive: get #3100 -> semantic hit similarity=1.00
+  served: "Refund of INR 950 for order #2001 is on its way (R2)."
+entity check: get #3100 -> semantic miss reason=order id differs
+text rule on "Please refund the order we discussed."
+  -> personal=False (no order id in the text)
+structured: put it -> not cached reason=route refund not allowlisted
+structured: faq reply that read the order
+  -> not cached reason=used session/order context
+put faq -> cached
+get faq -> exact hit
+get faq reworded -> semantic hit similarity=0.62
+get faq tenant=b -> miss reason=empty
+get faq permissions v2 -> miss reason=empty
+get faq handbook access revoked -> hit refused reason=access
+app_cache flushed policy=2026-11-01 dropped=1
+get faq -> miss reason=empty
+== Part 3: stable first, changing last (MM-176) ==
+as shipped: header > system > tools > policy > order > ticket
+  shared prefix=3 of 214 stable tokens -> FAIL
+stable first: system > tools > policy > order > header > ticket
+  shared prefix=214 of 214 stable tokens -> pass
+policy 2026-09-15 -> 2026-11-01: shared prefix=42 of 214
+provider_cache: unmeasured; read it from the provider's usage report;
+  the stub has none, so no hit rate or saving is printed

@@ -1,0 +1,50 @@
+Joined drill: real queue, ledger, trace and restore; mock payment provider
+
+A. reconcile before resume (the runbook)
+enqueue op-a-T-2001: QUEUED; backup taken
+w1 claim=1 paid key=k-65ff20dd26, crashed before recording
+  ledger SUBMITTED, provider rows=1, job LEASED
+workers stopped; restore from backup: job QUEUED
+  ledger rows=0, provider rows=1 (the provider is not restored)
+reconcile before resume: recorded from provider -> ledger CONFIRMED
+w2 claim=1: payment calls=0, ledger CONFIRMED, job DONE
+late w1 complete claim=1: refused (the restore rewound claim numbers)
+provider payments for key=1, replies=1, double payments=0
+trace b9f0f691:
+  backup      job.state=QUEUED
+  w1 refund   claim=1 ledger.state=SUBMITTED provider.rows=1
+  restore     job.state=QUEUED ledger.rows=0
+  reconcile   result=recorded from provider
+  w2 resume   claim=1 calls=0 ledger.state=CONFIRMED
+
+B. no reconcile, provider honours the key
+enqueue op-a-T-2001: QUEUED; backup taken
+w1 claim=1 paid key=k-65ff20dd26, crashed before recording
+  ledger SUBMITTED, provider rows=1, job LEASED
+workers stopped; restore from backup: job QUEUED
+  ledger rows=0, provider rows=1 (the provider is not restored)
+no reconcile: resume straight after the restore
+w2 claim=1: payment calls=1, ledger CONFIRMED, job DONE
+late w1 complete claim=1: refused (the restore rewound claim numbers)
+provider payments for key=1, replies=1, double payments=0
+trace b9f0f691:
+  backup      job.state=QUEUED
+  w1 refund   claim=1 ledger.state=SUBMITTED provider.rows=1
+  restore     job.state=QUEUED ledger.rows=0
+  w2 resume   claim=1 calls=1 ledger.state=CONFIRMED
+
+C. no reconcile, provider ignores the key
+enqueue op-a-T-2001: QUEUED; backup taken
+w1 claim=1 paid key=k-65ff20dd26, crashed before recording
+  ledger SUBMITTED, provider rows=1, job LEASED
+workers stopped; restore from backup: job QUEUED
+  ledger rows=0, provider rows=1 (the provider is not restored)
+no reconcile: resume straight after the restore
+w2 claim=1: payment calls=1, ledger CONFIRMED, job DONE
+late w1 complete claim=1: refused (the restore rewound claim numbers)
+provider payments for key=2, replies=1, double payments=1
+trace b9f0f691:
+  backup      job.state=QUEUED
+  w1 refund   claim=1 ledger.state=SUBMITTED provider.rows=1
+  restore     job.state=QUEUED ledger.rows=0
+  w2 resume   claim=1 calls=1 ledger.state=CONFIRMED

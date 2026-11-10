@@ -1,0 +1,11 @@
+{
+  "note": "Your decision record for the capstone week: one choice per kind of trouble, with a reason. These are the author's choices; replace them with yours.",
+  "provider_update": {"choice": "fallback_except_policy",
+                      "why": "fallback abstains on policy; send policy to the slow primary and pay latency budget to keep resolving"},
+  "stale_index": {"choice": "hold_returns",
+                  "why": "wrong policy answers are worse than slower human ones"},
+  "restore": {"choice": "reconcile_and_replay",
+              "why": "invariants first: no double refund, no deleted customer back"},
+  "cost": {"choice": "small_for_status",
+           "why": "status questions need the courier tool, not the big model"}
+}

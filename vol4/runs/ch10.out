@@ -1,0 +1,47 @@
+== Part 1: the model router (MM-129), example scores ==
+route-model type=faq      model=small  bar=pass (940>=900)
+route-model type=delivery model=small  bar=pass (910>=900)
+route-model type=refund   model=medium bar=pass (955>=950)
+route-model type=warranty model=large  bar=pass (960>=950)
+cost per call, one of each type: routed=1.20 all-large=3.00
+  (simulated units; scores are examples, not measurements)
+scorecard route=refund bar=950, n=200 cases each (simulated):
+  mini   960 [923,980] crit=11/12 p95=2s cost/res=3.50 -> reject: critical
+  small  880 [828,918] crit=10/12 p95=2s cost/res=10.00 -> reject: bar
+  medium 955 [917,976] crit=12/12 p95=4s cost/res=4.60 -> pass
+  large  970 [936,986] crit=12/12 p95=9s cost/res=5.40 -> pass
+== Part 2a: untested fallback (BREAK) ==
+naive: primary down, refund #4410 -> backup, no checks
+  reply: "Refund approved for #4410."
+  refund_rule: no (R3 final sale) -> WRONG
+== Part 2b: noon outage, eligibility checked (simulated) ==
+ticket T-faq-e1 tenant=e route=faq
+  provider 429 quota left=0 -> do not retry; try fallbacks
+  fallback backup data_boundary=eu -> not allowed
+  budget retry at local (primary down) retries_left=1
+  fallback local left=50s-3s reserve, p95=12s, timeout=47s -> ok
+  served ticket=T-faq-e1 model=local
+ticket T-del-a1 tenant=a route=delivery
+  provider 429 quota left=0 -> do not retry; try fallbacks
+  budget retry at backup (primary down) retries_left=1
+  fallback backup left=40s-3s reserve, p95=6s, timeout=37s -> ok
+  served ticket=T-del-a1 model=backup
+ticket T-del-a2 tenant=a route=delivery
+  provider 429 quota left=0 -> do not retry; try fallbacks
+  fallback backup left=4s-3s reserve, p95=6s -> not allowed
+  fallback local untested route=delivery -> not allowed
+  escalate T-del-a2 route=delivery reason=no eligible model
+ticket T-ref-a3 tenant=a route=refund
+  provider 429 quota left=0 -> do not retry; try fallbacks
+  fallback backup untested route=refund -> not allowed
+  fallback local untested route=refund -> not allowed
+  escalate T-ref-a3 route=refund reason=no eligible model
+ticket T-faq-a4 tenant=a route=faq, a rate limit, not a quota
+  provider 429 retry-after=20s
+  budget retry at primary (rate limit) retries_left=0
+  primary still 429 after the wait
+  budget retries_left=0 -> no retry at backup (primary down)
+  escalate T-faq-a4 reason=retry budget spent
+== Part 2c: outage drill at failover load (simulated) ==
+1 minute, 120 tickets, primary out of quota; backup 50/min, local 20/min
+  served backup=50 local=10, escalated=60, retries taken=60

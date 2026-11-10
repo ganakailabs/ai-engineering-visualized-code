@@ -1,0 +1,8 @@
+policy first: policy > system > tools > order > header > ticket
+  prefix test pass (shared 214 of 214)
+id above policy: header > policy > system > tools > order > ticket
+  prefix test FAIL (shared 3 of 214)
+decisions: #2001 R2 refund; #3100 R1 refund + R4 agent
+  code decides from the order record, so both layouts agree
+provider cache gain: a model experiment, read from the usage report
+ch09 solution: OK

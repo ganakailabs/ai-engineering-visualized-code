@@ -1,0 +1,6 @@
+alert courier_resolved=0.00 < slo 0.90
+contain pause courier jobs -> paused=['courier']
+triage TOOL breaker open (short_circuit)
+reconcile ledger unknown=2 -> confirmed=1 not_found=1
+verify original cases pass=10/10; resumed
+ch15 solution: OK

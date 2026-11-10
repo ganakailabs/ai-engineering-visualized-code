@@ -1,0 +1,31 @@
+== Part 1: one ticket, one trace (MM-120) ==
+trace 7942bdf22106f0847762f0f3cb4d764d (seeded; real ids are random)
+durations simulated
+  POST /tickets                               12.0 ms
+    process tickets                         1850.0 ms
+      invoke_agent northwind-assistant      1848.0 ms
+        retrieval                             35.0 ms
+        chat stub                           1693.0 ms
+        execute_tool issue_refund            120.0 ms
+chat tokens in=43 out=25 (placeholder counter)
+export otlp ok (6 spans, 2 services) -> vol4/runs/ch03-trace.otlp.json
+incoming traceparent, all-zero trace id -> new trace started
+incoming traceparent, not hex -> new trace started
+
+== Part 2: the missing spans (simulated Tuesday) ==
+jobs in queue table=30 worker spans received=20
+naive p95 job time=2.5s from 20 spans (looks better; simulated)
+true p95 job time=27.3s from all 30 jobs (only the simulator knows)
+completeness worker=0.67 floor=0.95 -> metric withheld
+
+== Part 3: what to log (MM-121) ==
+no redaction: scan finds 4 items
+log written:
+  amount_inr: 950
+  customer: [NAME]
+  event: reply_sent
+  note: customer asked for a call on [PHONE], copy to [EMAIL]
+  tenant_id: a
+  ticket_id: T-2001-a
+redacting sink: scan finds 0 items
+an address is outside the patterns: written as-is, scan finds 0

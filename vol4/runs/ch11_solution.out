@@ -1,0 +1,6 @@
+kv assume=full_attention (every layer)
+  context 8192 -> 16.0 GiB; 16384 -> 32.0 GiB (x2.00)
+kv assume=half layers sliding window=128
+  context 8192 -> 8.1 GiB; 16384 -> 16.1 GiB (x1.98)
+max seqs on 80 GiB, 16-bit weights: 65 at 8192, 32 at 16384
+ch11 solution: OK

@@ -1,0 +1,17 @@
+{
+  "name": "sealed week",
+  "note": "SIMULATED. Open only when you run the Chapter 16 exercise; do not tune on it. Drafted for the book (decision D4-13 pending).",
+  "seed": 61,
+  "tickets_per_day": 40,
+  "days": ["mon", "tue", "wed", "thu", "fri"],
+  "incident_days": ["mon", "tue", "wed", "thu"],
+  "detect_after": 6,
+  "cost_units_per_day": 30.0,
+  "resolve_min": 0.80,
+  "events": [
+    {"type": "stale_index", "day": "mon", "at": 20, "until": "tue"},
+    {"type": "restore", "day": "tue", "at": 5, "unknown_refunds": 3,
+     "deleted_customers": ["asha", "kiran"]},
+    {"type": "provider_update", "day": "wed", "at": 4, "until": "fri"}
+  ]
+}

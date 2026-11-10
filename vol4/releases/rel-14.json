@@ -1,0 +1,20 @@
+{
+  "release_id": "rel-14",
+  "note": "lab release manifest (Vol 4 Ch 6); version strings are the lab's labels, not real artefacts",
+  "versions": {
+    "code": "v4-ch06",
+    "workflow": "v5",
+    "checkpoint": "v2",
+    "prompt": "v7",
+    "model": "v3",
+    "embedder": "gram-v1",
+    "index": "2026-10-12",
+    "tools": "v2",
+    "evals": "v4",
+    "data": "v3"
+  },
+  "index_built_with": "gram-v1",
+  "eval_report": {"gate": "pass, no regression found (improvement not demonstrated)",
+                  "bench": "scenario catalog SC-001..SC-020", "evals": "v4"},
+  "rollback_target": "rel-13"
+}

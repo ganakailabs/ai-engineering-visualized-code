@@ -1,0 +1,19 @@
+== The SLO card (MM-118) ==
+slo latency owner=platform good = first checked reply <= 60s from creation
+  window 7 days: 420 tickets, excluded 14 probe + 3 cancelled (simulated)
+admission created=420 of attempted=420 (simulated: nothing refused)
+slo quality owner=support-eng: no events until Chapter 4 scores live traffic
+cost limit 6000 tokens/ticket: over=0 (simulated)
+invariant pii_in_reply violations=0
+
+== The error budget (MM-162) ==
+bad so far: Mon 0, Tue 13, Wed 13, Thu 13, Fri 13, Sat 13, Sun 13 (allowed 4)
+burn rate: Mon 0, Tue 22.4, Wed 0, Thu 0, Fri 0, Sat 0, Sun 0
+slo latency eligible=403 good=390 target=99.0%
+  allowed_bad=4 used=13 (simulated)
+policy prompt-v2 (prompt) -> blocked: budget spent -> freeze risky releases
+policy rollback-to-v1 (rollback) -> allowed: rollbacks and fixes always ship
+
+== Safety is not budgeted ==
+invariant pii_in_reply violations=1 (T-2040-a) -> incident
+policy prompt-v2 (budget left) -> blocked: invariant broken -> incident

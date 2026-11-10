@@ -1,0 +1,33 @@
+== Part 1: the critical path (MM-125) ==
+ticket T-1501-a (SC-015, warranty), simulated durations
+receive      |#                             |    15 ms
+check_input  |#                             |    35 ms
+triage       |###                           |   280 ms
+order_lookup |   #####                      |   520 ms
+retrieve     |   ==                         |   250 ms
+rerank       |     ==                       |   120 ms
+generate     |        ##################### |  2000 ms
+check_output |                             #|    60 ms
+send         |                             #|    10 ms
+total=2920 ms
+critical: receive > check_input > triage > order_lookup > generate
+         > check_output > send
+slack from dependency edges: retrieve 150 ms, rerank 150 ms; path steps 0 ms
+tied ends (timestamps vs edges):
+  timestamps: audit > generate
+  edges:      fetch > lookup > generate
+
+== Part 2: speeding up the wrong box ==
+rerank 120 -> 40 ms: total=2920 ms (was 2920); rerank on path: False
+
+== Part 3: stream, parallelize, skip (MM-126) ==
+baseline            total=2920 ms  first words=2920 ms
+parallelize lookup  total=2770 ms  first words=2770 ms
++ skip triage       total=2640 ms  first words=2640 ms
++ stream            total=2640 ms  first words=1170 ms
+critical now: receive > check_input > order_lookup > generate
+             > check_output > send
+
+== Sidebar: TTFT vs tokens per second (simulated models) ==
+reply  20 tokens: quick-start=633 ms  fast-decode=1000 ms
+reply 280 tokens: quick-start=4967 ms  fast-decode=2300 ms

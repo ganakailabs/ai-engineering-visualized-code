@@ -1,0 +1,26 @@
+== Part 1: alert, severity, owner, contain ==
+alert policy_cited=0.40 < slo 0.90 (simulated, 10 cases)
+alert policy_cited down severity=2 owner=support-eng on_call=meera
+contain flag=new_policy_prompt off
+contain policy replies held for review (harm stopped)
+after flag off policy_cited=0.40 (flag was not it)
+comms update 1 drafted: impact, severity, next update
+== Part 2: find the box ==
+BREAK swap model stub-a -> stub-b: policy_cited=0.40 (unchanged)
+FIX walk the trace of P0:
+  CONTEXT ok
+  MODEL   ok
+  CHECK   ok
+  TOOL    ok
+  DATA    STALE (index 2026-10-12 < source 2026-10-15)
+triage data STALE (index 2026-10-12 < source 2026-10-15)
+== Part 3: recover, reconcile, verify ==
+recover: workers paused; index restored from source 2026-10-15
+restore -> reconcile ledger unknown=2 -> confirmed=1 not_found=1
+ledger DONE=20/20 double payments=0; workers resumed
+verify original cases pass=6/6
+verify untouched critical slice pass=8/8
+release hold for 10% of policy replies; meera watches 120 min
+  watch policy_cited=1.00 >= 0.90, critical failures=0 (simulated rerun)
+release hold fully; flag back on after the window
+comms update 2 drafted (not sent): fixed, verified

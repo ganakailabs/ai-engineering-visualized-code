@@ -1,0 +1,35 @@
+== Part 1: the data boundary map ==
+the lab fixture's stores (yours will differ):
+store    holds                       erase   retention
+jobs     ticket text, ids            ours    P days
+replies  reply text                  ours    P days
+memory   notes from past chats       ours    until deleted
+index    chunks of past tickets      ours    rebuilt nightly
+logs     redacted records, ids       ours    L days
+evals    cases from feedback (Ch 5)  ours    E days
+train    training export (Ch 12)     ours    T days
+cache    general answers (Ch 9)      flush   until version
+audit    actor, action, ids          policy  A days
+journal  customer id per deletion    policy  oldest backup
+provider prompts sent to model API   per     provider terms
+backups  nightly copy of live        expiry  B days
+export asha: jobs=2 replies=1 memory=2 index=3 logs=1 evals=1 train=1 cache=0
+  audit, journal: ids kept by policy, own access and retention
+  provider: per product, dated; backups: listed by date
+== Part 2: the audit trail ==
+audit append actor=agent(s-a17) action=issue_refund order=2001
+audit entries=12 checkpoints in safe=[5, 10]
+audit verify vs checkpoint ok
+edit entry 7 actor: audit verify FAILED chain broken at entry 7
+edit + recompute chain: audit verify FAILED checkpoint 10 mismatch
+truncated to 8 -> detected (truncated: checkpoint 10 missing)
+truncated to 11 (after last checkpoint 10) -> not detected
+rollback: cut to 7, remove checkpoint 10 -> not detected
+  vs latest expected checkpoint 10, known elsewhere -> detected
+== Part 3: delete, back up, restore ==
+deleted chats=2 replies=1 memories=2 chunks=3 logs=1
+  evals=1 train=1 cache=0
+after delete asha present=no
+BREAK restore only -> asha present=yes memory=2 chunks=3
+restore + journal -> asha present=no
+ravi kept: jobs=1

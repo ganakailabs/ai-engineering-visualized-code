@@ -1,0 +1,19 @@
+{
+  "release_id": "rel-15",
+  "note": "lab release manifest (Vol 4 Ch 6): a one-line prompt change and a new checkpoint schema",
+  "versions": {
+    "code": "v4-ch06",
+    "workflow": "v5",
+    "checkpoint": "v3",
+    "prompt": "v8",
+    "model": "v3",
+    "embedder": "gram-v1",
+    "index": "2026-10-12",
+    "tools": "v2",
+    "evals": "v4",
+    "data": "v3"
+  },
+  "index_built_with": "gram-v1",
+  "eval_report": null,
+  "rollback_target": "rel-14"
+}

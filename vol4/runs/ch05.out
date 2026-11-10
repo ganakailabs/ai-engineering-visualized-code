@@ -1,0 +1,30 @@
+== Part 1: the feedback flywheel (MM-124) ==
+feedback thumbs_down=102 proposed=102 approved=3
+  rejected 45: duplicate of a case already covered
+  rejected 1: reply was right (R2)
+  rejected 48: reply was right (R3)
+  rejected 5: reply was right (S1)
+  case from T-401018-a:
+    "[NAME] here, my mug set for order #2001 arrived chipped, refund
+    please. Call me on [PHONE]."
+    expected=R2 got=none
+  split dev=1 held_out=2 (Vol 3 hash split)
+
+== Part 2: is the difference real? (MM-163) ==
+plan exp-v8: unit=customer, outcome=first ticket resolved, no reopen in 7 days
+  H0: gain <= 0.05  H1: gain > 0.05  (gain = B - A)
+  base=0.80 margin=0.05 plan_gain=0.10 alpha=0.025 one-sided power=0.80
+  -> n=785 customers per arm
+power check: the exact rule on 2000 simulated tests of 785 per arm
+  true gain 0.10 -> ships 0.798 (power)
+  true gain 0.05 -> ships 0.026 (false ship, alpha)
+assign customer=asha arm=B tickets=3 counted=1
+  (sticky; one customer, one outcome)
+naive: first 60 tickets per arm, thumbs-up, five seeded mornings,
+  same true rates
+  morning seed=5 A=44/60 B=41/60 -> A wins (diff=-0.050 [-0.212,+0.112])
+  morning seed=6 A=43/60 B=43/60 -> tie    (diff=+0.000 [-0.161,+0.161])
+  morning seed=7 A=42/60 B=44/60 -> B wins (diff=+0.033 [-0.128,+0.194])
+  morning seed=8 A=44/60 B=42/60 -> A wins (diff=-0.033 [-0.194,+0.128])
+  morning seed=9 A=43/60 B=48/60 -> B wins (diff=+0.083 [-0.069,+0.236])
+ab outcome=resolved matured customers A=0 B=0 of 785 -> not yet

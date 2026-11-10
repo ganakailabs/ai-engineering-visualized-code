@@ -1,0 +1,7 @@
+export: jobs=2 replies=1 memory=2 index=3 logs=1 evals=1 train=1 cache=0
+  also listed: audit, journal (ids kept by policy)
+  provider (per product, dated), backups (by date)
+after delete: live stores holding asha=0
+after restore + journal: live stores holding asha=0
+backup still holds asha until expiry: yes
+ch14 solution: OK

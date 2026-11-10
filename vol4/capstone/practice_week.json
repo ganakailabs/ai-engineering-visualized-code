@@ -1,0 +1,17 @@
+{
+  "name": "practice week",
+  "note": "SIMULATED. Used in the Chapter 16 text. Lab choices for the fictional Northwind Goods.",
+  "seed": 16,
+  "tickets_per_day": 40,
+  "days": ["mon", "tue", "wed", "thu", "fri"],
+  "incident_days": ["mon", "tue", "wed"],
+  "detect_after": 8,
+  "cost_units_per_day": 30.0,
+  "resolve_min": 0.80,
+  "events": [
+    {"type": "provider_update", "day": "mon", "at": 12, "until": "thu"},
+    {"type": "stale_index", "day": "tue", "at": 0, "until": "wed"},
+    {"type": "restore", "day": "wed", "at": 0, "unknown_refunds": 2,
+     "deleted_customers": ["asha"]}
+  ]
+}

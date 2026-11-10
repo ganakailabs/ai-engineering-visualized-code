@@ -1,0 +1,7 @@
+day 1: not yet
+day 17: matured customers A=810 B=827 (planned 785)
+ab gain=-0.007 interval=[-0.045,+0.031] margin=0.05
+  -> keep A: any gain is smaller than the margin
+escalations A=131 B=143 (workload, all matured tickets, simulated)
+41 customers: tickets A=4169 B=3751, customers A=21 B=20 -> not yet
+ch05 solution: OK

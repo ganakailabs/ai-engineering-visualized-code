@@ -1,0 +1,21 @@
+practice week (simulated); one change at a time
+change                          slow wrong resolve crit  cost
+author's record                   33     2    0.93    0  27.0
+  -> checks pass
+     latency 33/2 BREACHED, quality 2/7 met -> release policy FREEZE
+provider_update=wait              81     2    0.93    0  27.0
+  -> checks pass
+     latency 81/2 BREACHED, quality 2/7 met -> release policy FREEZE
+provider_update=route_fallback     6     0    0.72    0  27.0
+  -> checks FAIL: incident resolve 0.72 < 0.80
+     latency 6/2 BREACHED, quality 0/6 met -> release policy FREEZE
+stale_index=ignore                33     7    0.93    0  27.0
+  -> checks pass
+     latency 33/2 BREACHED, quality 7/7 met -> release policy FREEZE
+restore=resume_now                33     2    0.93    2  27.0
+  -> checks FAIL: critical invariants: 2
+     latency 33/2 BREACHED, quality 2/7 met -> release policy FREEZE
+cost=all_primary                  35     2    0.93    0  32.0
+  -> checks FAIL: recovery cost 32.0/day over limit
+     latency 35/2 BREACHED, quality 2/7 met -> release policy FREEZE
+limits: resolve>=0.80 cost<=30.0/day critical=0

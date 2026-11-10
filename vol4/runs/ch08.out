@@ -1,0 +1,35 @@
+== Part 1: the stream contract (MM-164), order #3100 ==
+naive: customer saw
+  "Your refund of INR 12,500 for order #3100 is approved."
+naive: check output ok=False clause=R4  <- after it was shown
+stream event=started id=1 "Got it. Looking at your ticket now."
+stream event=working id=2 "Checking your order..."
+stream event=working id=3 "Reading the refund policy..."
+stream event=working id=4 "Checking the reply before sending..."
+stream event=final id=5
+  "Refunds above INR 5,000 need a support agent's approval (R4).
+  We have passed order #3100 to them."
+stream event=done id=6 ""
+decision text before final: 0
+delivery draft for #2001 names c-42's address -> check ok=False (privacy)
+  streamed before the check: status lines only (True)
+wire format of event 2:
+id: 2
+event: working
+data: Checking your order...
+
+== Part 2: reconnect and cancel ==
+client reconnect last_event=3 -> resume ids [4, 5, 6]
+client cancel after decide -> ran lookup decide
+client cancel after pay -> ran lookup decide pay record
+== Part 3: backpressure (MM-165), simulated ==
+sizing: peak 30/min x 12 s = 6.0 busy workers; at 75% -> 8 workers
+queue limit: 32 waiting (first checked reply within 60 s)
+twice the peak (60/min) for 10 min:
+unbounded admitted=600/600 refused=0 late=496 worst=308 s
+bounded   admitted=432/600 refused=168 late=0 worst=59 s
+admit T-0096 queue=full -> 503 retry_after=12
+bounded: admission 432/600 = 72%, on time 432/432 admitted = 100%
+  on time out of all demand 432/600 = 72%
+long tail (1 in 10 takes 48 s), same limit: admitted=345/600
+  late=289 worst=115 s

@@ -1,0 +1,8 @@
+route-model type=dispute model=large
+noon T-dis-a1 -> escalate
+noon T-faq-a2 -> backup
+noon T-del-a3 -> backup
+  fallback backup untested route=dispute -> not allowed
+  fallback local untested route=dispute -> not allowed
+  escalate T-dis-a1 route=dispute reason=no eligible model
+ch10 solution: OK
